@@ -12,6 +12,7 @@ import com.badlogic.gdx.maps.objects.PolylineMapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
@@ -307,7 +308,9 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
             try {
                 EnemyType entityType = EnemyType.valueOf(mapObject.getName());
                 DirectionType lookingAt = Boolean.parseBoolean((String) mapObject.getProperties().get("type")) ? DirectionType.LEFT : DirectionType.RIGHT;
-                Enemy enemy = EntityFactory.enemy(entityType, ((RectangleMapObject) mapObject).getRectangle().x, ((RectangleMapObject) mapObject).getRectangle().y, lookingAt, this);
+                float posX = mapObject instanceof RectangleMapObject ? ((RectangleMapObject) mapObject).getRectangle().x : ((TiledMapTileMapObject) mapObject).getX();
+                float posY = mapObject instanceof RectangleMapObject ? ((RectangleMapObject) mapObject).getRectangle().y : ((TiledMapTileMapObject) mapObject).getY();
+                Enemy enemy = EntityFactory.enemy(entityType, posX, posY, lookingAt, this);
                 if (bossLevel && enemy.isBoss()) {
                     ((Boss) enemy).setBoostType(MealType.valueOf((String) map.getProperties().get("bossBoost")));
                 }
@@ -323,10 +326,12 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
             if (map.getLayers().get(MEAL_LAYER).getObjects().getCount() > 0) {
                 MapObject mapObject = map.getLayers().get(MEAL_LAYER).getObjects().get(0);
                 MealType mealType = MealType.parseMeal(mapObject.getName());
+                float posX = mapObject instanceof RectangleMapObject ? ((RectangleMapObject) mapObject).getRectangle().x : ((TiledMapTileMapObject) mapObject).getX();
+                float posY = mapObject instanceof RectangleMapObject ? ((RectangleMapObject) mapObject).getRectangle().y : ((TiledMapTileMapObject) mapObject).getY();
                 if (mealType.isBoost()) {
-                    food.add(EntityFactory.boost(((RectangleMapObject) mapObject).getRectangle().x, ((RectangleMapObject) mapObject).getRectangle().y, mealType, this, true));
+                    food.add(EntityFactory.boost(posX, posY, mealType, this, true));
                 } else {
-                    food.add(EntityFactory.fruit(((RectangleMapObject) mapObject).getRectangle().x, ((RectangleMapObject) mapObject).getRectangle().y, mealType, this));
+                    food.add(EntityFactory.fruit(posX, posY, mealType, this));
                 }
                 map.getLayers().get(MEAL_LAYER).getObjects().remove(0);
                 loadMealTimer = Constant.MEAL_SPAWN_DELAY;
