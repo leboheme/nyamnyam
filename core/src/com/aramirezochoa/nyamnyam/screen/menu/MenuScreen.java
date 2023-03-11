@@ -471,6 +471,9 @@ public class MenuScreen extends AbstractScreen {
             DataManager.INSTANCE.setExternalGift(false);
         }
 
+        if (Gdx.input.justTouched()) {
+            MediaManager.MENU.interactionStarted();
+        }
         MenuAction menuAction = InputManager.INSTANCE.getMenuAction();
         switch (menuAction) {
             case CONTINUE:

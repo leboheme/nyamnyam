@@ -28,7 +28,7 @@ import com.badlogic.gdx.utils.Align;
  * Created by boheme on 12/01/15.
  */
 public enum MediaManager {
-    MENU {
+    MENU(false) {
         @Override
         public void loadAssets() {
             manager.load("data/menu/menu.atlas", TextureAtlas.class);
@@ -130,10 +130,19 @@ public enum MediaManager {
     public static String SOUND_INTRO_NYAMNYAM = "data/sounds/nyamnyam.ogg";
 
     public static String SOUND_BUTTON = "data/sounds/button.ogg";
-
+    private static float VOLUME = 0.1f;
     private static final String SOUND = "sounds";
 
     private static Boolean soundEnabled = true;
+    private boolean interactionStarted;
+
+    MediaManager() {
+        interactionStarted = true;
+    }
+
+    MediaManager(boolean interactionStarted) {
+        this.interactionStarted = interactionStarted;
+    }
 
     public static void init() {
         manager = new AssetManager();
@@ -229,15 +238,20 @@ public enum MediaManager {
         return manager.get(s);
     }
 
+    public void interactionStarted() {
+        interactionStarted = true;
+    }
+
     public void playSound(String name) {
-        if (soundEnabled) {
-            ((Sound) get(name)).play();
+        if (interactionStarted && soundEnabled) {
+            ((Sound) get(name)).play(VOLUME);
         }
     }
 
     public void playTheme(String theme) {
-        if (soundEnabled) {
+        if (interactionStarted && soundEnabled) {
             if (!((Music) get(theme)).isPlaying()) {
+                ((Music) get(theme)).setVolume(VOLUME);
                 ((Music) get(theme)).setLooping(true);
                 ((Music) get(theme)).play();
             }
