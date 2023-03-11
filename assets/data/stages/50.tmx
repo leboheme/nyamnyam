@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="50" height="25" tilewidth="16" tileheight="16">
+ <properties>
+  <property name="automaticAirMode" value="3"/>
+  <property name="bossBoost" value="BOOST_CHILLI"/>
+  <property name="bossLevel" value="true"/>
+  <property name="guidedAir" value="false"/>
+  <property name="specialAir" value="AIR_SPIKES"/>
+ </properties>
+ <tileset firstgid="1" name="tiles" tilewidth="16" tileheight="16">
+  <image source="tiles.png" width="256" height="256"/>
+  <tile id="0">
+   <properties>
+    <property name="type" value="TOP"/>
+   </properties>
+  </tile>
+  <tile id="1">
+   <properties>
+    <property name="type" value="TOPL"/>
+   </properties>
+  </tile>
+  <tile id="2">
+   <properties>
+    <property name="type" value="TOPR"/>
+   </properties>
+  </tile>
+  <tile id="3">
+   <properties>
+    <property name="type" value="TOPRL"/>
+   </properties>
+  </tile>
+  <tile id="4">
+   <properties>
+    <property name="type" value="LEFT"/>
+   </properties>
+  </tile>
+  <tile id="5">
+   <properties>
+    <property name="type" value="RIGHT"/>
+   </properties>
+  </tile>
+  <tile id="6">
+   <properties>
+    <property name="type" value="RL"/>
+   </properties>
+  </tile>
+  <tile id="10">
+   <properties>
+    <property name="type" value="LEFT"/>
+   </properties>
+  </tile>
+  <tile id="15">
+   <properties>
+    <property name="type" value="RIGHT"/>
+   </properties>
+  </tile>
+  <tile id="20">
+   <properties>
+    <property name="type" value="TOP"/>
+   </properties>
+  </tile>
+  <tile id="21">
+   <properties>
+    <property name="type" value="LEFT"/>
+   </properties>
+  </tile>
+  <tile id="22">
+   <properties>
+    <property name="type" value="RIGHT"/>
+   </properties>
+  </tile>
+  <tile id="38">
+   <properties>
+    <property name="type" value="TOP"/>
+   </properties>
+  </tile>
+ </tileset>
+ <tileset firstgid="257" name="entities" tilewidth="32" tileheight="32">
+  <image source="entities.png" width="256" height="256"/>
+ </tileset>
+ <layer name="ground" width="50" height="25">
+  <data encoding="base64" compression="zlib">
+   eJztlEkKwDAQw/ycdP3/8xooPRsfUpJBgjkLg5gmqRW5vd+x8H07Nq0NO+aCHbnj/MExcsel96fcAx10lTvoykNXuYOuPHSVO+jKQ1e5g648dJU76MpTrasK9wADPShy
+  </data>
+ </layer>
+ <layer name="collision" width="50" height="25" visible="0">
+  <data encoding="base64" compression="zlib">
+   eJzt0sEJACAMBMGon/RfsfYgQYgzcP97bEZENhjArXm2Xp+gHV1RQVdU0BUVdEUFXf1pNNkGFqUB4Q==
+  </data>
+ </layer>
+ <objectgroup name="enemies" width="50" height="25">
+  <object name="BOSS_BANQUI" gid="263" x="688" y="96"/>
+ </objectgroup>
+ <objectgroup name="meals" width="50" height="25"/>
+ <objectgroup name="path" width="50" height="25"/>
+</map>

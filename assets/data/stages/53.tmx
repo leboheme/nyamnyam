@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="50" height="25" tilewidth="16" tileheight="16">
+ <properties>
+  <property name="automaticAirMode" value="0"/>
+  <property name="bossBoost" value=""/>
+  <property name="bossLevel" value="f"/>
+  <property name="guidedAir" value="true"/>
+  <property name="specialAir" value="AIR_TORNADO"/>
+ </properties>
+ <tileset firstgid="1" name="tiles" tilewidth="16" tileheight="16">
+  <image source="tiles.png" width="256" height="256"/>
+  <tile id="0">
+   <properties>
+    <property name="type" value="TOP"/>
+   </properties>
+  </tile>
+  <tile id="1">
+   <properties>
+    <property name="type" value="TOPL"/>
+   </properties>
+  </tile>
+  <tile id="2">
+   <properties>
+    <property name="type" value="TOPR"/>
+   </properties>
+  </tile>
+  <tile id="3">
+   <properties>
+    <property name="type" value="TOPRL"/>
+   </properties>
+  </tile>
+  <tile id="4">
+   <properties>
+    <property name="type" value="LEFT"/>
+   </properties>
+  </tile>
+  <tile id="5">
+   <properties>
+    <property name="type" value="RIGHT"/>
+   </properties>
+  </tile>
+  <tile id="6">
+   <properties>
+    <property name="type" value="RL"/>
+   </properties>
+  </tile>
+  <tile id="10">
+   <properties>
+    <property name="type" value="LEFT"/>
+   </properties>
+  </tile>
+  <tile id="15">
+   <properties>
+    <property name="type" value="RIGHT"/>
+   </properties>
+  </tile>
+  <tile id="20">
+   <properties>
+    <property name="type" value="TOP"/>
+   </properties>
+  </tile>
+  <tile id="21">
+   <properties>
+    <property name="type" value="LEFT"/>
+   </properties>
+  </tile>
+  <tile id="22">
+   <properties>
+    <property name="type" value="RIGHT"/>
+   </properties>
+  </tile>
+  <tile id="38">
+   <properties>
+    <property name="type" value="TOP"/>
+   </properties>
+  </tile>
+ </tileset>
+ <tileset firstgid="257" name="entities" tilewidth="32" tileheight="32">
+  <image source="entities.png" width="256" height="256"/>
+ </tileset>
+ <layer name="ground" width="50" height="25">
+  <data encoding="base64" compression="zlib">
+   eJzdV0EOwyAM45nduvX/z1h72AURYqdOxGYpJyBpgm3UrbW2gfFoY6Dns/M+z9gH0a8dRr23cR4NJK/3nd48rLVqIPf2L31c8XLWvb1KMDrq9THiqMV7i88qMHWvvR6vfgWRPjzvQzmnytPnYupb/sdwbubVzGwRfVjnsnnI1Ijqw9uPvr2z+49yXdkH+rbP7v+OZhl9rMSrO/qo8KsKfazkV99vUutDgRX0Ue1XWe9HtV9lvR8KVOljJb/qc6H1Pd4o/IrJE9XHasj6/1D4VbSmsg+FX7FAZ+fNkM2TkfcDv0GcYA==
+  </data>
+ </layer>
+ <layer name="collision" width="50" height="25" visible="0">
+  <data encoding="base64" compression="zlib">
+   eJztl90OgCAIRq1W+f5PXJetCaJ9EBln46YURP5mTilloVBI92vq5dgr/y15cpbwA4/kLAvxfT1lugm1FslcsLsxa4PvU4p5T86h9Fxp2WdR+y02euvDmx9aNrh8keaNBz/etPHH+ijNRnS/omYeEm/xGNEGsj6s+1XMjzFseO5XFm8KLeL9wYPoV3+mdneSO5TEQFvvAcyYArk=
+  </data>
+ </layer>
+ <objectgroup name="enemies" width="50" height="25">
+  <object name="RINOS" gid="259" x="272" y="112"/>
+  <object name="RINOS" gid="259" x="528" y="208"/>
+  <object name="RINOS" gid="259" x="272" y="304"/>
+  <object name="RINOS" type="true" gid="259" x="496" y="112"/>
+  <object name="RINOS" type="true" gid="259" x="240" y="208"/>
+  <object name="RINOS" type="true" gid="259" x="496" y="304"/>
+ </objectgroup>
+ <objectgroup name="meals" width="50" height="25">
+  <object gid="285" x="176" y="64"/>
+  <object gid="285" x="544" y="304"/>
+  <object gid="285" x="224" y="208"/>
+  <object gid="285" x="544" y="112"/>
+ </objectgroup>
+ <objectgroup name="path" width="50" height="25">
+  <object name="left" x="208" y="427">
+   <polyline points="16,-11 16,-75 -80,-75 -80,-331 16,-331 16,-443"/>
+  </object>
+  <object name="right" x="570" y="416">
+   <polyline points="6,0 6,-64 102,-64 102,-320 6,-320 6,-432"/>
+  </object>
+ </objectgroup>
+</map>

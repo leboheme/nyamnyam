@@ -1,0 +1,97 @@
+
+gluty.png
+size: 2018,978
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+GLUTY
+  rotate: false
+  xy: 2, 250
+  size: 302, 246
+  orig: 302, 246
+  offset: 0, 0
+  index: 0
+GLUTY
+  rotate: false
+  xy: 804, 732
+  size: 302, 246
+  orig: 302, 246
+  offset: 0, 0
+  index: 1
+GLUTY
+  rotate: false
+  xy: 2, 2
+  size: 302, 246
+  orig: 302, 246
+  offset: 0, 0
+  index: 2
+GLUTY
+  rotate: false
+  xy: 306, 250
+  size: 302, 246
+  orig: 302, 246
+  offset: 0, 0
+  index: 3
+GLUTY
+  rotate: false
+  xy: 1108, 732
+  size: 302, 246
+  orig: 302, 246
+  offset: 0, 0
+  index: 4
+GLUTY
+  rotate: false
+  xy: 306, 2
+  size: 302, 246
+  orig: 302, 246
+  offset: 0, 0
+  index: 5
+GLUTY
+  rotate: false
+  xy: 1412, 732
+  size: 302, 246
+  orig: 302, 246
+  offset: 0, 0
+  index: 6
+GLUTY
+  rotate: false
+  xy: 1716, 732
+  size: 302, 246
+  orig: 302, 246
+  offset: 0, 0
+  index: 7
+GLUTY
+  rotate: false
+  xy: 804, 484
+  size: 302, 246
+  orig: 302, 246
+  offset: 0, 0
+  index: 8
+GLUTY
+  rotate: false
+  xy: 1108, 484
+  size: 302, 246
+  orig: 302, 246
+  offset: 0, 0
+  index: 9
+GLUTY
+  rotate: false
+  xy: 1412, 484
+  size: 302, 246
+  orig: 302, 246
+  offset: 0, 0
+  index: 10
+GLUTY
+  rotate: false
+  xy: 1716, 484
+  size: 302, 246
+  orig: 302, 246
+  offset: 0, 0
+  index: 11
+background
+  rotate: false
+  xy: 2, 498
+  size: 800, 480
+  orig: 800, 480
+  offset: 0, 0
+  index: -1

@@ -1,0 +1,139 @@
+
+banqui.png
+size: 1978,1682
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+BANQUI
+  rotate: false
+  xy: 2, 802
+  size: 292, 398
+  orig: 292, 398
+  offset: 0, 0
+  index: -1
+BANQUI
+  rotate: false
+  xy: 2, 802
+  size: 292, 398
+  orig: 292, 398
+  offset: 0, 0
+  index: 0
+BANQUI
+  rotate: false
+  xy: 804, 1284
+  size: 292, 398
+  orig: 292, 398
+  offset: 0, 0
+  index: 1
+BANQUI
+  rotate: false
+  xy: 2, 402
+  size: 292, 398
+  orig: 292, 398
+  offset: 0, 0
+  index: 2
+BANQUI
+  rotate: false
+  xy: 296, 802
+  size: 292, 398
+  orig: 292, 398
+  offset: 0, 0
+  index: 3
+BANQUI
+  rotate: false
+  xy: 1098, 1284
+  size: 292, 398
+  orig: 292, 398
+  offset: 0, 0
+  index: 4
+BANQUI
+  rotate: false
+  xy: 2, 2
+  size: 292, 398
+  orig: 292, 398
+  offset: 0, 0
+  index: 5
+BANQUI
+  rotate: false
+  xy: 296, 402
+  size: 292, 398
+  orig: 292, 398
+  offset: 0, 0
+  index: 6
+BANQUI
+  rotate: false
+  xy: 1392, 1284
+  size: 292, 398
+  orig: 292, 398
+  offset: 0, 0
+  index: 7
+BANQUI
+  rotate: false
+  xy: 296, 2
+  size: 292, 398
+  orig: 292, 398
+  offset: 0, 0
+  index: 8
+BANQUI
+  rotate: false
+  xy: 1686, 1284
+  size: 292, 398
+  orig: 292, 398
+  offset: 0, 0
+  index: 9
+BANQUI
+  rotate: false
+  xy: 590, 802
+  size: 292, 398
+  orig: 292, 398
+  offset: 0, 0
+  index: 10
+BANQUI
+  rotate: false
+  xy: 590, 402
+  size: 292, 398
+  orig: 292, 398
+  offset: 0, 0
+  index: 11
+BANQUI
+  rotate: false
+  xy: 590, 2
+  size: 292, 398
+  orig: 292, 398
+  offset: 0, 0
+  index: 12
+BANQUI
+  rotate: false
+  xy: 884, 884
+  size: 292, 398
+  orig: 292, 398
+  offset: 0, 0
+  index: 13
+BANQUI
+  rotate: false
+  xy: 884, 484
+  size: 292, 398
+  orig: 292, 398
+  offset: 0, 0
+  index: 14
+BANQUI
+  rotate: false
+  xy: 1178, 884
+  size: 292, 398
+  orig: 292, 398
+  offset: 0, 0
+  index: 15
+BANQUI
+  rotate: false
+  xy: 884, 84
+  size: 292, 398
+  orig: 292, 398
+  offset: 0, 0
+  index: 16
+background
+  rotate: false
+  xy: 2, 1202
+  size: 800, 480
+  orig: 800, 480
+  offset: 0, 0
+  index: -1

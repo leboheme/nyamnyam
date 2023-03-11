@@ -1,0 +1,76 @@
+
+tfly.png
+size: 1831,900
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+TFLY
+  rotate: false
+  xy: 2, 120
+  size: 341, 298
+  orig: 341, 298
+  offset: 0, 0
+  index: 0
+TFLY
+  rotate: false
+  xy: 804, 602
+  size: 341, 298
+  orig: 341, 298
+  offset: 0, 0
+  index: 1
+TFLY
+  rotate: false
+  xy: 345, 120
+  size: 341, 298
+  orig: 341, 298
+  offset: 0, 0
+  index: 2
+TFLY
+  rotate: false
+  xy: 1147, 602
+  size: 341, 298
+  orig: 341, 298
+  offset: 0, 0
+  index: 3
+TFLY
+  rotate: false
+  xy: 1490, 602
+  size: 341, 298
+  orig: 341, 298
+  offset: 0, 0
+  index: 4
+TFLY
+  rotate: false
+  xy: 804, 302
+  size: 341, 298
+  orig: 341, 298
+  offset: 0, 0
+  index: 5
+TFLY
+  rotate: false
+  xy: 1147, 302
+  size: 341, 298
+  orig: 341, 298
+  offset: 0, 0
+  index: 6
+TFLY
+  rotate: false
+  xy: 1490, 302
+  size: 341, 298
+  orig: 341, 298
+  offset: 0, 0
+  index: 7
+TFLY
+  rotate: false
+  xy: 688, 2
+  size: 341, 298
+  orig: 341, 298
+  offset: 0, 0
+  index: 8
+background
+  rotate: false
+  xy: 2, 420
+  size: 800, 480
+  orig: 800, 480
+  offset: 0, 0
+  index: -1

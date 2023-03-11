@@ -1,0 +1,160 @@
+
+gui.png
+size: 1950,489
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+BAR
+  rotate: false
+  xy: 804, 398
+  size: 800, 91
+  orig: 800, 91
+  offset: 0, 0
+  index: -1
+BUTTON
+  rotate: false
+  xy: 1606, 409
+  size: 80, 80
+  orig: 80, 80
+  offset: 0, 0
+  index: 0
+BUTTON
+  rotate: false
+  xy: 804, 142
+  size: 80, 80
+  orig: 80, 80
+  offset: 0, 0
+  index: 1
+BUTTON_CANCEL
+  rotate: false
+  xy: 1106, 332
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 0
+BUTTON_CANCEL
+  rotate: false
+  xy: 1688, 425
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 1
+BUTTON_CONFIRM
+  rotate: false
+  xy: 804, 76
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 0
+BUTTON_CONFIRM
+  rotate: false
+  xy: 886, 158
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 1
+BUTTON_EXIT
+  rotate: false
+  xy: 1106, 266
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 0
+BUTTON_EXIT
+  rotate: false
+  xy: 1172, 332
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 1
+BUTTON_NEXT
+  rotate: false
+  xy: 1754, 425
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 0
+BUTTON_NEXT
+  rotate: false
+  xy: 804, 10
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 1
+BUTTON_PAUSE
+  rotate: false
+  xy: 952, 158
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 0
+BUTTON_PAUSE
+  rotate: false
+  xy: 1172, 266
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 1
+BUTTON_PLAY
+  rotate: false
+  xy: 1238, 332
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 0
+BUTTON_PLAY
+  rotate: false
+  xy: 1820, 425
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 1
+BUTTON_SOUND
+  rotate: false
+  xy: 1018, 158
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 0
+BUTTON_SOUND
+  rotate: false
+  xy: 1238, 266
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 1
+BUTTON_STORE
+  rotate: false
+  xy: 1304, 332
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 0
+BUTTON_STORE
+  rotate: false
+  xy: 1886, 425
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 1
+CONFIRM
+  rotate: false
+  xy: 804, 224
+  size: 300, 172
+  orig: 300, 172
+  offset: 0, 0
+  index: -1
+CONFIRM_BG
+  rotate: false
+  xy: 2, 2
+  size: 5, 5
+  orig: 5, 5
+  offset: 0, 0
+  index: -1
+TABLE_BG
+  rotate: false
+  xy: 2, 9
+  size: 800, 480
+  orig: 800, 480
+  offset: 0, 0
+  index: -1

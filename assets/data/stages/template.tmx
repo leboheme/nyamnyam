@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="50" height="25" tilewidth="16" tileheight="16">
+ <properties>
+  <property name="automaticAirMode" value=""/>
+  <property name="bossBoost" value=""/>
+  <property name="bossLevel" value="f"/>
+  <property name="guidedAir" value="true"/>
+  <property name="specialAir" value="AIR_SPIKES"/>
+ </properties>
+ <tileset firstgid="1" name="tiles" tilewidth="16" tileheight="16">
+  <image source="tiles.png" width="256" height="256"/>
+  <tile id="0">
+   <properties>
+    <property name="type" value="TOP"/>
+   </properties>
+  </tile>
+  <tile id="1">
+   <properties>
+    <property name="type" value="TOPL"/>
+   </properties>
+  </tile>
+  <tile id="2">
+   <properties>
+    <property name="type" value="TOPR"/>
+   </properties>
+  </tile>
+  <tile id="3">
+   <properties>
+    <property name="type" value="TOPRL"/>
+   </properties>
+  </tile>
+  <tile id="4">
+   <properties>
+    <property name="type" value="LEFT"/>
+   </properties>
+  </tile>
+  <tile id="5">
+   <properties>
+    <property name="type" value="RIGHT"/>
+   </properties>
+  </tile>
+  <tile id="6">
+   <properties>
+    <property name="type" value="RL"/>
+   </properties>
+  </tile>
+  <tile id="10">
+   <properties>
+    <property name="type" value="LEFT"/>
+   </properties>
+  </tile>
+  <tile id="15">
+   <properties>
+    <property name="type" value="RIGHT"/>
+   </properties>
+  </tile>
+  <tile id="20">
+   <properties>
+    <property name="type" value="TOP"/>
+   </properties>
+  </tile>
+  <tile id="21">
+   <properties>
+    <property name="type" value="LEFT"/>
+   </properties>
+  </tile>
+  <tile id="22">
+   <properties>
+    <property name="type" value="RIGHT"/>
+   </properties>
+  </tile>
+  <tile id="38">
+   <properties>
+    <property name="type" value="TOP"/>
+   </properties>
+  </tile>
+ </tileset>
+ <tileset firstgid="257" name="entities" tilewidth="32" tileheight="32">
+  <image source="entities.png" width="256" height="256"/>
+ </tileset>
+ <layer name="ground" width="50" height="25">
+  <data encoding="base64" compression="zlib">
+   eJztmOEKgCAMhPfYluWz108xQTfbbaKD+yHk7PKjEwMRBYEu+pZFj1znq8hUqrzDbdAjZj6OSr+Z6i+erEvCVY0F69pc+WJwhKvWPOQ+j3DVmmfhQ8qVNx9Srrz5WJ2rlmbgqucchMrMnYM7BzV9aP+vtM/VqBws965nzPm2qBwsn+WOe30guEL40M5ByToorjg5KLk74GToyjnoVQ8pav7H
+  </data>
+ </layer>
+ <layer name="collision" width="50" height="25" visible="0">
+  <data encoding="base64" compression="zlib">
+   eJztlVEKwDAIQx0rrPc/8f7L6GxKqkIe+CGKGAzYzawD8UXEjNksEcvljDtqQVESxFftp7cd2n2XZ7OehYw6EF9l1IEgHTxQX816q9xD8NAfxOtZWNEx3s6TI7D/4Ni7mjORDp4O9h8cez25qI3XU9njBRePAzQ=
+  </data>
+ </layer>
+ <objectgroup name="enemies" width="50" height="25">
+  <object name="BOOF" gid="257" x="304" y="192"/>
+  <object name="BANQUI" gid="263" x="304" y="336"/>
+  <object name="MBER" gid="262" x="416" y="320"/>
+  <object name="RINOS" gid="259" x="560" y="336"/>
+  <object name="LITO" gid="260" x="496" y="336"/>
+  <object name="FOLL" gid="261" x="256" y="192"/>
+  <object name="PHANT" gid="258" x="256" y="336"/>
+ </objectgroup>
+ <objectgroup name="meals" width="50" height="25">
+  <object name="BOOST_CHILLI" gid="284" x="48" y="336"/>
+  <object name="BOOST_LIVE" gid="277" x="128" y="384"/>
+  <object name="BOOST_CATERPILLAR" gid="281" x="48" y="240"/>
+  <object name="BOOST_EGG" gid="282" x="48" y="192"/>
+  <object name="BOOST_GARLIC" gid="283" x="48" y="288"/>
+  <object name="BOOST_PIZZA" gid="273" x="128" y="336"/>
+  <object name="BOOST_BURGER" gid="274" x="128" y="288"/>
+  <object name="BOOST_MEAT" gid="275" x="128" y="240"/>
+  <object name="BOOST_HOTDOG" gid="276" x="128" y="192"/>
+  <object gid="285" x="272" y="384"/>
+  <object gid="285" x="320" y="384"/>
+  <object name="BOOST_TORNADO" gid="292" x="48" y="144"/>
+ </objectgroup>
+ <objectgroup name="path" width="50" height="25">
+  <object name="right" x="535" y="399">
+   <polyline points="1,13 0,-159 208,-158 204,-365 -3,-364 -3,-420"/>
+  </object>
+  <object name="left" x="269" y="433">
+   <polyline points="-5,-1 -5,-64 -61,-65 -61,-385 -5,-385 -5,-447"/>
+  </object>
+ </objectgroup>
+</map>

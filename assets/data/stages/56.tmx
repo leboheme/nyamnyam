@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="50" height="25" tilewidth="16" tileheight="16">
+ <properties>
+  <property name="automaticAirMode" value="4"/>
+  <property name="bossBoost" value=""/>
+  <property name="bossLevel" value="f"/>
+  <property name="guidedAir" value="true"/>
+  <property name="specialAir" value="AIR_SPIKES"/>
+ </properties>
+ <tileset firstgid="1" name="tiles" tilewidth="16" tileheight="16">
+  <image source="tiles.png" width="256" height="256"/>
+  <tile id="0">
+   <properties>
+    <property name="type" value="TOP"/>
+   </properties>
+  </tile>
+  <tile id="1">
+   <properties>
+    <property name="type" value="TOPL"/>
+   </properties>
+  </tile>
+  <tile id="2">
+   <properties>
+    <property name="type" value="TOPR"/>
+   </properties>
+  </tile>
+  <tile id="3">
+   <properties>
+    <property name="type" value="TOPRL"/>
+   </properties>
+  </tile>
+  <tile id="4">
+   <properties>
+    <property name="type" value="LEFT"/>
+   </properties>
+  </tile>
+  <tile id="5">
+   <properties>
+    <property name="type" value="RIGHT"/>
+   </properties>
+  </tile>
+  <tile id="6">
+   <properties>
+    <property name="type" value="RL"/>
+   </properties>
+  </tile>
+  <tile id="10">
+   <properties>
+    <property name="type" value="LEFT"/>
+   </properties>
+  </tile>
+  <tile id="15">
+   <properties>
+    <property name="type" value="RIGHT"/>
+   </properties>
+  </tile>
+  <tile id="20">
+   <properties>
+    <property name="type" value="TOP"/>
+   </properties>
+  </tile>
+  <tile id="21">
+   <properties>
+    <property name="type" value="LEFT"/>
+   </properties>
+  </tile>
+  <tile id="22">
+   <properties>
+    <property name="type" value="RIGHT"/>
+   </properties>
+  </tile>
+  <tile id="38">
+   <properties>
+    <property name="type" value="TOP"/>
+   </properties>
+  </tile>
+ </tileset>
+ <tileset firstgid="257" name="entities" tilewidth="32" tileheight="32">
+  <image source="entities.png" width="256" height="256"/>
+ </tileset>
+ <layer name="ground" width="50" height="25">
+  <data encoding="base64" compression="zlib">
+   eJztlkkOgDAMA/P/F5StbwUO3MjmEtSqseQLKANGKG4homL0Qu+yznuYCHe9vBlcmecdxnkP08O1fJMRlDn60gw57ut7A5ebjeBqObQ9K72rNPs1F83x7ENuZ6I5UC6aQxOaA+XOkiPivBHBle61nDWizjAcd4b+GEnZg9mD2YOZo0f/3YNRzh7sX95/U9rrqKVO9HBOJbEDNQ==
+  </data>
+ </layer>
+ <layer name="collision" width="50" height="25" visible="0">
+  <data encoding="base64" compression="zlib">
+   eJztlUsKwDAIBW36y/1PnFwgQW01hc6AK3kjQohVRKqyRmjzFqfVCwD/5QjKRnlH3JNe6bU7s1HeNzOabJQ3ex57+LJnr81Z1wIvQCbcQe7gE2/2PPbIv4Pi7HEH4Wto3+bsXy8Gj9Zp9TYBXQLH
+  </data>
+ </layer>
+ <objectgroup name="enemies" width="50" height="25">
+  <object name="FOLL" gid="261" x="576" y="176"/>
+  <object name="FOLL" type="true" gid="261" x="512" y="320"/>
+  <object name="FOLL" type="true" gid="261" x="512" y="176"/>
+  <object name="FOLL" type="true" gid="261" x="160" y="176"/>
+  <object name="FOLL" type="true" gid="261" x="160" y="320"/>
+  <object name="FOLL" type="true" gid="261" x="288" y="176"/>
+  <object name="FOLL" type="true" gid="261" x="288" y="320"/>
+  <object name="FOLL" type="true" gid="261" x="640" y="320"/>
+  <object name="FOLL" type="true" gid="261" x="640" y="176"/>
+  <object name="FOLL" gid="261" x="576" y="320"/>
+  <object name="FOLL" gid="261" x="224" y="320"/>
+  <object name="FOLL" gid="261" x="224" y="176"/>
+  <object name="FOLL" type="true" gid="261" x="368" y="320"/>
+  <object name="FOLL" type="true" gid="261" x="400" y="320"/>
+ </objectgroup>
+ <objectgroup name="meals" width="50" height="25">
+  <object gid="285" x="560" y="256"/>
+  <object gid="285" x="208" y="256"/>
+  <object gid="285" x="208" y="112"/>
+  <object gid="285" x="560" y="112"/>
+ </objectgroup>
+ <objectgroup name="path" width="50" height="25">
+  <object name="left" x="224" y="416">
+   <polyline points="0,0 0,-48 -160,-48 -160,-192 160,-192 160,-352 0,-352 0,-432"/>
+  </object>
+  <object name="right" x="576" y="403">
+   <polyline points="0,0 0,-35 160,-35 160,-179 -160,-179 -160,-339 0,-339 0,-419"/>
+  </object>
+ </objectgroup>
+</map>

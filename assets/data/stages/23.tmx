@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="50" height="25" tilewidth="16" tileheight="16">
+ <properties>
+  <property name="automaticAirMode" value="4"/>
+  <property name="bossBoost" value=""/>
+  <property name="bossLevel" value="f"/>
+  <property name="guidedAir" value="false"/>
+  <property name="specialAir" value="AIR_TORNADO"/>
+ </properties>
+ <tileset firstgid="1" name="tiles" tilewidth="16" tileheight="16">
+  <image source="tiles.png" width="256" height="256"/>
+  <tile id="0">
+   <properties>
+    <property name="type" value="TOP"/>
+   </properties>
+  </tile>
+  <tile id="1">
+   <properties>
+    <property name="type" value="TOPL"/>
+   </properties>
+  </tile>
+  <tile id="2">
+   <properties>
+    <property name="type" value="TOPR"/>
+   </properties>
+  </tile>
+  <tile id="3">
+   <properties>
+    <property name="type" value="TOPRL"/>
+   </properties>
+  </tile>
+  <tile id="4">
+   <properties>
+    <property name="type" value="LEFT"/>
+   </properties>
+  </tile>
+  <tile id="5">
+   <properties>
+    <property name="type" value="RIGHT"/>
+   </properties>
+  </tile>
+  <tile id="6">
+   <properties>
+    <property name="type" value="RL"/>
+   </properties>
+  </tile>
+  <tile id="10">
+   <properties>
+    <property name="type" value="LEFT"/>
+   </properties>
+  </tile>
+  <tile id="15">
+   <properties>
+    <property name="type" value="RIGHT"/>
+   </properties>
+  </tile>
+  <tile id="20">
+   <properties>
+    <property name="type" value="TOP"/>
+   </properties>
+  </tile>
+  <tile id="21">
+   <properties>
+    <property name="type" value="LEFT"/>
+   </properties>
+  </tile>
+  <tile id="22">
+   <properties>
+    <property name="type" value="RIGHT"/>
+   </properties>
+  </tile>
+  <tile id="38">
+   <properties>
+    <property name="type" value="TOP"/>
+   </properties>
+  </tile>
+ </tileset>
+ <tileset firstgid="257" name="entities" tilewidth="32" tileheight="32">
+  <image source="entities.png" width="256" height="256"/>
+ </tileset>
+ <layer name="ground" width="50" height="25">
+  <data encoding="base64" compression="zlib">
+   eJztl9EOgCAIRflMLfP/P6Ne2pxLJOVWaGz3RTdupxDJEZEDyNN1ILxOLYdWZcUCxwbwqr07K/FzfCtG50h7QGD2kOJ8S3s5R9pT8r6D6DeSfsc90+h1ZS0k56O3rmvemmdHk0P6bTU9ZuFI5y5uTYtD6neXwwvXtDikfrNyWD8fLXd2K0fLvw/yPm/leMNbM9cT3j21mysAc9Y4NGfaCMxZ47AWo3EgVJp7UX4708rRjQ==
+  </data>
+ </layer>
+ <layer name="collision" width="50" height="25" visible="0">
+  <data encoding="base64" compression="zlib">
+   eJztl9EKgCAMRVdR+P9fnC+CmJtzOpG4B/ais+OwGgYiCg7B4eGSfACAf3PGOGJcwpxnSN7aHAArsX4DPe/uCsfdkZvzbOgo87mxEYe0VruHlgN16B3SWtTxdeT/CRLGuL1oHDkaX4/Dwowz3wHU4Yel1ya43ls+s5Y/u58DMMqq+1zC6z75AuoaA4c=
+  </data>
+ </layer>
+ <objectgroup name="enemies" width="50" height="25">
+  <object name="BOOF" gid="257" x="112" y="256"/>
+  <object name="BOOF" gid="257" x="192" y="256"/>
+  <object name="BOOF" gid="257" x="560" y="256"/>
+  <object name="BOOF" gid="257" x="640" y="256"/>
+  <object name="BOOF" gid="257" x="320" y="96"/>
+  <object name="BOOF" type="true" gid="257" x="448" y="96"/>
+ </objectgroup>
+ <objectgroup name="meals" width="50" height="25">
+  <object name="BOOST_PIZZA" gid="273" x="384" y="96"/>
+  <object gid="285" x="688" y="96"/>
+  <object gid="285" x="96" y="160"/>
+  <object gid="285" x="576" y="320"/>
+ </objectgroup>
+ <objectgroup name="path" width="50" height="25">
+  <object name="left" x="253" y="417">
+   <polyline points="-4,-9 -4,-65 -189,-65 -189,-369 -5,-369 -6,-450"/>
+  </object>
+  <object name="right" x="553" y="413">
+   <polyline points="0,21 -1,-61 183,-61 183,-365 1,-365 0,-437"/>
+  </object>
+ </objectgroup>
+</map>

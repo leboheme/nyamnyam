@@ -1,0 +1,90 @@
+
+store.png
+size: 1662,482
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+BACKGROUND
+  rotate: false
+  xy: 2, 2
+  size: 800, 480
+  orig: 800, 480
+  offset: 0, 0
+  index: -1
+BURGER
+  rotate: false
+  xy: 804, 316
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+BUTTON_EXIT
+  rotate: false
+  xy: 1466, 418
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 0
+BUTTON_EXIT
+  rotate: false
+  xy: 804, 250
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 1
+BUY
+  rotate: false
+  xy: 870, 316
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 0
+BUY
+  rotate: false
+  xy: 1532, 418
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: 1
+HOT_DOG
+  rotate: false
+  xy: 804, 184
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+MEAT
+  rotate: false
+  xy: 870, 250
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+PIZZA
+  rotate: false
+  xy: 936, 316
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+PRO_SHOOTER
+  rotate: false
+  xy: 1598, 418
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+THREE_LIVES
+  rotate: false
+  xy: 804, 118
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+button_bg
+  rotate: false
+  xy: 804, 382
+  size: 660, 100
+  orig: 660, 100
+  offset: 0, 0
+  index: -1

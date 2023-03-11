@@ -1,0 +1,174 @@
+
+end.png
+size: 1975,1937
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+background
+  rotate: false
+  xy: 2, 1457
+  size: 800, 480
+  orig: 800, 480
+  offset: 0, 0
+  index: -1
+gluty
+  rotate: false
+  xy: 804, 1508
+  size: 342, 173
+  orig: 342, 173
+  offset: 0, 0
+  index: 0
+gluty
+  rotate: false
+  xy: 2, 2
+  size: 342, 173
+  orig: 342, 173
+  offset: 0, 0
+  index: 1
+gluty
+  rotate: false
+  xy: 393, 258
+  size: 342, 173
+  orig: 342, 173
+  offset: 0, 0
+  index: 2
+gluty
+  rotate: false
+  xy: 1148, 1508
+  size: 342, 173
+  orig: 342, 173
+  offset: 0, 0
+  index: 3
+gluty
+  rotate: false
+  xy: 1492, 1508
+  size: 342, 173
+  orig: 342, 173
+  offset: 0, 0
+  index: 4
+gluty
+  rotate: false
+  xy: 393, 83
+  size: 342, 173
+  orig: 342, 173
+  offset: 0, 0
+  index: 5
+gluty
+  rotate: false
+  xy: 804, 1333
+  size: 342, 173
+  orig: 342, 173
+  offset: 0, 0
+  index: 6
+gluty
+  rotate: false
+  xy: 1148, 1333
+  size: 342, 173
+  orig: 342, 173
+  offset: 0, 0
+  index: 7
+idle
+  rotate: false
+  xy: 2, 1201
+  size: 389, 254
+  orig: 389, 254
+  offset: 0, 0
+  index: 0
+idle
+  rotate: false
+  xy: 2, 1201
+  size: 389, 254
+  orig: 389, 254
+  offset: 0, 0
+  index: 6
+idle
+  rotate: false
+  xy: 804, 1683
+  size: 389, 254
+  orig: 389, 254
+  offset: 0, 0
+  index: 1
+idle
+  rotate: false
+  xy: 804, 1683
+  size: 389, 254
+  orig: 389, 254
+  offset: 0, 0
+  index: 5
+idle
+  rotate: false
+  xy: 2, 945
+  size: 389, 254
+  orig: 389, 254
+  offset: 0, 0
+  index: 2
+idle
+  rotate: false
+  xy: 2, 945
+  size: 389, 254
+  orig: 389, 254
+  offset: 0, 0
+  index: 4
+idle
+  rotate: false
+  xy: 393, 1201
+  size: 389, 254
+  orig: 389, 254
+  offset: 0, 0
+  index: 3
+nyam
+  rotate: false
+  xy: 1195, 1683
+  size: 389, 254
+  orig: 389, 254
+  offset: 0, 0
+  index: 0
+nyam
+  rotate: false
+  xy: 2, 689
+  size: 389, 254
+  orig: 389, 254
+  offset: 0, 0
+  index: 1
+nyam
+  rotate: false
+  xy: 393, 945
+  size: 389, 254
+  orig: 389, 254
+  offset: 0, 0
+  index: 2
+nyam
+  rotate: false
+  xy: 1586, 1683
+  size: 389, 254
+  orig: 389, 254
+  offset: 0, 0
+  index: 3
+nyam
+  rotate: false
+  xy: 2, 433
+  size: 389, 254
+  orig: 389, 254
+  offset: 0, 0
+  index: 4
+nyam
+  rotate: false
+  xy: 393, 689
+  size: 389, 254
+  orig: 389, 254
+  offset: 0, 0
+  index: 5
+nyam
+  rotate: false
+  xy: 2, 177
+  size: 389, 254
+  orig: 389, 254
+  offset: 0, 0
+  index: 6
+nyam
+  rotate: false
+  xy: 393, 433
+  size: 389, 254
+  orig: 389, 254
+  offset: 0, 0
+  index: 7

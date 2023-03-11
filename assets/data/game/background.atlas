@@ -1,0 +1,27 @@
+
+background.png
+size: 1604,964
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+background
+  rotate: false
+  xy: 2, 484
+  size: 800, 480
+  orig: 800, 480
+  offset: 0, 0
+  index: 0
+background
+  rotate: false
+  xy: 2, 2
+  size: 800, 480
+  orig: 800, 480
+  offset: 0, 0
+  index: 1
+background
+  rotate: false
+  xy: 804, 484
+  size: 800, 480
+  orig: 800, 480
+  offset: 0, 0
+  index: 2
