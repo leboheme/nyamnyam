@@ -30,7 +30,6 @@ public class HtmlLauncher extends GwtApplication implements ActivityEngine {
 
     @Override
     public void onModuleLoad() {
-        super.onModuleLoad();
         FreetypeInjector.inject(new OnCompletion() {
             public void run() {
                 HtmlLauncher.super.onModuleLoad();

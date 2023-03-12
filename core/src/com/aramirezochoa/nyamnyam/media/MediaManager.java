@@ -62,6 +62,8 @@ public enum MediaManager {
     GAME {
         @Override
         public void loadAssets(AssetManager manager) {
+            manager.load("data/stages/entities.png", Texture.class);
+            manager.load("data/stages/tiles.png", Texture.class);
             manager.load("data/game/game.atlas", TextureAtlas.class);
             manager.load("data/game/background.atlas", TextureAtlas.class);
             manager.load("data/game/gui.atlas", TextureAtlas.class);
