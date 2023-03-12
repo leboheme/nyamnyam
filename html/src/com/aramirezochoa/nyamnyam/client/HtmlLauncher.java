@@ -6,6 +6,7 @@ import com.aramirezochoa.nyamnyam.activity.ActivityTransaction;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.backends.gwt.GwtApplication;
 import com.badlogic.gdx.backends.gwt.GwtApplicationConfiguration;
+import com.badlogic.gdx.backends.gwt.GwtGraphics;
 import com.badlogic.gdx.graphics.g2d.freetype.gwt.FreetypeInjector;
 import com.badlogic.gdx.graphics.g2d.freetype.gwt.inject.OnCompletion;
 
@@ -20,6 +21,8 @@ public class HtmlLauncher extends GwtApplication implements ActivityEngine {
         GwtApplicationConfiguration config = new GwtApplicationConfiguration(800, 480, GwtApplication.isMobileDevice());
         config.padHorizontal = 0;
         config.padVertical = 0;
+        config.fullscreenOrientation = GwtGraphics.OrientationLockType.LANDSCAPE;
+
         return config;
     }
 

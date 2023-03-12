@@ -11,10 +11,9 @@ import com.aramirezochoa.nyamnyam.screen.AbstractScreen;
 import com.aramirezochoa.nyamnyam.screen.ScreenManager;
 import com.aramirezochoa.nyamnyam.screen.ScreenType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.main.MainAvatarType;
-import com.aramirezochoa.nyamnyam.screen.game.status.GameStatus;
-import com.aramirezochoa.nyamnyam.screen.store.StoreItem;
 import com.aramirezochoa.nyamnyam.store.StoreManager;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.*;
@@ -44,8 +43,7 @@ public class MenuScreen extends AbstractScreen {
     private boolean newGame, continueGame;
     private float playTimer;
 
-    private Window confirmWindow, giftAdviseWindow, noDailyGiftWindow, lotteryWindow, giftErrorWindow;
-    private boolean dailyGiftAvailable = false;
+    private Window confirmWindow;
     private boolean showRateUs;
 
     public MenuScreen() {
@@ -58,7 +56,6 @@ public class MenuScreen extends AbstractScreen {
         Gdx.input.setInputProcessor(stage);
         newGame = continueGame = false;
         playTimer = 0.5f;
-        dailyGiftAvailable = DataManager.INSTANCE.isDailyGiftAvailable();
 
         TextureAtlas atlas = getMediaManager().get("data/menu/menu.atlas");
 
@@ -76,9 +73,6 @@ public class MenuScreen extends AbstractScreen {
         setMainButtons(atlas);
         setBorderButtons(atlas);
         setConfirmExitWindow(atlas);
-        setGiftAdviseWindow(atlas);
-        setNoDailyGiftWindow(atlas);
-        setGiftErrorWindow(atlas);
 
         ActivityManager.INSTANCE.trackScreen(ActivityManager.SCREEN_MENU);
 
@@ -141,28 +135,10 @@ public class MenuScreen extends AbstractScreen {
         bottomRightButtons.setFillParent(true);
         bottomRightButtons.bottom().right();
 
-        if (dailyGiftAvailable) {
-            Image arrow = new Image(atlas.findRegion("ARROW_GIFT")) {
-                public void act(float deltaTime) {
-                    super.act(deltaTime);
-                    if (!dailyGiftAvailable) {
-                        remove();
-                    }
-                }
-            };
-            arrow.addAction(Actions.forever(Actions.sequence(Actions.fadeOut(0.5f, Interpolation.linear), Actions.fadeIn(0.5f, Interpolation.linear))));
-            bottomRightButtons.add(arrow).right().padBottom(60f).padRight(5f);
-
-            buttonStyle = MediaManager.createButtonStyle("GIFT", atlas);
-            button = MediaManager.createButton(buttonStyle, MenuAction.GIFT);
-            bottomRightButtons.add(button).right().bottom().padRight(10f).padBottom(10f);
-            bottomRightButtons.row();
-        } else {
-            buttonStyle = MediaManager.createButtonStyle("GIFT", atlas);
-            button = MediaManager.createButton(buttonStyle, MenuAction.GIFT);
-            bottomRightButtons.add(button).colspan(2).right().top().pad(10f);
-            bottomRightButtons.row();
-        }
+        buttonStyle = MediaManager.createButtonStyle("GIFT", atlas);
+        button = MediaManager.createButton(buttonStyle, MenuAction.GIFT);
+        bottomRightButtons.add(button).colspan(2).right().top().pad(10f);
+        bottomRightButtons.row();
 
         buttonStyle = MediaManager.createButtonStyle("BUTTON_HELP", atlas);
         button = MediaManager.createButton(buttonStyle, MenuAction.HELP);
@@ -283,176 +259,6 @@ public class MenuScreen extends AbstractScreen {
         stage.addActor(confirmWindow);
     }
 
-    private void setGiftAdviseWindow(TextureAtlas atlas) {
-        Button.ButtonStyle buttonStyle;
-        Button button;
-        Window.WindowStyle windowStyle = new Window.WindowStyle();
-        windowStyle.background = new TextureRegionDrawable(atlas.findRegion("CONFIRM"));
-        windowStyle.stageBackground = new TextureRegionDrawable(atlas.findRegion("CONFIRM_BG"));
-        windowStyle.titleFont = smallFont;
-        giftAdviseWindow = new Window("", windowStyle);
-        giftAdviseWindow.setBounds(100, 100, 600, 280);
-
-        Label label = new Label(LanguageManager.INSTANCE.getString("lotteryDescription"), new Label.LabelStyle(smallFont, Color.valueOf("515151")));
-        label.setAlignment(Align.center);
-        giftAdviseWindow.add(label).colspan(2).pad(25f).padTop(100).row();
-        buttonStyle = MediaManager.createButtonStyle("BUTTON_CONFIRM", atlas);
-        button = MediaManager.createButton(buttonStyle, MenuAction.NONE);
-        button.addListener(new ChangeListener() {
-            public void changed(ChangeEvent event, Actor actor) {
-                showVideoGift();
-            }
-        });
-        giftAdviseWindow.add(button).bottom().padBottom(20f).left().padLeft(150f).expand();
-        buttonStyle = MediaManager.createButtonStyle("BUTTON_CANCEL", atlas);
-        button = MediaManager.createButton(buttonStyle, MenuAction.NONE);
-        button.addListener(new ChangeListener() {
-            public void changed(ChangeEvent event, Actor actor) {
-                hideWindow(giftAdviseWindow);
-            }
-        });
-        giftAdviseWindow.add(button).bottom().padBottom(20f).right().padRight(150f);
-        giftAdviseWindow.setVisible(false);
-        stage.addActor(giftAdviseWindow);
-    }
-
-    private void setNoDailyGiftWindow(TextureAtlas atlas) {
-        Button.ButtonStyle buttonStyle;
-        Button button;
-        Window.WindowStyle windowStyle = new Window.WindowStyle();
-        windowStyle.background = new TextureRegionDrawable(atlas.findRegion("CONFIRM"));
-        windowStyle.stageBackground = new TextureRegionDrawable(atlas.findRegion("CONFIRM_BG"));
-        windowStyle.titleFont = smallFont;
-        noDailyGiftWindow = new Window("", windowStyle);
-        noDailyGiftWindow.setBounds(100, 100, 600, 280);
-
-        Label label = new Label(LanguageManager.INSTANCE.getString("noMoreGift"), new Label.LabelStyle(smallFont, Color.valueOf("515151")));
-        label.setAlignment(Align.center);
-        noDailyGiftWindow.add(label).colspan(2).pad(25f).padTop(100).row();
-        buttonStyle = MediaManager.createButtonStyle("BUTTON_CONFIRM", atlas);
-        button = MediaManager.createButton(buttonStyle, MenuAction.NONE);
-        button.addListener(new ChangeListener() {
-            public void changed(ChangeEvent event, Actor actor) {
-                hideWindow(noDailyGiftWindow);
-            }
-        });
-        noDailyGiftWindow.add(button).bottom().padBottom(20f).right().padRight(150f);
-        noDailyGiftWindow.setVisible(false);
-        stage.addActor(noDailyGiftWindow);
-    }
-
-    private void setGiftErrorWindow(TextureAtlas atlas) {
-        Button.ButtonStyle buttonStyle;
-        Button button;
-        Window.WindowStyle windowStyle = new Window.WindowStyle();
-        windowStyle.background = new TextureRegionDrawable(atlas.findRegion("CONFIRM"));
-        windowStyle.stageBackground = new TextureRegionDrawable(atlas.findRegion("CONFIRM_BG"));
-        windowStyle.titleFont = smallFont;
-        giftErrorWindow = new Window("", windowStyle);
-        giftErrorWindow.setBounds(100, 100, 600, 280);
-
-        Label label = new Label(LanguageManager.INSTANCE.getString("giftError"), new Label.LabelStyle(smallFont, Color.valueOf("515151")));
-        label.setAlignment(Align.center);
-        giftErrorWindow.add(label).colspan(2).pad(25f).padTop(100).row();
-        buttonStyle = MediaManager.createButtonStyle("BUTTON_CONFIRM", atlas);
-        button = MediaManager.createButton(buttonStyle, MenuAction.NONE);
-        button.addListener(new ChangeListener() {
-            public void changed(ChangeEvent event, Actor actor) {
-                hideWindow(giftErrorWindow);
-            }
-        });
-        giftErrorWindow.add(button).bottom().padBottom(20f).right().padRight(150f);
-        giftErrorWindow.setVisible(false);
-        stage.addActor(giftErrorWindow);
-    }
-
-    private void showLotteryWindow(TextureAtlas atlas) {
-        Button.ButtonStyle buttonStyle;
-        Button button;
-        Window.WindowStyle windowStyle = new Window.WindowStyle();
-        windowStyle.background = new TextureRegionDrawable(atlas.findRegion("CONFIRM"));
-        windowStyle.stageBackground = new TextureRegionDrawable(atlas.findRegion("CONFIRM_BG"));
-        windowStyle.titleFont = smallFont;
-        lotteryWindow = new Window("", windowStyle);
-        lotteryWindow.setBounds(50, 50, 700, 380);
-        lotteryWindow.center();
-
-        final StoreItem gift = StoreItem.randomGift();
-
-        Label label = new Label(LanguageManager.INSTANCE.getString("giftGotten"), new Label.LabelStyle(smallFont, Color.valueOf("515151")));
-        label.setAlignment(Align.center);
-        lotteryWindow.add(label).pad(10).row();
-        Image image = new Image(atlas.findRegion(gift.name()));
-        lotteryWindow.add(image).pad(10).row();
-        label = new Label(LanguageManager.INSTANCE.getString(DataManager.INSTANCE.getCurrentCharacter().name() + "_" + gift.getItemId()), new Label.LabelStyle(smallFont, Color.valueOf("515151")));
-        label.setAlignment(Align.center);
-        lotteryWindow.add(label).pad(10).row();
-        buttonStyle = MediaManager.createButtonStyle("BUTTON_CONFIRM", atlas);
-        button = MediaManager.createButton(buttonStyle, MenuAction.NONE);
-        button.addListener(new ChangeListener() {
-            public void changed(ChangeEvent event, Actor actor) {
-                hideWindow(lotteryWindow);
-            }
-        });
-        lotteryWindow.add(button).pad(10f);
-
-        lotteryWindow.setVisible(false);
-        stage.addActor(lotteryWindow);
-
-        lotteryWindow.addAction(sequence(Actions.alpha(0), Actions.show(), Actions.fadeIn(0.25f, Interpolation.fade), Actions.delay(0.25f), Actions.run(new Runnable() {
-            @Override
-            public void run() {
-                DataManager.INSTANCE.dailyGiftDone();
-                StoreManager.INSTANCE.checkItem(gift);
-            }
-        })));
-    }
-
-    private void showExternalGift(TextureAtlas atlas) {
-        Button.ButtonStyle buttonStyle;
-        Button button;
-        Window.WindowStyle windowStyle = new Window.WindowStyle();
-        windowStyle.background = new TextureRegionDrawable(atlas.findRegion("CONFIRM"));
-        windowStyle.stageBackground = new TextureRegionDrawable(atlas.findRegion("CONFIRM_BG"));
-        windowStyle.titleFont = smallFont;
-        lotteryWindow = new Window("", windowStyle);
-        lotteryWindow.setBounds(50, 50, 700, 380);
-        lotteryWindow.center();
-
-//        final StoreItem gift = StoreItem.randomGift();
-
-        Label label = new Label(LanguageManager.INSTANCE.getString("giftGotten"), new Label.LabelStyle(smallFont, Color.valueOf("515151")));
-        label.setAlignment(Align.center);
-        lotteryWindow.add(label).pad(10).row();
-        Image image = new Image(atlas.findRegion("LIVE"));
-        lotteryWindow.add(image).pad(10).row();
-        label = new Label(LanguageManager.INSTANCE.getString("fiveLivesGift"), new Label.LabelStyle(smallFont, Color.valueOf("515151")));
-        label.setAlignment(Align.center);
-        lotteryWindow.add(label).pad(10).row();
-        buttonStyle = MediaManager.createButtonStyle("BUTTON_CONFIRM", atlas);
-        button = MediaManager.createButton(buttonStyle, MenuAction.NONE);
-        button.addListener(new ChangeListener() {
-            public void changed(ChangeEvent event, Actor actor) {
-                hideWindow(lotteryWindow);
-            }
-        });
-        lotteryWindow.add(button).pad(10f);
-        lotteryWindow.setVisible(false);
-        stage.addActor(lotteryWindow);
-        lotteryWindow.addAction(sequence(Actions.alpha(0), Actions.show(), Actions.fadeIn(0.25f, Interpolation.fade), Actions.delay(0.25f), Actions.run(new Runnable() {
-            @Override
-            public void run() {
-                GameStatus gameStatus = DataManager.INSTANCE.getGameStatus();
-                gameStatus.increaseLive();
-                gameStatus.increaseLive();
-                gameStatus.increaseLive();
-                gameStatus.increaseLive();
-                gameStatus.increaseLive();
-                DataManager.INSTANCE.saveGameStatus(false);
-            }
-        })));
-    }
-
     @Override
     public void render(float delta) {
         Gdx.graphics.getGL20().glClearColor(1, 1, 1, 1);
@@ -462,12 +268,6 @@ public class MenuScreen extends AbstractScreen {
 
         stage.act();
         stage.draw();
-
-        if (DataManager.INSTANCE.isExternalGift()) {
-            showExternalGift((TextureAtlas) getMediaManager().get("data/menu/menu.atlas"));
-            ActivityManager.INSTANCE.trackReward();
-            DataManager.INSTANCE.setExternalGift(false);
-        }
 
         if (Gdx.input.justTouched()) {
             MediaManager.MENU.interactionStarted();
@@ -493,12 +293,14 @@ public class MenuScreen extends AbstractScreen {
                 ScreenManager.INSTANCE.changeTo(ScreenType.HELP);
                 break;
             case GIFT:
-                if (dailyGiftAvailable) {
-//                    showWindow(giftAdviseWindow);
-                    showVideoGift();
-                } else {
-                    showWindow(noDailyGiftWindow);
-                }
+                Boolean fullScreen = Gdx.graphics.isFullscreen();
+                Graphics.DisplayMode currentMode = Gdx.graphics.getDisplayMode();
+                if (fullScreen == true)
+                    Gdx.graphics.setWindowedMode(800, 480);
+                else
+                    Gdx.graphics.setFullscreenMode(currentMode);
+
+                ScreenManager.INSTANCE.changeTo(ScreenType.MENU);
                 break;
             case PLAY_NYAM:
                 DataManager.INSTANCE.setCurrentCharacter(MainAvatarType.NYAM);
@@ -517,11 +319,8 @@ public class MenuScreen extends AbstractScreen {
                 break;
             default:
                 if (isBackJustPressed()) {
-                    if (confirmWindow.isVisible() || giftAdviseWindow.isVisible() || noDailyGiftWindow.isVisible() || giftErrorWindow.isVisible()) {
+                    if (confirmWindow.isVisible()) {
                         hideWindow(confirmWindow);
-                        hideWindow(giftAdviseWindow);
-                        hideWindow(noDailyGiftWindow);
-                        hideWindow(giftErrorWindow);
                     }
                 }
         }
@@ -572,28 +371,6 @@ public class MenuScreen extends AbstractScreen {
         }
     }
 
-
-    private void showVideoGift() {
-        ActivityManager.INSTANCE.showVideoGift(new ActivityTransaction() {
-            @Override
-            public void done(boolean result) {
-                if (result) {
-                    ActivityManager.INSTANCE.trackDailyGift(true);
-                    startLottery();
-                    dailyGiftAvailable = false;
-                } else {
-                    ActivityManager.INSTANCE.trackDailyGift(false);
-                    hideWindow(giftAdviseWindow);
-                    showWindow(giftErrorWindow);
-                }
-            }
-        });
-    }
-
-    private void startLottery() {
-        hideWindow(giftAdviseWindow);
-        showLotteryWindow((TextureAtlas) getMediaManager().get("data/menu/menu.atlas"));
-    }
 
     @Override
     public void dispose() {
