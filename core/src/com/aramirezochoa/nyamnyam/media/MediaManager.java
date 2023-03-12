@@ -17,6 +17,8 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGeneratorLoader;
 import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
@@ -31,14 +33,14 @@ import com.badlogic.gdx.utils.Align;
 public enum MediaManager {
     SPLASH(false) {
         @Override
-        public void loadAssets() {
+        public void loadAssets(AssetManager manager) {
             manager.load("data/splash/title.png", Texture.class);
             manager.load("data/splash/over.png", Texture.class);
         }
     },
     LOADING(false) {
         @Override
-        public void loadAssets() {
+        public void loadAssets(AssetManager manager) {
             manager.load("data/loading/tfly.atlas", TextureAtlas.class);
             manager.load("data/loading/banqui.atlas", TextureAtlas.class);
             manager.load("data/loading/gluty.atlas", TextureAtlas.class);
@@ -46,7 +48,7 @@ public enum MediaManager {
     },
     MENU(false) {
         @Override
-        public void loadAssets() {
+        public void loadAssets(AssetManager manager) {
             manager.load("data/menu/menu.atlas", TextureAtlas.class);
             manager.load("data/menu/font.ttf", FreeTypeFontGenerator.class);
 
@@ -59,9 +61,7 @@ public enum MediaManager {
     },
     GAME {
         @Override
-        public void loadAssets() {
-            manager.load("data/stages/tiles.png", TextureAtlas.class);
-            manager.load("data/stages/entities.png", TextureAtlas.class);
+        public void loadAssets(AssetManager manager) {
             manager.load("data/game/game.atlas", TextureAtlas.class);
             manager.load("data/game/background.atlas", TextureAtlas.class);
             manager.load("data/game/gui.atlas", TextureAtlas.class);
@@ -92,7 +92,7 @@ public enum MediaManager {
         }
     }, INTRO(false) {
         @Override
-        public void loadAssets() {
+        public void loadAssets(AssetManager manager) {
             manager.load("data/intro/intro.atlas", TextureAtlas.class);
             manager.load("data/intro/font.ttf", FreeTypeFontGenerator.class);
             manager.load(SOUND_INTRO_PUSH, Sound.class);
@@ -102,27 +102,25 @@ public enum MediaManager {
     },
     END {
         @Override
-        public void loadAssets() {
+        public void loadAssets(AssetManager manager) {
             manager.load("data/end/end.atlas", TextureAtlas.class);
             manager.load("data/end/font.ttf", FreeTypeFontGenerator.class);
         }
     },
     HELP {
         @Override
-        public void loadAssets() {
+        public void loadAssets(AssetManager manager) {
             manager.load("data/help/help.atlas", TextureAtlas.class);
             manager.load("data/help/font.ttf", FreeTypeFontGenerator.class);
         }
     },
     STORE {
         @Override
-        public void loadAssets() {
+        public void loadAssets(AssetManager manager) {
             manager.load("data/store/store.atlas", TextureAtlas.class);
             manager.load("data/store/font.ttf", FreeTypeFontGenerator.class);
         }
     };
-
-    private static AssetManager manager;
 
     public static String THEME_CHEWING = "data/sounds/chewing.ogg";
 
@@ -154,6 +152,8 @@ public enum MediaManager {
     private static Boolean soundEnabled = true;
     private boolean interactionStarted;
 
+    private AssetManager manager;
+
     MediaManager() {
         interactionStarted = true;
     }
@@ -162,7 +162,7 @@ public enum MediaManager {
         this.interactionStarted = interactionStarted;
     }
 
-    public static void init() {
+    public void init() {
         manager = new AssetManager();
         FileHandleResolver resolver = new InternalFileHandleResolver();
         manager.setLoader(FreeTypeFontGenerator.class, new FreeTypeFontGeneratorLoader(resolver));
@@ -174,9 +174,11 @@ public enum MediaManager {
             prefs.flush();
         }
         soundEnabled = prefs.getBoolean(SOUND);
+
+        loadAssets(manager);
     }
 
-    public abstract void loadAssets();
+    public abstract void loadAssets(AssetManager manager);
 
     public boolean update() {
         return manager.update();
@@ -294,5 +296,12 @@ public enum MediaManager {
         if (((Music) get(theme)).isPlaying()) {
             ((Music) get(theme)).stop();
         }
+    }
+
+    public TiledMap loadMap(String map) {
+        manager.setLoader(TiledMap.class, new TmxMapLoader(new InternalFileHandleResolver()));
+        manager.load(map, TiledMap.class);
+        manager.finishLoading();
+        return manager.get(map);
     }
 }

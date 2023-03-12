@@ -1,7 +1,6 @@
 package com.aramirezochoa.nyamnyam;
 
 import com.aramirezochoa.nyamnyam.activity.ActivityManager;
-import com.aramirezochoa.nyamnyam.media.MediaManager;
 import com.aramirezochoa.nyamnyam.screen.ScreenManager;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
@@ -32,7 +31,6 @@ public class CoreGame extends Game {
         DataManager.INSTANCE.init();
 //        StoreManager.INSTANCE.init();
 
-        MediaManager.init();
         ScreenManager.INSTANCE.init(this);
     }
 

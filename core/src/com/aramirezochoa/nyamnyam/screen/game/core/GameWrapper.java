@@ -1,22 +1,5 @@
 package com.aramirezochoa.nyamnyam.screen.game.core;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.maps.MapObject;
-import com.badlogic.gdx.maps.objects.PolylineMapObject;
-import com.badlogic.gdx.maps.objects.RectangleMapObject;
-import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.TmxMapLoader;
-import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
-import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.SnapshotArray;
 import com.aramirezochoa.nyamnyam.Constant;
 import com.aramirezochoa.nyamnyam.DataManager;
 import com.aramirezochoa.nyamnyam.activity.ActivityManager;
@@ -40,6 +23,22 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.meal.common.Rais
 import com.aramirezochoa.nyamnyam.screen.game.gui.GameUserInterface;
 import com.aramirezochoa.nyamnyam.screen.game.status.GameStatus;
 import com.aramirezochoa.nyamnyam.screen.game.status.GameStatusListener;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.maps.MapObject;
+import com.badlogic.gdx.maps.objects.PolylineMapObject;
+import com.badlogic.gdx.maps.objects.RectangleMapObject;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.SnapshotArray;
 
 /**
  * Created by boheme on 13/01/15.
@@ -297,7 +296,7 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     }
 
     private void loadMap(int levelNumber) {
-        map = new TmxMapLoader().load("data/stages/" + levelNumber + ".tmx");
+        map = MediaManager.GAME.loadMap("data/stages/" + levelNumber + ".tmx");
         bossLevel = Boolean.parseBoolean((String) map.getProperties().get("bossLevel"));
         mapRenderer = new OrthogonalTiledMapRenderer(map, 1);
         mapRenderer.setView(camera);

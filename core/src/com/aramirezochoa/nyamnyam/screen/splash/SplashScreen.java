@@ -36,7 +36,7 @@ public class SplashScreen implements Screen {
 
     public SplashScreen() {
         this.mediaManager = MediaManager.SPLASH;
-        this.mediaManager.loadAssets();
+        this.mediaManager.init();
     }
 
     @Override

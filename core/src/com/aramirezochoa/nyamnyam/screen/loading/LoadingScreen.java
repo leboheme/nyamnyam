@@ -24,7 +24,7 @@ public class LoadingScreen implements Screen {
 
     private TextureAtlas textureAtlas;
     private Stage stage;
-    private MediaManager mediaManager;
+    private MediaManager nextMediaManager;
     private float loadingCounter = 2f;
 
     private enum LoadingType {
@@ -131,7 +131,7 @@ public class LoadingScreen implements Screen {
     }
 
     public LoadingScreen(MediaManager nextMediaManager) {
-        this.mediaManager = nextMediaManager;
+        this.nextMediaManager = nextMediaManager;
     }
 
     private boolean loadComplete;
@@ -140,8 +140,8 @@ public class LoadingScreen implements Screen {
     public void show() {
         loadComplete = false;
 
-        MediaManager.LOADING.loadAssets();
-        mediaManager.loadAssets();
+        MediaManager.LOADING.init();
+        nextMediaManager.init();
     }
 
     private void onAssetsLoaded() {
@@ -183,7 +183,7 @@ public class LoadingScreen implements Screen {
         if (!loadComplete)
             onAssetsLoaded();
 
-        if (loadingCounter < 0) {
+        if (nextMediaManager.update() && loadingCounter < 0) {
             ScreenManager.INSTANCE.loaded();
         } else {
             stage.act(delta);
@@ -215,6 +215,7 @@ public class LoadingScreen implements Screen {
 
     @Override
     public void dispose() {
+        MediaManager.LOADING.unloadAssets();
         textureAtlas.dispose();
         stage.dispose();
     }
