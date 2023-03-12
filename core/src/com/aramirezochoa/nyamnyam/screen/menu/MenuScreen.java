@@ -41,8 +41,6 @@ public class MenuScreen extends AbstractScreen {
 
     private BitmapFont font, smallFont;
     private Stage stage;
-    private boolean wantsToExit;
-
     private boolean newGame, continueGame;
     private float playTimer;
 
@@ -58,7 +56,6 @@ public class MenuScreen extends AbstractScreen {
     public void show() {
         this.stage = new Stage(new StretchViewport(Constant.SCREEN_WIDTH, Constant.SCREEN_HEIGHT));
         Gdx.input.setInputProcessor(stage);
-        this.wantsToExit = false;
         newGame = continueGame = false;
         playTimer = 0.5f;
         dailyGiftAvailable = DataManager.INSTANCE.isDailyGiftAvailable();
@@ -525,22 +522,6 @@ public class MenuScreen extends AbstractScreen {
                         hideWindow(giftAdviseWindow);
                         hideWindow(noDailyGiftWindow);
                         hideWindow(giftErrorWindow);
-                    } else {
-                        if (wantsToExit) {
-                            ActivityManager.INSTANCE.showInterstitial(new ActivityTransaction() {
-                                @Override
-                                public void done(boolean result) {
-                                    Gdx.app.postRunnable(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            ScreenManager.INSTANCE.changeTo(ScreenType.EXIT);
-                                        }
-                                    });
-                                }
-                            });
-                        } else {
-                            wantsToExit = true;
-                        }
                     }
                 }
         }

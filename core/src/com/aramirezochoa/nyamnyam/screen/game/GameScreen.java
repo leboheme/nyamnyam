@@ -3,7 +3,6 @@ package com.aramirezochoa.nyamnyam.screen.game;
 import com.aramirezochoa.nyamnyam.Constant;
 import com.aramirezochoa.nyamnyam.DataManager;
 import com.aramirezochoa.nyamnyam.activity.ActivityManager;
-import com.aramirezochoa.nyamnyam.activity.ActivityTransaction;
 import com.aramirezochoa.nyamnyam.input.InputManager;
 import com.aramirezochoa.nyamnyam.media.MediaManager;
 import com.aramirezochoa.nyamnyam.screen.AbstractScreen;
@@ -103,21 +102,7 @@ public class GameScreen extends AbstractScreen {
                     getMediaManager().stopAllThemes();
                     int level = DataManager.INSTANCE.getGameStatus().getLevel();
                     if (level <= Constant.GAME_LEVELS) {
-                        if (level % 2 == 0) {
-                            ActivityManager.INSTANCE.showInterstitial(new ActivityTransaction() {
-                                @Override
-                                public void done(boolean result) {
-                                    Gdx.app.postRunnable(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            init(DataManager.INSTANCE.getGameStatus());
-                                        }
-                                    });
-                                }
-                            });
-                        } else {
-                            init(DataManager.INSTANCE.getGameStatus());
-                        }
+                        init(DataManager.INSTANCE.getGameStatus());
                     }
                     break;
                 case EXIT:
