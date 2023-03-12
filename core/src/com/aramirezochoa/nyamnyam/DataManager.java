@@ -1,13 +1,10 @@
 package com.aramirezochoa.nyamnyam;
 
+import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.main.MainAvatarType;
+import com.aramirezochoa.nyamnyam.screen.game.status.GameStatus;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.math.MathUtils;
-import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.main.MainAvatarType;
-import com.aramirezochoa.nyamnyam.screen.game.status.GameStatus;
-
-import java.util.Calendar;
-import java.util.Date;
 
 /**
  * Created by boheme on 9/02/15.
@@ -196,13 +193,7 @@ public enum DataManager {
         if (getTime() < lastDailyGift) {
             return false;
         }
-        Calendar cal1 = Calendar.getInstance();
-        Calendar cal2 = Calendar.getInstance();
-        cal1.setTime(new Date(lastDailyGift));
-        cal2.setTime(new Date(getTime()));
-        boolean differentDays = cal1.get(Calendar.YEAR) != cal2.get(Calendar.YEAR) ||
-                cal1.get(Calendar.DAY_OF_YEAR) != cal2.get(Calendar.DAY_OF_YEAR);
-        return differentDays;
+        return lastDailyGift >= (System.currentTimeMillis() - (60 * 60 * 24 * 1000));
     }
 
     public void dailyGiftDone() {

@@ -22,7 +22,7 @@ import com.aramirezochoa.nyamnyam.screen.game.core.GameWrapper;
 public class GamePad extends InputAdapter implements GameScreen.GameScreenComponent {
 
     //    private final GameWrapper gameWrapper;
-    private Button leftButton, rightButton, fireButton, jumpButton;
+    public Button leftButton, rightButton, fireButton, jumpButton;
     private SpriteBatch batch;
     private OrthographicCamera camera;
     private Vector3 coords = new Vector3();

@@ -1,5 +1,8 @@
 package com.aramirezochoa.nyamnyam.media;
 
+import com.aramirezochoa.nyamnyam.DataManager;
+import com.aramirezochoa.nyamnyam.input.InputManager;
+import com.aramirezochoa.nyamnyam.screen.menu.MenuAction;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.assets.AssetManager;
@@ -8,6 +11,7 @@ import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
@@ -19,15 +23,27 @@ import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import com.aramirezochoa.nyamnyam.DataManager;
-import com.aramirezochoa.nyamnyam.input.InputManager;
-import com.aramirezochoa.nyamnyam.screen.menu.MenuAction;
 import com.badlogic.gdx.utils.Align;
 
 /**
  * Created by boheme on 12/01/15.
  */
 public enum MediaManager {
+    SPLASH(false) {
+        @Override
+        public void loadAssets() {
+            manager.load("data/splash/title.png", Texture.class);
+            manager.load("data/splash/over.png", Texture.class);
+        }
+    },
+    LOADING(false) {
+        @Override
+        public void loadAssets() {
+            manager.load("data/loading/tfly.atlas", TextureAtlas.class);
+            manager.load("data/loading/banqui.atlas", TextureAtlas.class);
+            manager.load("data/loading/gluty.atlas", TextureAtlas.class);
+        }
+    },
     MENU(false) {
         @Override
         public void loadAssets() {
@@ -44,6 +60,8 @@ public enum MediaManager {
     GAME {
         @Override
         public void loadAssets() {
+            manager.load("data/stages/tiles.png", TextureAtlas.class);
+            manager.load("data/stages/entities.png", TextureAtlas.class);
             manager.load("data/game/game.atlas", TextureAtlas.class);
             manager.load("data/game/background.atlas", TextureAtlas.class);
             manager.load("data/game/gui.atlas", TextureAtlas.class);
@@ -72,7 +90,7 @@ public enum MediaManager {
             stopTheme(THEME_NORMAL);
             stopTheme(THEME_BOSS);
         }
-    }, INTRO {
+    }, INTRO(false) {
         @Override
         public void loadAssets() {
             manager.load("data/intro/intro.atlas", TextureAtlas.class);

@@ -1,6 +1,6 @@
 package com.aramirezochoa.nyamnyam;
 
-import com.aramirezochoa.nyamnyam.activity.ActivityManager;
+import com.aramirezochoa.nyamnyam.activity.ActivityTransaction;
 
 /**
  * Created by boheme on 16/09/14.
@@ -9,9 +9,9 @@ public interface ActivityEngine {
 
     void showBannerAd(boolean show);
 
-    void showInterstitial(ActivityManager.ActivityTransaction activityTransaction);
+    void showInterstitial(ActivityTransaction activityTransaction);
 
-    void showVideoGift(ActivityManager.ActivityTransaction activityTransaction);
+    void showVideoGift(ActivityTransaction activityTransaction);
 
     void trackScreen(String screen);
 
@@ -19,5 +19,5 @@ public interface ActivityEngine {
 
     void trackEvent(String category, String action, String label);
 
-    void showRateUs(ActivityManager.ActivityTransaction activityTransaction);
+    void showRateUs(ActivityTransaction activityTransaction);
 }

@@ -1,5 +1,9 @@
 package com.aramirezochoa.nyamnyam.screen.splash;
 
+import com.aramirezochoa.nyamnyam.Constant;
+import com.aramirezochoa.nyamnyam.media.MediaManager;
+import com.aramirezochoa.nyamnyam.screen.ScreenManager;
+import com.aramirezochoa.nyamnyam.screen.ScreenType;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
@@ -10,9 +14,6 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
-import com.aramirezochoa.nyamnyam.Constant;
-import com.aramirezochoa.nyamnyam.screen.ScreenManager;
-import com.aramirezochoa.nyamnyam.screen.ScreenType;
 
 /**
  * Created by leboheme on 25/02/15.
@@ -28,13 +29,28 @@ public class SplashScreen implements Screen {
 
     private float overPosition = 0;
 
+    private final MediaManager mediaManager;
+
+    private boolean loadComplete;
+
+
+    public SplashScreen() {
+        this.mediaManager = MediaManager.SPLASH;
+        this.mediaManager.loadAssets();
+    }
 
     @Override
     public void show() {
-        textureTitle = new Texture(Gdx.files.internal("data/splash/title.png"));
+        loadComplete = false;
+    }
+
+    private void onAssetsLoaded(){
+        loadComplete = true;
+
+        textureTitle = mediaManager.get("data/splash/title.png");
         title = new TextureRegion(textureTitle);
 
-        textureOver = new Texture(Gdx.files.internal("data/splash/over.png"));
+        textureOver = mediaManager.get("data/splash/over.png");
         over = new TextureRegion(textureOver);
 
         stage = new Stage(new StretchViewport(Constant.SCREEN_WIDTH, Constant.SCREEN_HEIGHT));
@@ -64,6 +80,7 @@ public class SplashScreen implements Screen {
         stage.addActor(table);
     }
 
+
     @Override
     public void hide() {
 
@@ -83,6 +100,12 @@ public class SplashScreen implements Screen {
     public void render(float delta) {
         Gdx.graphics.getGL20().glClearColor(1, 1, 1, 1);
         Gdx.graphics.getGL20().glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+
+        if (!mediaManager.update()){
+            return;
+        }
+        if (!loadComplete)
+            onAssetsLoaded();
 
         stage.act();
         stage.draw();

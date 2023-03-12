@@ -1,9 +1,9 @@
 package com.aramirezochoa.nyamnyam;
 
+import com.aramirezochoa.nyamnyam.activity.ActivityTransaction;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
-import com.aramirezochoa.nyamnyam.activity.ActivityManager;
 
 // Please note that on macOS your application needs to be started with the -XstartOnFirstThread JVM argument
 public class DesktopLauncher implements ActivityEngine {
@@ -22,13 +22,13 @@ public class DesktopLauncher implements ActivityEngine {
 	}
 
 	@Override
-	public void showInterstitial(ActivityManager.ActivityTransaction activityTransaction) {
+	public void showInterstitial(ActivityTransaction activityTransaction) {
 		Gdx.app.error("ADs", "Show interstitial");
 		activityTransaction.done(true);
 	}
 
 	@Override
-	public void showVideoGift(ActivityManager.ActivityTransaction activityTransaction) {
+	public void showVideoGift(ActivityTransaction activityTransaction) {
 		Gdx.app.error("Desktop", "Video gift showed");
 		activityTransaction.done(true);
 	}
@@ -49,7 +49,7 @@ public class DesktopLauncher implements ActivityEngine {
 	}
 
 	@Override
-	public void showRateUs(ActivityManager.ActivityTransaction activityTransaction) {
+	public void showRateUs(ActivityTransaction activityTransaction) {
 		Gdx.app.error("Rate us", "");
 		activityTransaction.done(false);
 	}

@@ -1,5 +1,19 @@
 package com.aramirezochoa.nyamnyam.screen.menu;
 
+import com.aramirezochoa.nyamnyam.Constant;
+import com.aramirezochoa.nyamnyam.DataManager;
+import com.aramirezochoa.nyamnyam.activity.ActivityManager;
+import com.aramirezochoa.nyamnyam.activity.ActivityTransaction;
+import com.aramirezochoa.nyamnyam.i18n.LanguageManager;
+import com.aramirezochoa.nyamnyam.input.InputManager;
+import com.aramirezochoa.nyamnyam.media.MediaManager;
+import com.aramirezochoa.nyamnyam.screen.AbstractScreen;
+import com.aramirezochoa.nyamnyam.screen.ScreenManager;
+import com.aramirezochoa.nyamnyam.screen.ScreenType;
+import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.main.MainAvatarType;
+import com.aramirezochoa.nyamnyam.screen.game.status.GameStatus;
+import com.aramirezochoa.nyamnyam.screen.store.StoreItem;
+import com.aramirezochoa.nyamnyam.store.StoreManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -11,23 +25,10 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
-import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
-import com.aramirezochoa.nyamnyam.Constant;
-import com.aramirezochoa.nyamnyam.DataManager;
-import com.aramirezochoa.nyamnyam.activity.ActivityManager;
-import com.aramirezochoa.nyamnyam.i18n.LanguageManager;
-import com.aramirezochoa.nyamnyam.input.InputManager;
-import com.aramirezochoa.nyamnyam.media.MediaManager;
-import com.aramirezochoa.nyamnyam.screen.AbstractScreen;
-import com.aramirezochoa.nyamnyam.screen.ScreenManager;
-import com.aramirezochoa.nyamnyam.screen.ScreenType;
-import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.main.MainAvatarType;
-import com.aramirezochoa.nyamnyam.screen.game.status.GameStatus;
-import com.aramirezochoa.nyamnyam.screen.store.StoreItem;
-import com.aramirezochoa.nyamnyam.store.StoreManager;
 
 import java.util.concurrent.TimeUnit;
 
@@ -235,9 +236,9 @@ public class MenuScreen extends AbstractScreen {
             public void act(float delta) {
                 super.act(delta);
                 if (timerEnabled) {
+//                    I know it's 5 seconds because of the migration
                     long timer = DataManager.INSTANCE.getNextFreeLiveTimerRemain();
-                    getLabel().setText(String.format("%02d:%02d", TimeUnit.MILLISECONDS.toMinutes(timer),
-                            TimeUnit.MILLISECONDS.toSeconds(timer) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timer))));
+                    getLabel().setText((int) TimeUnit.MILLISECONDS.toSeconds(timer));
                     if (!DataManager.INSTANCE.isFreeLiveRunning()) {
                         timerEnabled = false;
                         getLabel().setText("");
@@ -526,7 +527,7 @@ public class MenuScreen extends AbstractScreen {
                         hideWindow(giftErrorWindow);
                     } else {
                         if (wantsToExit) {
-                            ActivityManager.INSTANCE.showInterstitial(new ActivityManager.ActivityTransaction() {
+                            ActivityManager.INSTANCE.showInterstitial(new ActivityTransaction() {
                                 @Override
                                 public void done(boolean result) {
                                     Gdx.app.postRunnable(new Runnable() {
@@ -570,7 +571,7 @@ public class MenuScreen extends AbstractScreen {
 
         // show rate us
         if (showRateUs) {
-            ActivityManager.INSTANCE.showRateUs(new ActivityManager.ActivityTransaction() {
+            ActivityManager.INSTANCE.showRateUs(new ActivityTransaction() {
                 @Override
                 public void done(boolean result) {
                     DataManager.INSTANCE.notifyShowRateUs(result);
@@ -592,7 +593,7 @@ public class MenuScreen extends AbstractScreen {
 
 
     private void showVideoGift() {
-        ActivityManager.INSTANCE.showVideoGift(new ActivityManager.ActivityTransaction() {
+        ActivityManager.INSTANCE.showVideoGift(new ActivityTransaction() {
             @Override
             public void done(boolean result) {
                 if (result) {

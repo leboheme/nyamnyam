@@ -30,7 +30,7 @@ public class Constant {
     public static final float GAME_WIN_FREE_TIME = 4f;
 
     public static final int GAME_NEW_GAME_LIVES = 3;
-    public static final long GAME_FREE_LIVE_TIMER = 900000;
+    public static final long GAME_FREE_LIVE_TIMER = 30000;
     public static final int GAME_LEVELS = 60;
     public static final float GAME_LEVEL_HURRY_TIME = 60;
     public static final float GAME_LEVEL_DARK_TIME = 75;

@@ -80,8 +80,4 @@ public enum ActivityManager {
     public void showRateUs(ActivityTransaction activityTransaction) {
         activityEngine.showRateUs(activityTransaction);
     }
-
-    public interface ActivityTransaction {
-        void done(boolean result);
-    }
 }

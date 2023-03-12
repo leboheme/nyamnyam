@@ -1,11 +1,11 @@
 package com.aramirezochoa.nyamnyam;
 
-import com.badlogic.gdx.Game;
-import com.badlogic.gdx.Gdx;
 import com.aramirezochoa.nyamnyam.activity.ActivityManager;
 import com.aramirezochoa.nyamnyam.media.MediaManager;
 import com.aramirezochoa.nyamnyam.screen.ScreenManager;
-import com.aramirezochoa.nyamnyam.store.StoreManager;
+import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 
 /**
  * Created by boheme on 10/02/14.
@@ -20,16 +20,20 @@ public class CoreGame extends Game {
 
     @Override
     public void create() {
+        Gdx.input.setCatchKey(Input.Keys.SPACE, true);
+        Gdx.input.setCatchKey(Input.Keys.UP, true);
+        Gdx.input.setCatchKey(Input.Keys.DOWN, true);
+        Gdx.input.setCatchKey(Input.Keys.LEFT, true);
+        Gdx.input.setCatchKey(Input.Keys.RIGHT, true);
+
         Gdx.input.setCatchBackKey(true);
 //        // Loading main manager, others in LoadingState
         ActivityManager.INSTANCE.init(application);
-
         DataManager.INSTANCE.init();
 //        StoreManager.INSTANCE.init();
 
         MediaManager.init();
         ScreenManager.INSTANCE.init(this);
-
     }
 
     @Override

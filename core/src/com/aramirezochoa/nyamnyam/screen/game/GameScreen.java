@@ -1,13 +1,9 @@
 package com.aramirezochoa.nyamnyam.screen.game;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.graphics.GL20;
 import com.aramirezochoa.nyamnyam.Constant;
 import com.aramirezochoa.nyamnyam.DataManager;
 import com.aramirezochoa.nyamnyam.activity.ActivityManager;
+import com.aramirezochoa.nyamnyam.activity.ActivityTransaction;
 import com.aramirezochoa.nyamnyam.input.InputManager;
 import com.aramirezochoa.nyamnyam.media.MediaManager;
 import com.aramirezochoa.nyamnyam.screen.AbstractScreen;
@@ -19,6 +15,10 @@ import com.aramirezochoa.nyamnyam.screen.game.input.GamePad;
 import com.aramirezochoa.nyamnyam.screen.game.status.GameStatus;
 import com.aramirezochoa.nyamnyam.screen.menu.MenuAction;
 import com.aramirezochoa.nyamnyam.store.StoreManager;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.graphics.GL20;
 
 /**
  * Created by boheme on 13/01/15.
@@ -48,7 +48,7 @@ public class GameScreen extends AbstractScreen {
         InputMultiplexer im = new InputMultiplexer();
         im.addProcessor(new InputAdapter());
         im.addProcessor(gamePad);
-        im.addProcessor(InputProcessor.class.cast(gameUserInterface.getStage()));
+        im.addProcessor(gameUserInterface.getStage());
         Gdx.input.setInputProcessor(im);
 
         StoreManager.INSTANCE.checkExtraItems();
@@ -104,7 +104,7 @@ public class GameScreen extends AbstractScreen {
                     int level = DataManager.INSTANCE.getGameStatus().getLevel();
                     if (level <= Constant.GAME_LEVELS) {
                         if (level % 2 == 0) {
-                            ActivityManager.INSTANCE.showInterstitial(new ActivityManager.ActivityTransaction() {
+                            ActivityManager.INSTANCE.showInterstitial(new ActivityTransaction() {
                                 @Override
                                 public void done(boolean result) {
                                     Gdx.app.postRunnable(new Runnable() {

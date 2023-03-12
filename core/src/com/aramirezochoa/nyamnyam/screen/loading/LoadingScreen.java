@@ -1,5 +1,8 @@
 package com.aramirezochoa.nyamnyam.screen.loading;
 
+import com.aramirezochoa.nyamnyam.Constant;
+import com.aramirezochoa.nyamnyam.media.MediaManager;
+import com.aramirezochoa.nyamnyam.screen.ScreenManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
@@ -13,9 +16,6 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
-import com.aramirezochoa.nyamnyam.Constant;
-import com.aramirezochoa.nyamnyam.media.MediaManager;
-import com.aramirezochoa.nyamnyam.screen.ScreenManager;
 
 /**
  * Created by boheme on 12/01/15.
@@ -31,7 +31,7 @@ public class LoadingScreen implements Screen {
         BANQUI {
             @Override
             public TextureAtlas getTextureAtlas() {
-                return new TextureAtlas(Gdx.files.internal("data/loading/banqui.atlas"));
+                return MediaManager.LOADING.get("data/loading/banqui.atlas");
             }
 
             @Override
@@ -57,7 +57,7 @@ public class LoadingScreen implements Screen {
         GLUTY {
             @Override
             public TextureAtlas getTextureAtlas() {
-                return new TextureAtlas(Gdx.files.internal("data/loading/gluty.atlas"));
+                return MediaManager.LOADING.get("data/loading/gluty.atlas");
             }
 
             @Override
@@ -83,7 +83,7 @@ public class LoadingScreen implements Screen {
         TFLY {
             @Override
             public TextureAtlas getTextureAtlas() {
-                return new TextureAtlas(Gdx.files.internal("data/loading/tfly.atlas"));
+                return MediaManager.LOADING.get("data/loading/tfly.atlas");
             }
 
             @Override
@@ -130,12 +130,23 @@ public class LoadingScreen implements Screen {
         public abstract float getFrameDuration();
     }
 
-    public LoadingScreen(MediaManager mediaManager) {
-        this.mediaManager = mediaManager;
+    public LoadingScreen(MediaManager nextMediaManager) {
+        this.mediaManager = nextMediaManager;
     }
+
+    private boolean loadComplete;
 
     @Override
     public void show() {
+        loadComplete = false;
+
+        MediaManager.LOADING.loadAssets();
+        mediaManager.loadAssets();
+    }
+
+    private void onAssetsLoaded() {
+        loadComplete = true;
+
         final LoadingType loadingType = LoadingType.random();
         textureAtlas = loadingType.getTextureAtlas();
         stage = new Stage(new StretchViewport(Constant.SCREEN_WIDTH, Constant.SCREEN_HEIGHT));
@@ -159,8 +170,6 @@ public class LoadingScreen implements Screen {
         });
 
         stage.addActor(table);
-
-        mediaManager.loadAssets();
     }
 
     @Override
@@ -168,7 +177,13 @@ public class LoadingScreen implements Screen {
         Gdx.graphics.getGL20().glClearColor(1, 1, 1, 1);
         Gdx.graphics.getGL20().glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
-        if (mediaManager.update() && loadingCounter < 0) {
+        if (!MediaManager.LOADING.update()) {
+            return;
+        }
+        if (!loadComplete)
+            onAssetsLoaded();
+
+        if (loadingCounter < 0) {
             ScreenManager.INSTANCE.loaded();
         } else {
             stage.act(delta);
