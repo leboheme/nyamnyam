@@ -1,0 +1,43 @@
+{
+  "trello": {
+    "settings": {
+      "board": "https://trello.com/b/4eDljm4i/nyam-nyam",
+      "api_key": "TRELLO_MINO_API_KEY",
+      "token": "TRELLO_MINO_TOKEN"
+    },
+    "lists": [
+      {
+        "name": "Ideas",
+        "description": "Quick capture for raw ideas. No ticket format or acceptance criteria required."
+      },
+      {
+        "name": "Backlog",
+        "description": "Refined tasks or stories with enough context to consider for upcoming work."
+      },
+      {
+        "name": "To Do",
+        "description": "Selected and unblocked work that is ready to start."
+      },
+      {
+        "name": "In Progress",
+        "description": "Solution design and implementation are in progress."
+      },
+      {
+        "name": "Review",
+        "description": "Validate locally, deploy when appropriate, and validate in production. Repeat release checks as needed; return to In Progress when changes are required."
+      },
+      {
+        "name": "Done",
+        "description": "Acceptance is complete."
+      }
+    ],
+    "happy_path": [
+      "Ideas",
+      "Backlog",
+      "To Do",
+      "In Progress",
+      "Review",
+      "Done"
+    ]
+  }
+}
