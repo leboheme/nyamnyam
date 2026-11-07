@@ -11,7 +11,7 @@ public class DesktopLauncher implements ActivityEngine {
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
 		config.setForegroundFPS(60);
 		config.setTitle("Nyam Nyam!");
-		config.setWindowedMode(800, 480);
+		config.setWindowedMode(640, 360);
 		config.setResizable(false);
 		new Lwjgl3Application(new CoreGame(new DesktopLauncher()), config);
 	}

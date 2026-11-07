@@ -238,10 +238,17 @@ public class GameUserInterface implements GameScreen.GameScreenComponent, GameSt
         stage.getBatch().setColor(color.r, color.g, color.b, 1);
         stage.getBatch().begin();
         stage.getBatch().draw(bar, 0, 0);
-        barFont.draw(stage.getBatch(), LanguageManager.INSTANCE.getString("level") + ": " + level, 200, 65);
-        barFont.draw(stage.getBatch(), LanguageManager.INSTANCE.getString("lives") + ": " + lives, 200, 30);
-        barFont.draw(stage.getBatch(), LanguageManager.INSTANCE.getString("score") + ": " + score, 400, 65);
-        barFont.draw(stage.getBatch(), fourthMessage, 400, 30);
+        float hudWidth = Constant.SCREEN_WIDTH - 120;
+        float columnWidth = hudWidth / 3;
+        float firstRowY = Constant.SCREEN_HEIGHT - 16;
+        float secondRowY = Constant.SCREEN_HEIGHT - 42;
+        barFont.draw(stage.getBatch(), LanguageManager.INSTANCE.getString("level") + ": " + level,
+                0, firstRowY, columnWidth, Align.center, false);
+        barFont.draw(stage.getBatch(), LanguageManager.INSTANCE.getString("lives") + ": " + lives,
+                columnWidth, firstRowY, columnWidth, Align.center, false);
+        barFont.draw(stage.getBatch(), LanguageManager.INSTANCE.getString("score") + ": " + score,
+                columnWidth * 2, firstRowY, columnWidth, Align.center, false);
+        barFont.draw(stage.getBatch(), fourthMessage, 0, secondRowY, hudWidth, Align.center, false);
         for (VolatileMessage message : messages) {
             message.getFont().draw(stage.getBatch(), message.message, message.x, message.y);
         }
