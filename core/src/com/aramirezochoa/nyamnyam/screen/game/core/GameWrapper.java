@@ -34,6 +34,7 @@ import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.PolylineMapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
@@ -85,9 +86,8 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
         this.gameUserInterface = gameUserInterface;
         this.mediaManager = mediaManager;
         this.batch = new SpriteBatch();
-        this.camera = new OrthographicCamera(Constant.SCREEN_WIDTH, Constant.SCREEN_HEIGHT);
-        this.camera.setToOrtho(false, Constant.SCREEN_WIDTH, Constant.SCREEN_HEIGHT);
-        this.camera.position.y += Constant.SCREEN_GAME_Y_OFFSET;
+        this.camera = new OrthographicCamera(Constant.GAME_CAMERA_WIDTH, Constant.GAME_CAMERA_HEIGHT);
+        this.camera.setToOrtho(false, Constant.GAME_CAMERA_WIDTH, Constant.GAME_CAMERA_HEIGHT);
         this.camera.update();
         this.batch.setProjectionMatrix(camera.combined);
 
@@ -105,6 +105,7 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
         cleanEntities();
         loadMainAvatar();
         loadMap(gameStatus.getLevel());
+        updateCamera();
         loadEnemies();
         loadAir();
 
@@ -154,6 +155,7 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
         for (int i = 0; i < pets.size; i++) {
             pets.get(i).update(deltaTime);
         }
+        updateCamera();
         checkSpawnMeals(deltaTime);
         checkSpawnAir(deltaTime);
         checkLevelTime(deltaTime);
@@ -237,8 +239,14 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
 
     @Override
     public void render(float deltaTime) {
+        camera.update();
+        batch.setProjectionMatrix(camera.combined);
+        debugRenderer.setProjectionMatrix(camera.combined);
+        mapRenderer.setView(camera);
+
         batch.begin();
-        batch.draw(background, 0, 0);
+        batch.draw(background, camera.position.x - camera.viewportWidth / 2,
+                camera.position.y - camera.viewportHeight / 2);
         batch.end();
 
         mapRenderer.render();
@@ -300,6 +308,26 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
         bossLevel = Boolean.parseBoolean((String) map.getProperties().get("bossLevel"));
         mapRenderer = new OrthogonalTiledMapRenderer(map, 1);
         mapRenderer.setView(camera);
+    }
+
+    private void updateCamera() {
+        if (mainAvatar == null || map == null) {
+            return;
+        }
+
+        TiledMapTileLayer ground = (TiledMapTileLayer) map.getLayers().get("ground");
+        float mapWidth = ground.getWidth() * ground.getTileWidth();
+        float mapHeight = ground.getHeight() * ground.getTileHeight();
+        float halfWidth = camera.viewportWidth / 2;
+        float halfHeight = camera.viewportHeight / 2;
+        float targetX = mainAvatar.position.x + mainAvatar.dimension.x / 2;
+        float targetY = mainAvatar.position.y + mainAvatar.dimension.y / 2;
+
+        camera.position.set(
+                mapWidth <= camera.viewportWidth ? mapWidth / 2 : MathUtils.clamp(targetX, halfWidth, mapWidth - halfWidth),
+                mapHeight <= camera.viewportHeight ? mapHeight / 2 : MathUtils.clamp(targetY, halfHeight, mapHeight - halfHeight),
+                0);
+        camera.update();
     }
 
     private void loadEnemies() {
