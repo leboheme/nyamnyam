@@ -10,6 +10,7 @@ import com.aramirezochoa.nyamnyam.screen.ScreenManager;
 import com.aramirezochoa.nyamnyam.screen.ScreenType;
 import com.aramirezochoa.nyamnyam.screen.game.core.GameWrapper;
 import com.aramirezochoa.nyamnyam.screen.game.debug.DebugConsole;
+import com.aramirezochoa.nyamnyam.screen.game.debug.StageCommand;
 import com.aramirezochoa.nyamnyam.screen.game.gui.GameUserInterface;
 import com.aramirezochoa.nyamnyam.screen.game.input.GamePad;
 import com.aramirezochoa.nyamnyam.screen.game.status.GameStatus;
@@ -51,6 +52,7 @@ public class GameScreen extends AbstractScreen {
         gamePad = new GamePad(getMediaManager(), gameWrapper, hudViewport);
         gamePad.layoutControls();
         debugConsole = new DebugConsole(getMediaManager(), hudViewport);
+        debugConsole.registerCommand(new StageCommand(this::loadStage));
 
         InputMultiplexer im = new InputMultiplexer();
         im.addProcessor(debugConsole);
@@ -69,6 +71,12 @@ public class GameScreen extends AbstractScreen {
         gameWrapper.init(getMediaManager(), gameStatus);
 
         gameWrapper.getGameStatus().setGameState(GameState.IN_GAME);
+    }
+
+    private void loadStage(int stageNumber) {
+        GameStatus gameStatus = gameWrapper.getGameStatus();
+        gameStatus.setLevel(stageNumber);
+        init(gameStatus);
     }
 
     @Override
