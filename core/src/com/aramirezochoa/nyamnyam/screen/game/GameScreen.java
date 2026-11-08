@@ -9,6 +9,7 @@ import com.aramirezochoa.nyamnyam.screen.AbstractScreen;
 import com.aramirezochoa.nyamnyam.screen.ScreenManager;
 import com.aramirezochoa.nyamnyam.screen.ScreenType;
 import com.aramirezochoa.nyamnyam.screen.game.core.GameWrapper;
+import com.aramirezochoa.nyamnyam.screen.game.debug.DebugConsole;
 import com.aramirezochoa.nyamnyam.screen.game.gui.GameUserInterface;
 import com.aramirezochoa.nyamnyam.screen.game.input.GamePad;
 import com.aramirezochoa.nyamnyam.screen.game.status.GameStatus;
@@ -28,6 +29,7 @@ public class GameScreen extends AbstractScreen {
     private GameWrapper gameWrapper;
     private GameUserInterface gameUserInterface;
     private GamePad gamePad;
+    private DebugConsole debugConsole;
     private ExtendViewport hudViewport;
 
     public GameScreen() {
@@ -48,8 +50,10 @@ public class GameScreen extends AbstractScreen {
 
         gamePad = new GamePad(getMediaManager(), gameWrapper, hudViewport);
         gamePad.layoutControls();
+        debugConsole = new DebugConsole(getMediaManager(), hudViewport);
 
         InputMultiplexer im = new InputMultiplexer();
+        im.addProcessor(debugConsole);
         im.addProcessor(new InputAdapter());
         im.addProcessor(gamePad);
         im.addProcessor(gameUserInterface.getStage());
@@ -90,42 +94,45 @@ public class GameScreen extends AbstractScreen {
         if (!gameWrapper.getGameStatus().isPaused()) {
             gamePad.render(delta);
         }
+        debugConsole.render();
 
         if (DataManager.INSTANCE.getGameStatus().getLevel() > Constant.GAME_LEVELS) {
             ActivityManager.INSTANCE.showBannerAd(false);
             ScreenManager.INSTANCE.changeTo(ScreenType.END);
         } else {
-            MenuAction menuAction = InputManager.INSTANCE.getMenuAction();
-            switch (menuAction) {
-                case PAUSE:
-                    gameWrapper.getGameStatus().setGameState(GameState.PAUSE);
-                    break;
-                case CONTINUE:
-                    gameWrapper.getGameStatus().setGameState(GameState.IN_GAME);
-                    break;
-                case NEXT:
-                    getMediaManager().stopAllThemes();
-                    int level = DataManager.INSTANCE.getGameStatus().getLevel();
-                    if (level <= Constant.GAME_LEVELS) {
-                        init(DataManager.INSTANCE.getGameStatus());
-                    }
-                    break;
-                case EXIT:
-                    gameUserInterface.showConfirmExit();
-                    break;
-                case CONFIRM:
-                    getMediaManager().stopAllThemes();
-                    ActivityManager.INSTANCE.showBannerAd(false);
-                    ScreenManager.INSTANCE.changeTo(ScreenType.MENU);
-                    break;
-                default:
-                    if (isBackJustPressed()) {
-                        if (GameState.PAUSE.equals(gameWrapper.getGameStatus().getGameState())) {
-                            gameWrapper.getGameStatus().setGameState(GameState.IN_GAME);
-                        } else if (GameState.IN_GAME.equals(gameWrapper.getGameStatus().getGameState())) {
-                            gameWrapper.getGameStatus().setGameState(GameState.PAUSE);
+            if (!debugConsole.consumeMenuInput()) {
+                MenuAction menuAction = InputManager.INSTANCE.getMenuAction();
+                switch (menuAction) {
+                    case PAUSE:
+                        gameWrapper.getGameStatus().setGameState(GameState.PAUSE);
+                        break;
+                    case CONTINUE:
+                        gameWrapper.getGameStatus().setGameState(GameState.IN_GAME);
+                        break;
+                    case NEXT:
+                        getMediaManager().stopAllThemes();
+                        int level = DataManager.INSTANCE.getGameStatus().getLevel();
+                        if (level <= Constant.GAME_LEVELS) {
+                            init(DataManager.INSTANCE.getGameStatus());
                         }
-                    }
+                        break;
+                    case EXIT:
+                        gameUserInterface.showConfirmExit();
+                        break;
+                    case CONFIRM:
+                        getMediaManager().stopAllThemes();
+                        ActivityManager.INSTANCE.showBannerAd(false);
+                        ScreenManager.INSTANCE.changeTo(ScreenType.MENU);
+                        break;
+                    default:
+                        if (isBackJustPressed()) {
+                            if (GameState.PAUSE.equals(gameWrapper.getGameStatus().getGameState())) {
+                                gameWrapper.getGameStatus().setGameState(GameState.IN_GAME);
+                            } else if (GameState.IN_GAME.equals(gameWrapper.getGameStatus().getGameState())) {
+                                gameWrapper.getGameStatus().setGameState(GameState.PAUSE);
+                            }
+                        }
+                }
             }
         }
     }
@@ -151,6 +158,7 @@ public class GameScreen extends AbstractScreen {
         gameWrapper.dispose();
         gameUserInterface.dispose();
         gamePad.dispose();
+        debugConsole.dispose();
     }
 
     public interface GameScreenComponent {
