@@ -133,6 +133,12 @@ public class GameScreen extends AbstractScreen {
     }
 
     @Override
+    public void resize(int width, int height) {
+        if (gameUserInterface != null) gameUserInterface.resize(width, height);
+        if (gamePad != null) gamePad.resize(width, height);
+    }
+
+    @Override
     public void dispose() {
         super.dispose();
         gameWrapper.dispose();

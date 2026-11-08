@@ -15,8 +15,8 @@ public final class HtmlLauncher implements ActivityEngine {
         installUncaughtErrorLogger();
         migrateLegacyPreferences();
         WebApplicationConfiguration configuration = new WebApplicationConfiguration("canvas");
-        configuration.width = 640;
-        configuration.height = 360;
+        configuration.width = 360;
+        configuration.height = 640;
         configuration.usePhysicalPixels = true;
         configuration.storagePrefix = "nyamnyam";
         new WebApplication(

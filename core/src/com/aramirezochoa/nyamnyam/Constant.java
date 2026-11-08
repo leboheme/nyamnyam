@@ -12,13 +12,13 @@ public class Constant {
     public static final Vector2 VECTOR_24 = new Vector2(24, 24);
     public static final Vector2 VECTOR_32 = new Vector2(32, 32);
 
-    public static final float SCREEN_WIDTH = 800;
-    public static final float SCREEN_HEIGHT = 480;
+    public static final float SCREEN_WIDTH = 360;
+    public static final float SCREEN_HEIGHT = 640;
     public static final float SCREEN_GAME_Y_OFFSET = -80f;
     public static final int TILE_SIZE = 16;
-    public static final int GAME_CAMERA_TILES_WIDTH = 30;
+    public static final int GAME_CAMERA_TILES_WIDTH = 15;
     public static final float GAME_CAMERA_WIDTH = TILE_SIZE * GAME_CAMERA_TILES_WIDTH;
-    public static final float GAME_CAMERA_HEIGHT = GAME_CAMERA_WIDTH * 360f / 640f;
+    public static final float GAME_CAMERA_HEIGHT = GAME_CAMERA_WIDTH * SCREEN_HEIGHT / SCREEN_WIDTH;
 
     // Game
     public static final Vector2 GRAVITY = new Vector2(0, -16.0f);

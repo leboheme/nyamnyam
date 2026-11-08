@@ -44,7 +44,7 @@ public class CoreGame extends Game {
             Boolean fullScreen = Gdx.graphics.isFullscreen();
             Graphics.DisplayMode currentMode = Gdx.graphics.getDisplayMode();
             if (fullScreen == true)
-                Gdx.graphics.setWindowedMode(800, 480);
+                Gdx.graphics.setWindowedMode((int) Constant.SCREEN_WIDTH, (int) Constant.SCREEN_HEIGHT);
             else
                 Gdx.graphics.setFullscreenMode(currentMode);
         }

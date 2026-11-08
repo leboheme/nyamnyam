@@ -17,8 +17,8 @@ body {
 
 #game-shell {
     position: relative;
-    width: min(100vw, 177.7778dvh);
-    height: min(100dvh, 56.25vw);
+    width: min(100vw, 56.25dvh);
+    height: min(100dvh, 177.7778vw);
     overflow: hidden;
     background: #000;
     touch-action: none;

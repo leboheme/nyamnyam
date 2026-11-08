@@ -78,8 +78,10 @@ public class GameWrapperAssistant {
             entity.position.y = Constant.TILE_SIZE;
             entity.velocity.y = 0;
         }
-        if (entity.position.y + entity.dimension.y > Constant.SCREEN_HEIGHT + Constant.SCREEN_GAME_Y_OFFSET - Constant.TILE_SIZE) {
-            entity.position.y = Constant.SCREEN_HEIGHT + Constant.SCREEN_GAME_Y_OFFSET - Constant.TILE_SIZE - entity.dimension.y;
+        TiledMapTileLayer ground = (TiledMapTileLayer) entity.getParent().getMap().getLayers().get("ground");
+        float mapHeight = ground.getHeight() * ground.getTileHeight();
+        if (entity.position.y + entity.dimension.y > mapHeight - Constant.TILE_SIZE) {
+            entity.position.y = mapHeight - Constant.TILE_SIZE - entity.dimension.y;
             entity.velocity.y = 0;
         }
 
@@ -244,25 +246,31 @@ public class GameWrapperAssistant {
     }
 
     private static void checkTop(Entity entity) {
-        if (entity.position.y > Constant.SCREEN_HEIGHT + Constant.SCREEN_GAME_Y_OFFSET + entity.dimension.y) {
+        TiledMapTileLayer ground = (TiledMapTileLayer) entity.getParent().getMap().getLayers().get("ground");
+        float mapHeight = ground.getHeight() * ground.getTileHeight();
+        if (entity.position.y > mapHeight + entity.dimension.y) {
             entity.position.y = -entity.dimension.y;
         }
     }
 
     private static void checkBottom(Entity entity) {
+        TiledMapTileLayer ground = (TiledMapTileLayer) entity.getParent().getMap().getLayers().get("ground");
+        float mapHeight = ground.getHeight() * ground.getTileHeight();
         if (entity.position.y < -entity.dimension.y) {
-            entity.position.y = Constant.SCREEN_HEIGHT + Constant.SCREEN_GAME_Y_OFFSET;
+            entity.position.y = mapHeight;
         }
     }
 
     private static void checkSides(Entity entity) {
+        TiledMapTileLayer ground = (TiledMapTileLayer) entity.getParent().getMap().getLayers().get("ground");
+        float mapWidth = ground.getWidth() * ground.getTileWidth();
         if (entity.position.x < Constant.TILE_SIZE) {
             entity.position.x = Constant.TILE_SIZE;
             entity.velocity.x = 0;
             entity.notifyWall();
         }
-        if (entity.position.x + entity.dimension.x > Constant.SCREEN_WIDTH - Constant.TILE_SIZE) {
-            entity.position.x = Constant.SCREEN_WIDTH - entity.dimension.x - Constant.TILE_SIZE;
+        if (entity.position.x + entity.dimension.x > mapWidth - Constant.TILE_SIZE) {
+            entity.position.x = mapWidth - entity.dimension.x - Constant.TILE_SIZE;
             entity.velocity.x = 0;
             entity.notifyWall();
         }
@@ -331,7 +339,9 @@ public class GameWrapperAssistant {
         Rectangle avatarRect = rectPool.obtain();
         avatarRect.set(enemy.position.x, enemy.position.y, enemy.dimension.x, enemy.dimension.y);
         avatarRect.x += Math.signum(enemy.velocity.x) * (enemy.dimension.x / 2);
-        if (avatarRect.x < Constant.TILE_SIZE || avatarRect.x > Constant.SCREEN_WIDTH - Constant.TILE_SIZE) {
+        TiledMapTileLayer ground = (TiledMapTileLayer) map.getLayers().get("ground");
+        float mapWidth = ground.getWidth() * ground.getTileWidth();
+        if (avatarRect.x < Constant.TILE_SIZE || avatarRect.x > mapWidth - Constant.TILE_SIZE) {
             avatarRect.x = enemy.position.x;
         }
         avatarRect.y -= 5f;

@@ -3,6 +3,7 @@ package com.aramirezochoa.nyamnyam.screen.game.core.entity.state.projectile;
 import com.aramirezochoa.nyamnyam.Constant;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.GameWrapperAssistant;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.types.DirectionType;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 
 /**
  * Created by boheme on 28/01/15.
@@ -19,9 +20,11 @@ public class HorizontalProjectileState extends ProjectileState {
     @Override
     public boolean update(float deltaTime) {
         GameWrapperAssistant.updateProjectile(getProjectile(), deltaTime, getProjectile().getType().isTileCollision());
+        TiledMapTileLayer ground = (TiledMapTileLayer) getProjectile().getParent().getMap().getLayers().get("ground");
+        float mapWidth = ground.getWidth() * ground.getTileWidth();
         if (getProjectile().position.y < -getProjectile().dimension.y
                 || getProjectile().position.x < Constant.TILE_SIZE
-                || getProjectile().position.x + getProjectile().dimension.x > Constant.SCREEN_WIDTH - Constant.TILE_SIZE
+                || getProjectile().position.x + getProjectile().dimension.x > mapWidth - Constant.TILE_SIZE
                 || getProjectile().velocity.x == 0) {
             return true;
         }

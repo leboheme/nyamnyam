@@ -296,6 +296,10 @@ public class GameUserInterface implements GameScreen.GameScreenComponent, GameSt
         return stage;
     }
 
+    public void resize(int width, int height) {
+        stage.getViewport().update(width, height, true);
+    }
+
     private class VolatileMessage implements Pool.Poolable {
         private String message;
         private float timer = 0.5f;
