@@ -1,7 +1,6 @@
 package com.aramirezochoa.nyamnyam;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.Vector2;
 
 /**
@@ -12,8 +11,6 @@ public class Constant {
     public static final Vector2 VECTOR_16 = new Vector2(16, 16);
     public static final Vector2 VECTOR_24 = new Vector2(24, 24);
     public static final Vector2 VECTOR_32 = new Vector2(32, 32);
-
-    public static final java.lang.String NYAM_CHARS = FreeTypeFontGenerator.DEFAULT_CHARS + "€’";
 
     public static final float SCREEN_WIDTH = 800;
     public static final float SCREEN_HEIGHT = 480;

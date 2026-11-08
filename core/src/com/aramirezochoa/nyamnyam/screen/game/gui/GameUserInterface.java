@@ -4,7 +4,6 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -53,7 +52,7 @@ public class GameUserInterface implements GameScreen.GameScreenComponent, GameSt
     public GameUserInterface(MediaManager mediaManager) {
         this.stage = new Stage(new StretchViewport(Constant.SCREEN_WIDTH, Constant.SCREEN_HEIGHT));
         bar = ((TextureAtlas) mediaManager.get("data/game/gui.atlas")).findRegion("BAR");
-        loadFonts((FreeTypeFontGenerator) mediaManager.get("data/game/font.ttf"));
+        loadFonts(mediaManager);
         loadButtons((TextureAtlas) mediaManager.get("data/game/gui.atlas"));
     }
 
@@ -67,23 +66,14 @@ public class GameUserInterface implements GameScreen.GameScreenComponent, GameSt
         this.fourthMessage = "";
     }
 
-    private void loadFonts(FreeTypeFontGenerator freeTypeFontGenerator) {
-        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        parameter.size = 24;
-        parameter.characters = Constant.NYAM_CHARS;
-        barFont = freeTypeFontGenerator.generateFont(parameter);
+    private void loadFonts(MediaManager mediaManager) {
+        barFont = mediaManager.get("data/game/font-24.fnt");
         barFont.setColor(Color.valueOf("13004a"));
 
-        parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        parameter.size = 14;
-        parameter.characters = Constant.NYAM_CHARS;
-        messageFont = freeTypeFontGenerator.generateFont(parameter);
+        messageFont = mediaManager.get("data/game/font-14.fnt");
         messageFont.setColor(Color.valueOf("e66e04"));
 
-        parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        parameter.size = 52;
-        parameter.characters = Constant.NYAM_CHARS;
-        bigMessageFont = freeTypeFontGenerator.generateFont(parameter);
+        bigMessageFont = mediaManager.get("data/game/font-52.fnt");
         bigMessageFont.setColor(Color.valueOf("d5de25"));
     }
 

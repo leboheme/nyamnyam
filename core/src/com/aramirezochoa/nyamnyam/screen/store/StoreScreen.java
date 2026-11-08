@@ -5,7 +5,6 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
@@ -43,15 +42,8 @@ public class StoreScreen extends AbstractScreen {
         Gdx.input.setInputProcessor(stage);
 
         TextureAtlas atlas = getMediaManager().get("data/store/store.atlas");
-        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        parameter.size = 46;
-        parameter.characters = Constant.NYAM_CHARS;
-        bigFont = ((FreeTypeFontGenerator) getMediaManager().get("data/store/font.ttf")).generateFont(parameter);
-
-        parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        parameter.size = 30;
-        parameter.characters = Constant.NYAM_CHARS;
-        smallFont = ((FreeTypeFontGenerator) getMediaManager().get("data/store/font.ttf")).generateFont(parameter);
+        bigFont = getMediaManager().get("data/store/font-46.fnt");
+        smallFont = getMediaManager().get("data/store/font-30.fnt");
 
         Table table = new Table();
         table.setFillParent(true);

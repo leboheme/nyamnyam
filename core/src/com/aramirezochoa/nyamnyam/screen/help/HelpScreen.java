@@ -5,7 +5,6 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
@@ -39,10 +38,7 @@ public class HelpScreen extends AbstractScreen {
         Gdx.input.setInputProcessor(stage);
 
         TextureAtlas atlas = getMediaManager().get("data/help/help.atlas");
-        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        parameter.size = 46;
-        parameter.characters = Constant.NYAM_CHARS;
-        font = ((FreeTypeFontGenerator) getMediaManager().get("data/help/font.ttf")).generateFont(parameter);
+        font = getMediaManager().get("data/help/font-46.fnt");
 
         Label.LabelStyle labelStyle = new Label.LabelStyle(font, Color.BLACK);
 

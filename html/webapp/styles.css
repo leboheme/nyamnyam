@@ -1,43 +1,52 @@
-canvas {
-    cursor: default;
-    outline: none;
+html,
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    overscroll-behavior: none;
+    background: #090d16;
 }
 
 body {
-    background-color: #222222;
+    display: grid;
+    place-items: center;
+    user-select: none;
+    -webkit-touch-callout: none;
 }
 
-.superdev {
-    color: rgb(37,37,37);
-    text-shadow: 0px 1px 1px rgba(250,250,250,0.1);
-    font-size: 50pt;
-    display: block;
+#game-shell {
     position: relative;
-    text-decoration: none;
-    background-color: rgb(83,87,93);
-    box-shadow: 0px 3px 0px 0px rgb(34,34,34),
-                0px 7px 10px 0px rgb(17,17,17),
-                inset 0px 1px 1px 0px rgba(250, 250, 250, .2),
-                inset 0px -12px 35px 0px rgba(0, 0, 0, .5);
-    width: 70px;
-    height: 70px;
-    border: 0;
-    border-radius: 35px;
-    text-align: center;
-    line-height: 68px;
+    width: min(100vw, 177.7778dvh);
+    height: min(100dvh, 56.25vw);
+    overflow: hidden;
+    background: #000;
+    touch-action: none;
 }
 
-.superdev:active {
-    box-shadow: 0px 0px 0px 0px rgb(34,34,34),
-                0px 3px 7px 0px rgb(17,17,17),
-                inset 0px 1px 1px 0px rgba(250, 250, 250, .2),
-                inset 0px -10px 35px 5px rgba(0, 0, 0, .5);
-    background-color: rgb(83,87,93);
-    top: 3px;
+#canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    outline: 0;
+    touch-action: none;
+}
+
+#loading,
+#error {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
     color: #fff;
-    text-shadow: 0px 0px 3px rgb(250,250,250);
+    background: #090d16;
+    font: 600 1rem system-ui, sans-serif;
 }
 
-.superdev:hover {
-    background-color: rgb(100,100,100);
+#error[hidden] {
+    display: none;
+}
+
+#loading[hidden] {
+    display: none;
 }

@@ -1,9 +1,9 @@
-sourceCompatibility = 1.8
+sourceCompatibility = JavaVersion.VERSION_17
 sourceSets.main.java.srcDirs = [ "src/" ]
 sourceSets.main.resources.srcDirs = ["../assets"]
 
 project.ext.mainClassName = "com.aramirezochoa.nyamnyam.DesktopLauncher"
-project.ext.assetsDir = new File("../assets")
+project.ext.assetsDir = rootProject.file("assets")
 
 import org.gradle.internal.os.OperatingSystem
 
@@ -43,5 +43,17 @@ task dist(type: Jar) {
 
 
 dist.dependsOn classes
+
+dependencies {
+    implementation "com.badlogicgames.gdx:gdx-tools:$gdxVersion"
+}
+
+tasks.register('generateBitmapFonts', JavaExec) {
+    dependsOn classes
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.aramirezochoa.nyamnyam.tools.BitmapFontGeneratorTool'
+    args project.ext.assetsDir.absolutePath
+    workingDir rootProject.projectDir
+}
 
 eclipse.project.name = appName + "-desktop"

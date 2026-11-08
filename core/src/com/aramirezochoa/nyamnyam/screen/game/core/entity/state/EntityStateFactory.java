@@ -2,6 +2,8 @@ package com.aramirezochoa.nyamnyam.screen.game.core.entity.state;
 
 import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Pools;
+import com.badlogic.gdx.utils.ObjectSet;
+import com.badlogic.gdx.utils.ReflectionPool;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.Entity;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.common.*;
 
@@ -10,7 +12,11 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.common.*;
  */
 public abstract class EntityStateFactory {
 
+    private static final ObjectSet<Class<?>> registeredPoolTypes = new ObjectSet<Class<?>>();
+
     public static <T extends EntityState> T state(Class<T> type) {
+        if (registeredPoolTypes.add(type))
+            Pools.set(type, new ReflectionPool<T>(type, 4, 100));
         Pool<T> pool = Pools.get(type);
         T entity = pool.obtain();
         entity.setPool(pool);

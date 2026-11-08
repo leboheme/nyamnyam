@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.*;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -40,10 +39,7 @@ public class IntroScreen extends AbstractScreen {
         this.stage = new Stage(new StretchViewport(Constant.SCREEN_WIDTH, Constant.SCREEN_HEIGHT));
 
         TextureAtlas atlas = getMediaManager().get("data/intro/intro.atlas");
-        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        parameter.size = 48;
-        parameter.characters = Constant.NYAM_CHARS;
-        font = ((FreeTypeFontGenerator) getMediaManager().get("data/intro/font.ttf")).generateFont(parameter);
+        font = getMediaManager().get("data/intro/font-48.fnt");
 
         // First phrase
         final Label label = new Label(LanguageManager.INSTANCE.getString("firstPhrase"), new Label.LabelStyle(font, Color.WHITE));

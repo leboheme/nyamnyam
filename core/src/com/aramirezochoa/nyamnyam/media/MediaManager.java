@@ -6,6 +6,8 @@ import com.aramirezochoa.nyamnyam.screen.menu.MenuAction;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.assets.AssetDescriptor;
+import com.badlogic.gdx.assets.AssetErrorListener;
 import com.badlogic.gdx.assets.loaders.FileHandleResolver;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.audio.Music;
@@ -14,9 +16,6 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGeneratorLoader;
-import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -50,7 +49,8 @@ public enum MediaManager {
         @Override
         public void loadAssets(AssetManager manager) {
             manager.load("data/menu/menu.atlas", TextureAtlas.class);
-            manager.load("data/menu/font.ttf", FreeTypeFontGenerator.class);
+            manager.load("data/menu/font-48.fnt", BitmapFont.class);
+            manager.load("data/menu/font-40.fnt", BitmapFont.class);
 
             manager.load(THEME_CHEWING, Music.class);
             manager.load(SOUND_BUTTON, Sound.class);
@@ -67,7 +67,9 @@ public enum MediaManager {
             manager.load("data/game/game.atlas", TextureAtlas.class);
             manager.load("data/game/background.atlas", TextureAtlas.class);
             manager.load("data/game/gui.atlas", TextureAtlas.class);
-            manager.load("data/game/font.ttf", FreeTypeFontGenerator.class);
+            manager.load("data/game/font-24.fnt", BitmapFont.class);
+            manager.load("data/game/font-14.fnt", BitmapFont.class);
+            manager.load("data/game/font-52.fnt", BitmapFont.class);
 
             manager.load(THEME_NORMAL, Music.class);
             manager.load(THEME_BOSS, Music.class);
@@ -96,7 +98,7 @@ public enum MediaManager {
         @Override
         public void loadAssets(AssetManager manager) {
             manager.load("data/intro/intro.atlas", TextureAtlas.class);
-            manager.load("data/intro/font.ttf", FreeTypeFontGenerator.class);
+            manager.load("data/intro/font-48.fnt", BitmapFont.class);
             manager.load(SOUND_INTRO_PUSH, Sound.class);
             manager.load(SOUND_INTRO_CRUSH, Sound.class);
             manager.load(SOUND_INTRO_NYAMNYAM, Sound.class);
@@ -106,21 +108,22 @@ public enum MediaManager {
         @Override
         public void loadAssets(AssetManager manager) {
             manager.load("data/end/end.atlas", TextureAtlas.class);
-            manager.load("data/end/font.ttf", FreeTypeFontGenerator.class);
+            manager.load("data/end/font-80.fnt", BitmapFont.class);
         }
     },
     HELP {
         @Override
         public void loadAssets(AssetManager manager) {
             manager.load("data/help/help.atlas", TextureAtlas.class);
-            manager.load("data/help/font.ttf", FreeTypeFontGenerator.class);
+            manager.load("data/help/font-46.fnt", BitmapFont.class);
         }
     },
     STORE {
         @Override
         public void loadAssets(AssetManager manager) {
             manager.load("data/store/store.atlas", TextureAtlas.class);
-            manager.load("data/store/font.ttf", FreeTypeFontGenerator.class);
+            manager.load("data/store/font-46.fnt", BitmapFont.class);
+            manager.load("data/store/font-30.fnt", BitmapFont.class);
         }
     };
 
@@ -166,10 +169,13 @@ public enum MediaManager {
 
     public void init() {
         manager = new AssetManager();
+        manager.setErrorListener(new AssetErrorListener() {
+            @Override
+            public void error(AssetDescriptor asset, Throwable throwable) {
+                Gdx.app.error("Assets", "Failed to load " + asset.fileName, throwable);
+            }
+        });
         FileHandleResolver resolver = new InternalFileHandleResolver();
-        manager.setLoader(FreeTypeFontGenerator.class, new FreeTypeFontGeneratorLoader(resolver));
-        manager.setLoader(BitmapFont.class, ".ttf", new FreetypeFontLoader(resolver));
-
         Preferences prefs = Gdx.app.getPreferences(DataManager.COMMON_DATA);
         if (!prefs.contains(SOUND)) {
             prefs.putBoolean(SOUND, true);

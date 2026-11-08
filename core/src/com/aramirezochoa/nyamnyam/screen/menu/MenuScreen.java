@@ -17,7 +17,6 @@ import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.*;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -59,13 +58,8 @@ public class MenuScreen extends AbstractScreen {
 
         TextureAtlas atlas = getMediaManager().get("data/menu/menu.atlas");
 
-        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        parameter.size = 48;
-        parameter.characters = Constant.NYAM_CHARS;
-        font = ((FreeTypeFontGenerator) getMediaManager().get("data/menu/font.ttf")).generateFont(parameter);
-
-        parameter.size = 40;
-        smallFont = ((FreeTypeFontGenerator) getMediaManager().get("data/menu/font.ttf")).generateFont(parameter);
+        font = getMediaManager().get("data/menu/font-48.fnt");
+        smallFont = getMediaManager().get("data/menu/font-40.fnt");
 
         StoreManager.INSTANCE.checkExtraItems();
 

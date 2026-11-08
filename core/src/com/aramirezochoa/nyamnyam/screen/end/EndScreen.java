@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.*;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -39,10 +38,7 @@ public class EndScreen extends AbstractScreen {
         this.stage = new Stage(new StretchViewport(Constant.SCREEN_WIDTH, Constant.SCREEN_HEIGHT));
 
         TextureAtlas atlas = getMediaManager().get("data/end/end.atlas");
-        FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        parameter.size = 80;
-        parameter.characters = Constant.NYAM_CHARS;
-        font = ((FreeTypeFontGenerator) getMediaManager().get("data/end/font.ttf")).generateFont(parameter);
+        font = getMediaManager().get("data/end/font-80.fnt");
 
         // Background
         Actor background = new Image(new TextureRegionDrawable(atlas.findRegion("background")));

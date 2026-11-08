@@ -1,92 +1,46 @@
-gwt {
-    gwtVersion='2.8.2' // Should match the gwt version used for building the gwt backend
-    maxHeapSize="1G" // Default 256m is not enough for gwt compiler. GWT is HUNGRY
-    minHeapSize="1G"
+plugins {
+    id 'com.github.xpenatan.gdx-teavm' version '1.6.2'
+}
 
-    src = files(file("src/")) // Needs to be in front of "modules" below.
-    modules 'com.aramirezochoa.nyamnyam.GdxDefinition'
-    devModules 'com.aramirezochoa.nyamnyam.GdxDefinitionSuperdev'
-    project.webAppDirName = 'webapp'
+sourceCompatibility = JavaVersion.VERSION_17
+sourceSets.main.java.srcDirs = ["src/"]
+sourceSets.main.resources.srcDirs = ["src/main/resources"]
 
-    compiler {
-        strict = true;
-        disableCastChecking = true;
+def webAssets = layout.buildDirectory.dir('generated/web-assets')
+def webApp = layout.buildDirectory.dir('dist/js/webapp')
+
+tasks.register('prepareWebAssets', Sync) {
+    from(rootProject.file('assets')) {
+        exclude '**/*.ttf'
+        exclude '**/.DS_Store'
+    }
+    into(webAssets)
+}
+
+tasks.register('cleanWebApp', Delete) {
+    delete(webApp)
+}
+
+gdxTeaVM {
+    assets(webAssets)
+
+    js {
+        mainClass = 'com.aramirezochoa.nyamnyam.client.HtmlLauncher'
+        htmlTitle = 'Nyam Nyam'
+        targetFileName = 'nyamnyam.js'
     }
 }
 
-import org.wisepersist.gradle.plugins.gwt.GwtSuperDev
-import org.akhikhl.gretty.AppBeforeIntegrationTestTask
+tasks.named('generateJavaScript') {
+    dependsOn tasks.named('cleanWebApp')
+    dependsOn tasks.named('prepareWebAssets')
+}
 
-gretty.httpPort = 8080
-gretty.resourceBase = project.buildDir.path + "/gwt/draftOut"
-gretty.contextPath = "/"
-gretty.portPropertiesFileName = "TEMP_PORTS.properties"
-
-task startHttpServer () {
-    dependsOn draftCompileGwt
-
-    doFirst {
-        copy {
-            from "webapp"
-            into gretty.resourceBase
-        }
-
-        copy {
-            from "war"
-            into gretty.resourceBase
-        }
+tasks.register('prepareWebRuntime', Sync) {
+    dependsOn tasks.named('gdx_teavm_web_js_build')
+    from(webApp) {
+        exclude 'index.html'
+        exclude 'WEB-INF/**'
     }
+    into(layout.buildDirectory.dir('web-runtime'))
 }
-
-task beforeRun(type: AppBeforeIntegrationTestTask, dependsOn: startHttpServer) {
-    // The next line allows ports to be reused instead of
-    // needing a process to be manually terminated.
-    file("build/TEMP_PORTS.properties").delete()
-    // Somewhat of a hack; uses Gretty's support for wrapping a task in
-    // a start and then stop of a Jetty server that serves files while
-    // also running the SuperDev code server.
-    integrationTestTask 'superDev'
-
-    interactive false
-}
-
-task superDev (type: GwtSuperDev) {
-    dependsOn startHttpServer
-    doFirst {
-        gwt.modules = gwt.devModules
-    }
-}
-
-task dist(dependsOn: [clean, compileGwt]) {
-    doLast {
-        file("build/dist").mkdirs()
-        copy {
-            from "build/gwt/out"
-            into "build/dist"
-        }
-        copy {
-            from "webapp"
-            into "build/dist"
-            }
-        copy {
-            from "war"
-            into "build/dist"
-        }
-    }
-}
-
-task addSource {
-    doLast {
-        sourceSets.main.compileClasspath += files(project(':core').sourceSets.main.allJava.srcDirs)
-    }
-}
-
-tasks.compileGwt.dependsOn(addSource)
-tasks.draftCompileGwt.dependsOn(addSource)
-tasks.checkGwt.dependsOn(addSource)
-checkGwt.war = file("war")
-
-sourceCompatibility = 1.7
-sourceSets.main.java.srcDirs = [ "src/" ]
-
-eclipse.project.name = appName + "-html"

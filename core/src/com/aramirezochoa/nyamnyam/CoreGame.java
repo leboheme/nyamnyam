@@ -28,7 +28,6 @@ public class CoreGame extends Game {
         Gdx.input.setCatchKey(Input.Keys.LEFT, true);
         Gdx.input.setCatchKey(Input.Keys.RIGHT, true);
         Gdx.input.setCatchKey(Input.Keys.TAB, true);
-        Gdx.input.setCatchBackKey(true);
 
         ActivityManager.INSTANCE.init(application);
         DataManager.INSTANCE.init();
@@ -37,6 +36,10 @@ public class CoreGame extends Game {
 
     @Override
     public void render() {
+        render(Gdx.graphics.getDeltaTime());
+    }
+
+    public void render(float delta) {
         if (Gdx.input.isKeyPressed(Input.Keys.TAB)){
             Boolean fullScreen = Gdx.graphics.isFullscreen();
             Graphics.DisplayMode currentMode = Gdx.graphics.getDisplayMode();
@@ -45,7 +48,8 @@ public class CoreGame extends Game {
             else
                 Gdx.graphics.setFullscreenMode(currentMode);
         }
-        super.render();
+        if (screen != null)
+            screen.render(delta);
     }
 
     @Override
