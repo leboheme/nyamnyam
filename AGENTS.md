@@ -31,7 +31,7 @@ Useful commands:
 ./gradlew build
 ```
 
-The project uses Java source compatibility 1.7 and LibGDX. The desktop launcher is under `desktop/`; the shared game logic is under `core/`; the browser target is under `html/`.
+The project uses Java 17 and LibGDX. The desktop launcher is under `desktop/`; the shared game logic is under `core/`; the browser target is under `html/`.
 
 Prefer the narrowest relevant compile check after a change. Run the full build when a change crosses modules, affects assets, or changes build configuration.
 
