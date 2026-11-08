@@ -77,7 +77,7 @@ public class GameScreen extends AbstractScreen {
         gameUserInterface.update(delta);
 
         // Render
-        Gdx.graphics.getGL20().glClearColor(1, 1, 1, 1);
+        Gdx.graphics.getGL20().glClearColor(0, 0, 0, 1);
         Gdx.graphics.getGL20().glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
         gameWrapper.render(delta);
@@ -134,6 +134,7 @@ public class GameScreen extends AbstractScreen {
 
     @Override
     public void resize(int width, int height) {
+        if (gameWrapper != null) gameWrapper.resize(width, height);
         if (gameUserInterface != null) gameUserInterface.resize(width, height);
         if (gamePad != null) gamePad.resize(width, height);
     }

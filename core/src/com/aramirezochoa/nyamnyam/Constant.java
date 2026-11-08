@@ -19,6 +19,10 @@ public class Constant {
     public static final int GAME_CAMERA_TILES_WIDTH = 15;
     public static final float GAME_CAMERA_WIDTH = TILE_SIZE * GAME_CAMERA_TILES_WIDTH;
     public static final float GAME_CAMERA_HEIGHT = GAME_CAMERA_WIDTH * SCREEN_HEIGHT / SCREEN_WIDTH;
+    public static final int GAMEPLAY_VIEWPORT_TILES_WIDTH = 15;
+    public static final int GAMEPLAY_VIEWPORT_TILES_HEIGHT = 20;
+    public static final float GAMEPLAY_VIEWPORT_WIDTH = TILE_SIZE * GAMEPLAY_VIEWPORT_TILES_WIDTH;
+    public static final float GAMEPLAY_VIEWPORT_HEIGHT = TILE_SIZE * GAMEPLAY_VIEWPORT_TILES_HEIGHT;
 
     // Game
     public static final Vector2 GRAVITY = new Vector2(0, -16.0f);

@@ -14,7 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.SnapshotArray;
-import com.badlogic.gdx.utils.viewport.StretchViewport;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.aramirezochoa.nyamnyam.Constant;
 import com.aramirezochoa.nyamnyam.activity.ActivityManager;
 import com.aramirezochoa.nyamnyam.i18n.LanguageManager;
@@ -50,7 +50,7 @@ public class GameUserInterface implements GameScreen.GameScreenComponent, GameSt
     private String fourthMessage = "";
 
     public GameUserInterface(MediaManager mediaManager) {
-        this.stage = new Stage(new StretchViewport(Constant.SCREEN_WIDTH, Constant.SCREEN_HEIGHT));
+        this.stage = new Stage(new ExtendViewport(Constant.SCREEN_WIDTH, Constant.SCREEN_HEIGHT));
         bar = ((TextureAtlas) mediaManager.get("data/game/gui.atlas")).findRegion("BAR");
         loadFonts(mediaManager);
         loadButtons((TextureAtlas) mediaManager.get("data/game/gui.atlas"));
@@ -224,21 +224,23 @@ public class GameUserInterface implements GameScreen.GameScreenComponent, GameSt
 
     @Override
     public void render(float deltaTime) {
+        float worldWidth = stage.getViewport().getWorldWidth();
+        float worldHeight = stage.getViewport().getWorldHeight();
         Color color = stage.getBatch().getColor();
         stage.getBatch().setColor(color.r, color.g, color.b, 1);
         stage.getBatch().begin();
-        stage.getBatch().draw(bar, 0, 0);
-        float hudWidth = Constant.SCREEN_WIDTH - 120;
+        stage.getBatch().draw(bar, (worldWidth - bar.getRegionWidth()) / 2f, worldHeight - bar.getRegionHeight());
+        float hudWidth = worldWidth - 120;
         float columnWidth = hudWidth / 3;
-        float firstRowY = Constant.SCREEN_HEIGHT - 16;
-        float secondRowY = Constant.SCREEN_HEIGHT - 42;
+        float firstRowY = worldHeight - 16;
+        float secondRowY = worldHeight - 42;
         barFont.draw(stage.getBatch(), LanguageManager.INSTANCE.getString("level") + ": " + level,
-                0, firstRowY, columnWidth, Align.center, false);
+                (worldWidth - hudWidth) / 2f, firstRowY, columnWidth, Align.center, false);
         barFont.draw(stage.getBatch(), LanguageManager.INSTANCE.getString("lives") + ": " + lives,
-                columnWidth, firstRowY, columnWidth, Align.center, false);
+                (worldWidth - hudWidth) / 2f + columnWidth, firstRowY, columnWidth, Align.center, false);
         barFont.draw(stage.getBatch(), LanguageManager.INSTANCE.getString("score") + ": " + score,
-                columnWidth * 2, firstRowY, columnWidth, Align.center, false);
-        barFont.draw(stage.getBatch(), fourthMessage, 0, secondRowY, hudWidth, Align.center, false);
+                (worldWidth - hudWidth) / 2f + columnWidth * 2, firstRowY, columnWidth, Align.center, false);
+        barFont.draw(stage.getBatch(), fourthMessage, (worldWidth - hudWidth) / 2f, secondRowY, hudWidth, Align.center, false);
         for (VolatileMessage message : messages) {
             message.getFont().draw(stage.getBatch(), message.message, message.x, message.y);
         }

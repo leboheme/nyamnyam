@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.aramirezochoa.nyamnyam.Constant;
 import com.aramirezochoa.nyamnyam.media.MediaManager;
 import com.aramirezochoa.nyamnyam.screen.game.GameScreen;
@@ -25,11 +26,14 @@ public class GamePad extends InputAdapter implements GameScreen.GameScreenCompon
     public Button leftButton, rightButton, fireButton, jumpButton;
     private SpriteBatch batch;
     private OrthographicCamera camera;
+    private ExtendViewport viewport;
     private Vector3 coords = new Vector3();
 
     public GamePad(MediaManager mediaManager, final GameWrapper gameWrapper) {
         this.batch = new SpriteBatch();
         this.camera = new OrthographicCamera(Constant.SCREEN_WIDTH, Constant.SCREEN_HEIGHT);
+        this.viewport = new ExtendViewport(Constant.SCREEN_WIDTH, Constant.SCREEN_HEIGHT, camera);
+        this.viewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
         this.camera.setToOrtho(false, Constant.SCREEN_WIDTH, Constant.SCREEN_HEIGHT);
         this.camera.update();
         this.batch.setProjectionMatrix(camera.combined);
@@ -76,6 +80,7 @@ public class GamePad extends InputAdapter implements GameScreen.GameScreenCompon
 
     @Override
     public void render(float deltaTime) {
+        viewport.apply();
         leftButton.render(batch);
         rightButton.render(batch);
         fireButton.render(batch);
@@ -88,9 +93,7 @@ public class GamePad extends InputAdapter implements GameScreen.GameScreenCompon
     }
 
     public void resize(int width, int height) {
-        camera.viewportWidth = Constant.SCREEN_WIDTH;
-        camera.viewportHeight = Constant.SCREEN_HEIGHT;
-        camera.update();
+        viewport.update(width, height, true);
         batch.setProjectionMatrix(camera.combined);
     }
 
@@ -118,7 +121,7 @@ public class GamePad extends InputAdapter implements GameScreen.GameScreenCompon
     private void checkCoordinates(int screenX, int screenY, int pointer) {
         coords.x = screenX;
         coords.y = screenY;
-        camera.unproject(coords);
+        viewport.unproject(coords);
         checkButton(leftButton, coords.x, coords.y, pointer);
         checkButton(rightButton, coords.x, coords.y, pointer);
         checkButton(fireButton, coords.x, coords.y, pointer);

@@ -19,13 +19,13 @@ public class KeyboardInputProcessor implements InputProcessor {
     @Override
     public boolean keyDown(int keycode) {
         switch (keycode) {
-            case Input.Keys.LEFT:
+            case Input.Keys.A:
                 mainAvatar.left();
                 break;
-            case Input.Keys.RIGHT:
+            case Input.Keys.D:
                 mainAvatar.right();
                 break;
-            case Input.Keys.UP:
+            case Input.Keys.W:
                 mainAvatar.jump();
                 break;
             case Input.Keys.SPACE:

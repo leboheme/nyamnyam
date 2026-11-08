@@ -40,6 +40,7 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.SnapshotArray;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 
 /**
  * Created by boheme on 13/01/15.
@@ -50,6 +51,7 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     private final GameUserInterface gameUserInterface;
     private SpriteBatch batch;
     private OrthographicCamera camera;
+    private FitViewport viewport;
 
     private TiledMap map;
     private OrthogonalTiledMapRenderer mapRenderer;
@@ -86,8 +88,10 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
         this.gameUserInterface = gameUserInterface;
         this.mediaManager = mediaManager;
         this.batch = new SpriteBatch();
-        this.camera = new OrthographicCamera(Constant.GAME_CAMERA_WIDTH, Constant.GAME_CAMERA_HEIGHT);
-        this.camera.setToOrtho(false, Constant.GAME_CAMERA_WIDTH, Constant.GAME_CAMERA_HEIGHT);
+        this.camera = new OrthographicCamera(Constant.GAMEPLAY_VIEWPORT_WIDTH, Constant.GAMEPLAY_VIEWPORT_HEIGHT);
+        this.viewport = new FitViewport(Constant.GAMEPLAY_VIEWPORT_WIDTH, Constant.GAMEPLAY_VIEWPORT_HEIGHT, camera);
+        this.viewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
+        this.camera.setToOrtho(false, Constant.GAMEPLAY_VIEWPORT_WIDTH, Constant.GAMEPLAY_VIEWPORT_HEIGHT);
         this.camera.update();
         this.batch.setProjectionMatrix(camera.combined);
 
@@ -220,13 +224,13 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
 
     private void checkKeyboardInput() {
 
-        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+        if (Gdx.input.isKeyPressed(Input.Keys.A)) {
             mainAvatar.left();
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+        if (Gdx.input.isKeyPressed(Input.Keys.D)) {
             mainAvatar.right();
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
+        if (Gdx.input.isKeyPressed(Input.Keys.W)) {
             mainAvatar.jump();
         }
         if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
@@ -239,6 +243,7 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
 
     @Override
     public void render(float deltaTime) {
+        viewport.apply();
         camera.update();
         batch.setProjectionMatrix(camera.combined);
         debugRenderer.setProjectionMatrix(camera.combined);
@@ -266,6 +271,10 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
         if (dark != null) {
             dark.render(batch);
         }
+    }
+
+    public void resize(int width, int height) {
+        viewport.update(width, height, true);
     }
 
     @Override

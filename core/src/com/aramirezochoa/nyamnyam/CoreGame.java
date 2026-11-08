@@ -23,10 +23,9 @@ public class CoreGame extends Game {
 //        Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
 
         Gdx.input.setCatchKey(Input.Keys.SPACE, true);
-        Gdx.input.setCatchKey(Input.Keys.UP, true);
-        Gdx.input.setCatchKey(Input.Keys.DOWN, true);
-        Gdx.input.setCatchKey(Input.Keys.LEFT, true);
-        Gdx.input.setCatchKey(Input.Keys.RIGHT, true);
+        Gdx.input.setCatchKey(Input.Keys.W, true);
+        Gdx.input.setCatchKey(Input.Keys.A, true);
+        Gdx.input.setCatchKey(Input.Keys.D, true);
         Gdx.input.setCatchKey(Input.Keys.TAB, true);
 
         ActivityManager.INSTANCE.init(application);
