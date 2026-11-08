@@ -8,7 +8,7 @@
   <property name="specialAir" value="AIR_SPIKES" />
  </properties>
  <tileset firstgid="1" name="tiles" tilewidth="16" tileheight="16" tilecount="256" columns="16">
-  <image source="../../../assets/data/stages/tiles.png" width="256" height="256" />
+  <image source="tiles.png" width="256" height="256" />
   <tile id="0">
    <properties>
     <property name="type" value="TOP" />
@@ -76,7 +76,7 @@
   </tile>
  </tileset>
  <tileset firstgid="257" name="entities" tilewidth="32" tileheight="32" tilecount="64" columns="8">
-  <image source="../../../assets/data/stages/entities.png" width="256" height="256" />
+  <image source="entities.png" width="256" height="256" />
  </tileset>
  <layer id="1" name="ground" width="20" height="25">
   <data encoding="base64">
