@@ -3,7 +3,6 @@ package com.aramirezochoa.nyamnyam.screen.game.gui;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -36,7 +35,6 @@ public class GameUserInterface implements GameScreen.GameScreenComponent, GameSt
     private Table inGameTable, pauseTable, winTable, loseTable;
     private Window confirmWindow;
 
-    private final TextureRegion bar;
     private BitmapFont barFont;
 
     private BitmapFont messageFont, bigMessageFont;
@@ -49,9 +47,8 @@ public class GameUserInterface implements GameScreen.GameScreenComponent, GameSt
     };
     private String fourthMessage = "";
 
-    public GameUserInterface(MediaManager mediaManager) {
-        this.stage = new Stage(new ExtendViewport(Constant.SCREEN_WIDTH, Constant.SCREEN_HEIGHT));
-        bar = ((TextureAtlas) mediaManager.get("data/game/gui.atlas")).findRegion("BAR");
+    public GameUserInterface(MediaManager mediaManager, ExtendViewport viewport) {
+        this.stage = new Stage(viewport);
         loadFonts(mediaManager);
         loadButtons((TextureAtlas) mediaManager.get("data/game/gui.atlas"));
     }
@@ -224,12 +221,12 @@ public class GameUserInterface implements GameScreen.GameScreenComponent, GameSt
 
     @Override
     public void render(float deltaTime) {
+        stage.getViewport().apply();
         float worldWidth = stage.getViewport().getWorldWidth();
         float worldHeight = stage.getViewport().getWorldHeight();
         Color color = stage.getBatch().getColor();
         stage.getBatch().setColor(color.r, color.g, color.b, 1);
         stage.getBatch().begin();
-        stage.getBatch().draw(bar, (worldWidth - bar.getRegionWidth()) / 2f, worldHeight - bar.getRegionHeight());
         float hudWidth = worldWidth - 120;
         float columnWidth = hudWidth / 3;
         float firstRowY = worldHeight - 16;
@@ -298,8 +295,12 @@ public class GameUserInterface implements GameScreen.GameScreenComponent, GameSt
         return stage;
     }
 
-    public void resize(int width, int height) {
-        stage.getViewport().update(width, height, true);
+    public void resize() {
+        inGameTable.invalidateHierarchy();
+        pauseTable.invalidateHierarchy();
+        winTable.invalidateHierarchy();
+        loseTable.invalidateHierarchy();
+        confirmWindow.invalidateHierarchy();
     }
 
     private class VolatileMessage implements Pool.Poolable {

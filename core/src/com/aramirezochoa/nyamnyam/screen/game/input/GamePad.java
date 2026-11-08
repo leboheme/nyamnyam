@@ -26,16 +26,13 @@ public class GamePad extends InputAdapter implements GameScreen.GameScreenCompon
     public Button leftButton, rightButton, fireButton, jumpButton;
     private SpriteBatch batch;
     private OrthographicCamera camera;
-    private ExtendViewport viewport;
+    private final ExtendViewport viewport;
     private Vector3 coords = new Vector3();
 
-    public GamePad(MediaManager mediaManager, final GameWrapper gameWrapper) {
+    public GamePad(MediaManager mediaManager, final GameWrapper gameWrapper, ExtendViewport viewport) {
         this.batch = new SpriteBatch();
-        this.camera = new OrthographicCamera(Constant.SCREEN_WIDTH, Constant.SCREEN_HEIGHT);
-        this.viewport = new ExtendViewport(Constant.SCREEN_WIDTH, Constant.SCREEN_HEIGHT, camera);
-        this.viewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
-        this.camera.setToOrtho(false, Constant.SCREEN_WIDTH, Constant.SCREEN_HEIGHT);
-        this.camera.update();
+        this.viewport = viewport;
+        this.camera = (OrthographicCamera) viewport.getCamera();
         this.batch.setProjectionMatrix(camera.combined);
 
         // Buttons
@@ -92,8 +89,10 @@ public class GamePad extends InputAdapter implements GameScreen.GameScreenCompon
         batch.dispose();
     }
 
-    public void resize(int width, int height) {
-        viewport.update(width, height, true);
+    public void layoutControls() {
+        float rightOffset = viewport.getWorldWidth() - Constant.SCREEN_WIDTH;
+        fireButton.setPosition(176 + rightOffset, 8);
+        jumpButton.setPosition(264 + rightOffset, 8);
         batch.setProjectionMatrix(camera.combined);
     }
 
@@ -135,11 +134,11 @@ public class GamePad extends InputAdapter implements GameScreen.GameScreenCompon
         }
     }
 
-    private static abstract class Button {
+    private abstract class Button {
 
         private final TextureRegion textureButtonUp, textureButtonDown;
         private TextureRegion currentFrame;
-        private final float x, y;
+        private float x, y;
         private boolean pressed;
         private final Rectangle box = new Rectangle();
         private int pointer;
@@ -168,7 +167,7 @@ public class GamePad extends InputAdapter implements GameScreen.GameScreenCompon
             }
             coords.x = Gdx.input.getX(pointer);
             coords.y = Gdx.input.getY(pointer);
-            camera.unproject(coords);
+            viewport.unproject(coords);
             if (!Gdx.input.isTouched(pointer) || !contains(coords.x, coords.y)) {
                 setPressed(false);
             }
@@ -201,6 +200,12 @@ public class GamePad extends InputAdapter implements GameScreen.GameScreenCompon
 
         public void setPointer(int pointer) {
             this.pointer = pointer;
+        }
+
+        public void setPosition(float x, float y) {
+            this.x = x;
+            this.y = y;
+            box.setPosition(x - ((box.width - textureButtonUp.getRegionWidth()) / 2f), y);
         }
     }
 

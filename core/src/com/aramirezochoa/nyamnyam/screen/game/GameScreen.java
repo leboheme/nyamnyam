@@ -18,6 +18,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 
 /**
  * Created by boheme on 13/01/15.
@@ -27,6 +28,7 @@ public class GameScreen extends AbstractScreen {
     private GameWrapper gameWrapper;
     private GameUserInterface gameUserInterface;
     private GamePad gamePad;
+    private ExtendViewport hudViewport;
 
     public GameScreen() {
         super(MediaManager.GAME);
@@ -36,13 +38,16 @@ public class GameScreen extends AbstractScreen {
     public void show() {
         GameStatus gameStatus = DataManager.INSTANCE.getGameStatus();
 
-        gameUserInterface = new GameUserInterface(getMediaManager());
+        hudViewport = new ExtendViewport(Constant.SCREEN_WIDTH, Constant.SCREEN_HEIGHT);
+        hudViewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
+        gameUserInterface = new GameUserInterface(getMediaManager(), hudViewport);
         gameStatus.addListener(gameUserInterface);
 
         gameWrapper = new GameWrapper(getMediaManager(), gameStatus, gameUserInterface);
         gameStatus.addListener(gameWrapper);
 
-        gamePad = new GamePad(getMediaManager(), gameWrapper);
+        gamePad = new GamePad(getMediaManager(), gameWrapper, hudViewport);
+        gamePad.layoutControls();
 
         InputMultiplexer im = new InputMultiplexer();
         im.addProcessor(new InputAdapter());
@@ -135,8 +140,9 @@ public class GameScreen extends AbstractScreen {
     @Override
     public void resize(int width, int height) {
         if (gameWrapper != null) gameWrapper.resize(width, height);
-        if (gameUserInterface != null) gameUserInterface.resize(width, height);
-        if (gamePad != null) gamePad.resize(width, height);
+        if (hudViewport != null) hudViewport.update(width, height, true);
+        if (gameUserInterface != null) gameUserInterface.resize();
+        if (gamePad != null) gamePad.layoutControls();
     }
 
     @Override
