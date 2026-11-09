@@ -33,16 +33,9 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.maps.MapObject;
-import com.badlogic.gdx.maps.objects.PolylineMapObject;
-import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
-import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
-import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.viewport.FitViewport;
 
 /**
  * Created by boheme on 13/01/15.
@@ -52,12 +45,10 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     private final MediaManager mediaManager;
     private final GameUserInterface gameUserInterface;
     private SpriteBatch batch;
-    private OrthographicCamera camera;
-    private FitViewport viewport;
+    private final GameplayCamera gameplayCamera;
     public static ShapeRenderer debugRenderer;
 
-    private TiledMap map;
-    private OrthogonalTiledMapRenderer mapRenderer;
+    private TmxStage tmxStage;
     private final RoomDebugRenderer roomDebugRenderer;
     private final RunState runState;
     private final EntityWorld entityWorld = new EntityWorld();
@@ -70,18 +61,13 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     private TextureAtlas textureAtlas;
     private float loadMealTimer, loadAirTimer;
     private boolean loadMealFinished, guidedAir, specialAir, extraMeal;
-    private int automaticAirMode;
+    private int automaticAirMode, mealSpawnIndex;
     private float winCounter;
     public Array<Constant.Coordinates> leftGuide = new Array<Constant.Coordinates>(true, 6);
     public Array<Constant.Coordinates> rightGuide = new Array<Constant.Coordinates>(true, 6);
 
     public static boolean debug;
     private boolean bossLevel;
-
-    private static final String MEAL_LAYER = "meals";
-    private static final String LEFT = "left";
-    private static final String RIGHT = "right";
-    private static final String PATH = "path";
 
     private float levelDarkTimer, levelHurryTimer;
     private boolean noMoreEnemies, hurryAdvised;
@@ -93,17 +79,13 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
         this.runState = runState;
         this.roomDebugRenderer = new RoomDebugRenderer();
         this.batch = new SpriteBatch();
-        this.camera = new OrthographicCamera(Constant.GAMEPLAY_VIEWPORT_WIDTH, Constant.GAMEPLAY_VIEWPORT_HEIGHT);
-        this.viewport = new FitViewport(Constant.GAMEPLAY_VIEWPORT_WIDTH, Constant.GAMEPLAY_VIEWPORT_HEIGHT, camera);
-        this.viewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
-        this.camera.setToOrtho(false, Constant.GAMEPLAY_VIEWPORT_WIDTH, Constant.GAMEPLAY_VIEWPORT_HEIGHT);
-        this.camera.update();
-        this.batch.setProjectionMatrix(camera.combined);
+        this.gameplayCamera = new GameplayCamera();
+        this.batch.setProjectionMatrix(gameplayCamera.getCamera().combined);
 
         this.textureAtlas = mediaManager.get("data/game/game.atlas");
 
         this.debugRenderer = new ShapeRenderer();
-        this.debugRenderer.setProjectionMatrix(camera.combined);
+        this.debugRenderer.setProjectionMatrix(gameplayCamera.getCamera().combined);
         this.debug = false;
     }
 
@@ -120,6 +102,7 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
 
         loadMealTimer = Constant.MEAL_SPAWN_DELAY;
         loadMealFinished = false;
+        mealSpawnIndex = 0;
         extraMeal = false;
         specialAir = true;
 
@@ -240,18 +223,17 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
 
     @Override
     public void render(float deltaTime) {
-        viewport.apply();
-        camera.update();
+        gameplayCamera.apply();
+        OrthographicCamera camera = gameplayCamera.getCamera();
         batch.setProjectionMatrix(camera.combined);
         debugRenderer.setProjectionMatrix(camera.combined);
-        mapRenderer.setView(camera);
 
         batch.begin();
         batch.draw(background, camera.position.x - camera.viewportWidth / 2,
                 camera.position.y - camera.viewportHeight / 2);
         batch.end();
 
-        mapRenderer.render();
+        tmxStage.render(camera);
         if (showRoomPreview && runState.getCurrentRoom() != null) {
             roomDebugRenderer.render(runState.getCurrentRoom(), camera.combined);
         }
@@ -263,7 +245,7 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     }
 
     public void resize(int width, int height) {
-        viewport.update(width, height, true);
+        gameplayCamera.resize(width, height);
     }
 
     @Override
@@ -271,8 +253,9 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
         debugRenderer.dispose();
         roomDebugRenderer.dispose();
         batch.dispose();
-        map.dispose();
-        mapRenderer.dispose();
+        if (tmxStage != null) {
+            tmxStage.dispose();
+        }
         cleanEntities();
     }
 
@@ -288,67 +271,48 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     }
 
     private void loadMap(int levelNumber) {
-        map = MediaManager.GAME.loadMap("data/stages/" + levelNumber + ".tmx");
+        if (tmxStage != null) {
+            tmxStage.dispose();
+        }
+        tmxStage = new TmxStage(MediaManager.GAME.loadMap("data/stages/" + levelNumber + ".tmx"));
         showRoomPreview = false;
-        bossLevel = Boolean.parseBoolean((String) map.getProperties().get("bossLevel"));
-        mapRenderer = new OrthogonalTiledMapRenderer(map, 1);
-        mapRenderer.setView(camera);
+        bossLevel = tmxStage.isBossLevel();
     }
 
     private void updateCamera() {
-        if (mainAvatar == null || map == null) {
+        if (mainAvatar == null || tmxStage == null) {
             return;
         }
 
-        TiledMapTileLayer ground = (TiledMapTileLayer) map.getLayers().get("ground");
-        float mapWidth = ground.getWidth() * ground.getTileWidth();
-        float mapHeight = ground.getHeight() * ground.getTileHeight();
-        float halfWidth = camera.viewportWidth / 2;
-        float halfHeight = camera.viewportHeight / 2;
         float targetX = mainAvatar.position.x + mainAvatar.dimension.x / 2;
         float targetY = mainAvatar.position.y + mainAvatar.dimension.y / 2;
-
-        camera.position.set(
-                mapWidth <= camera.viewportWidth ? mapWidth / 2 : MathUtils.clamp(targetX, halfWidth, mapWidth - halfWidth),
-                mapHeight <= camera.viewportHeight ? mapHeight / 2 : MathUtils.clamp(targetY, halfHeight, mapHeight - halfHeight),
-                0);
-        camera.update();
+        gameplayCamera.follow(targetX, targetY, tmxStage.getWorldWidth(), tmxStage.getWorldHeight());
     }
 
     private void loadEnemies() {
-        for (MapObject mapObject : map.getLayers().get("enemies").getObjects()) {
-            try {
-                EnemyType entityType = EnemyType.valueOf(mapObject.getName());
-                DirectionType lookingAt = Boolean.parseBoolean((String) mapObject.getProperties().get("type")) ? DirectionType.LEFT : DirectionType.RIGHT;
-                float posX = mapObject instanceof RectangleMapObject ? ((RectangleMapObject) mapObject).getRectangle().x : ((TiledMapTileMapObject) mapObject).getX();
-                float posY = mapObject instanceof RectangleMapObject ? ((RectangleMapObject) mapObject).getRectangle().y : ((TiledMapTileMapObject) mapObject).getY();
-                Enemy enemy = EntityFactory.enemy(entityType, posX, posY, lookingAt, this);
-                if (bossLevel && enemy.isBoss()) {
-                    ((Boss) enemy).setBoostType(MealType.valueOf((String) map.getProperties().get("bossBoost")));
-                }
-                entityWorld.addEnemy(enemy);
-            } catch (Exception e) {
-                Gdx.app.error("Game", "Error parsing enemy value", e);
+        for (TmxStage.EnemySpawn spawn : tmxStage.getEnemySpawns()) {
+            Enemy enemy = EntityFactory.enemy(spawn.getType(), spawn.getX(), spawn.getY(), spawn.getFacing(), this);
+            if (spawn.getBossBoost() != null) {
+                ((Boss) enemy).setBoostType(spawn.getBossBoost());
             }
+            entityWorld.addEnemy(enemy);
         }
     }
 
     private void checkSpawnMeals(float deltaTime) {
         if (!loadMealFinished && loadMealTimer < 0) {
-            if (map.getLayers().get(MEAL_LAYER).getObjects().getCount() > 0) {
-                MapObject mapObject = map.getLayers().get(MEAL_LAYER).getObjects().get(0);
-                MealType mealType = MealType.parseMeal(mapObject.getName());
-                float posX = mapObject instanceof RectangleMapObject ? ((RectangleMapObject) mapObject).getRectangle().x : ((TiledMapTileMapObject) mapObject).getX();
-                float posY = mapObject instanceof RectangleMapObject ? ((RectangleMapObject) mapObject).getRectangle().y : ((TiledMapTileMapObject) mapObject).getY();
+            if (mealSpawnIndex < tmxStage.getMealSpawns().size) {
+                TmxStage.MealSpawn spawn = tmxStage.getMealSpawns().get(mealSpawnIndex);
+                MealType mealType = spawn.getType() == null ? MealType.randomFruit() : spawn.getType();
                 if (mealType.isBoost()) {
-                    entityWorld.addMeal(EntityFactory.boost(posX, posY, mealType, this, true));
+                    entityWorld.addMeal(EntityFactory.boost(spawn.getX(), spawn.getY(), mealType, this, true));
                 } else {
-                    entityWorld.addMeal(EntityFactory.fruit(posX, posY, mealType, this));
+                    entityWorld.addMeal(EntityFactory.fruit(spawn.getX(), spawn.getY(), mealType, this));
                 }
-                map.getLayers().get(MEAL_LAYER).getObjects().remove(0);
+                mealSpawnIndex++;
                 loadMealTimer = Constant.MEAL_SPAWN_DELAY;
 
-                if (map.getLayers().get(MEAL_LAYER).getObjects().getCount() == 0) {
+                if (mealSpawnIndex == tmxStage.getMealSpawns().size) {
                     loadMealFinished = true;
                 }
             }
@@ -364,7 +328,7 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
                 if (!specialAir) {
                     mealType = MealType.AIR;
                 } else {
-                    mealType = MealType.parseAir((String) map.getProperties().get("specialAir"));
+                    mealType = tmxStage.getAirSettings().getSpecialAir();
                 }
                 switch (mealType) {
                     case AIR:
@@ -400,33 +364,15 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     }
 
     private void loadAir() {
-        guidedAir = Boolean.parseBoolean((String) map.getProperties().get("guidedAir"))
-                || (Boolean.parseBoolean((String) map.getProperties().get("extraAir"))
-                && !mainAvatar.isAirSkilled());
+        TmxStage.AirSettings airSettings = tmxStage.getAirSettings();
+        guidedAir = airSettings.isGuided() || (airSettings.hasExtraAir() && !mainAvatar.isAirSkilled());
         if (guidedAir) {
-            loadGuide(LEFT, leftGuide);
-            loadGuide(RIGHT, rightGuide);
+            leftGuide.addAll(airSettings.getLeftGuide());
+            rightGuide.addAll(airSettings.getRightGuide());
 
             loadAirTimer = Constant.AIR_SPAWN_RATE;
         }
-        try {
-            automaticAirMode = Integer.valueOf(((String) map.getProperties().get("automaticAirMode")));
-        } catch (NumberFormatException e) {
-            automaticAirMode = 0;
-        }
-    }
-
-    private void loadGuide(String id, Array<Constant.Coordinates> guide) {
-        if (map.getLayers().get(PATH).getObjects().get(id) != null) {
-            float[] vertices = ((PolylineMapObject) map.getLayers().get(PATH).getObjects().get(id)).getPolyline().getVertices();
-            float origX = ((PolylineMapObject) map.getLayers().get(PATH).getObjects().get(id)).getPolyline().getX();
-            float origY = ((PolylineMapObject) map.getLayers().get(PATH).getObjects().get(id)).getPolyline().getY();
-            int i = 0;
-            while (i < vertices.length) {
-                guide.add(new Constant.Coordinates(origX + vertices[i], origY + vertices[i + 1]));
-                i += 2;
-            }
-        }
+        automaticAirMode = airSettings.getAutomaticMode();
     }
 
     public void addEnemy(Enemy enemy) {
@@ -454,7 +400,7 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     }
 
     public TiledMap getMap() {
-        return map;
+        return tmxStage == null ? null : tmxStage.getMap();
     }
 
     public void mainAvatarDead() {
