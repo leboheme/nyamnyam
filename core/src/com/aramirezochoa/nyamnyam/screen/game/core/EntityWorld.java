@@ -2,6 +2,7 @@ package com.aramirezochoa.nyamnyam.screen.game.core;
 
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.Avatar;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.enemy.Enemy;
+import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.main.MainAvatar;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.Meal;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.Projectile;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -14,6 +15,24 @@ public class EntityWorld {
     private final SnapshotArray<Meal> food = new SnapshotArray(true, 4, Meal.class);
     private final SnapshotArray<Projectile> projectiles = new SnapshotArray(true, 4, Projectile.class);
     private final SnapshotArray<Avatar> pets = new SnapshotArray(true, 4, Avatar.class);
+    private MainAvatar mainAvatar;
+    private Enemy dark;
+
+    public MainAvatar getMainAvatar() {
+        return mainAvatar;
+    }
+
+    public void setMainAvatar(MainAvatar mainAvatar) {
+        this.mainAvatar = mainAvatar;
+    }
+
+    public Enemy getDark() {
+        return dark;
+    }
+
+    public void setDark(Enemy dark) {
+        this.dark = dark;
+    }
 
     public SnapshotArray<Enemy> getEnemies() {
         return enemies;
@@ -64,6 +83,9 @@ public class EntityWorld {
     }
 
     public void update(float deltaTime) {
+        if (mainAvatar != null) {
+            mainAvatar.update(deltaTime);
+        }
         for (int i = 0; i < enemies.size; i++) {
             enemies.get(i).update(deltaTime);
         }
@@ -91,6 +113,12 @@ public class EntityWorld {
         for (int i = 0; i < enemies.size; i++) {
             enemies.get(i).render(batch);
         }
+        if (mainAvatar != null) {
+            mainAvatar.render(batch);
+        }
+        if (dark != null) {
+            dark.render(batch);
+        }
     }
 
     public boolean hasEnemies() {
@@ -114,5 +142,9 @@ public class EntityWorld {
             pets.get(i).free();
         }
         pets.clear();
+        if (dark != null) {
+            dark.free();
+            dark = null;
+        }
     }
 }

@@ -16,8 +16,8 @@ public class FollowEnemyState extends EnemyState {
         super.init();
         startX = getEnemy().position.x;
         startY = getEnemy().position.y;
-        endX = getEnemy().getParent().mainAvatar.position.x;
-        endY = getEnemy().getParent().mainAvatar.position.y;
+        endX = getEnemy().getParent().getEntityWorld().getMainAvatar().position.x;
+        endY = getEnemy().getParent().getEntityWorld().getMainAvatar().position.y;
         partialTime = 0;
         totalTime = Vector2.len(endX - startX, endY - startY) / 150;
         percent = 0;
@@ -35,7 +35,7 @@ public class FollowEnemyState extends EnemyState {
         getEnemy().position.x = startX + (endX - startX) * percent;
         getEnemy().position.y = startY + (endY - startY) * percent;
 
-        if (getEnemy().getParent().mainAvatar.position.x < getEnemy().position.x) {
+        if (getEnemy().getParent().getEntityWorld().getMainAvatar().position.x < getEnemy().position.x) {
             getEnemy().setLookingAt(DirectionType.LEFT);
         } else {
             getEnemy().setLookingAt(DirectionType.RIGHT);

@@ -32,9 +32,9 @@ public class ClimbEnemyState extends EnemyState {
     public boolean update(float deltaTime) {
         GameWrapperAssistant.updateEntity(getEnemy(), deltaTime, true);
 
-        if (getEnemy().getParent().mainAvatar.position.x + (getEnemy().getParent().mainAvatar.dimension.x / 2) < getEnemy().position.x) {
+        if (getEnemy().getParent().getEntityWorld().getMainAvatar().position.x + (getEnemy().getParent().getEntityWorld().getMainAvatar().dimension.x / 2) < getEnemy().position.x) {
             avatar.velocity.x = -getEnemy().getVelocity();
-        } else if (getEnemy().getParent().mainAvatar.position.x + (getEnemy().getParent().mainAvatar.dimension.x / 2) > getEnemy().position.x + getEnemy().dimension.x) {
+        } else if (getEnemy().getParent().getEntityWorld().getMainAvatar().position.x + (getEnemy().getParent().getEntityWorld().getMainAvatar().dimension.x / 2) > getEnemy().position.x + getEnemy().dimension.x) {
             avatar.velocity.x = getEnemy().getVelocity();
         } else {
             if (!firing && fireTimer < 0) {

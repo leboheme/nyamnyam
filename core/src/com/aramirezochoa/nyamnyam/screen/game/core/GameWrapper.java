@@ -54,8 +54,6 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     private final EntityWorld entityWorld = new EntityWorld();
     private boolean showRoomPreview;
 
-    public MainAvatar mainAvatar;
-    public Enemy dark;
     private GameStatus gameStatus;
     private TextureRegion background;
     private TextureAtlas textureAtlas;
@@ -120,7 +118,7 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
         gameUserInterface.showMessage("");
         levelDarkTimer = Constant.GAME_LEVEL_DARK_TIME;
         levelHurryTimer = Constant.GAME_LEVEL_HURRY_TIME;
-        dark = null;
+        entityWorld.setDark(null);
         noMoreEnemies = false;
         hurryAdvised = false;
     }
@@ -134,7 +132,6 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     public void update(float deltaTime) {
         checkKeyboardInput();
 
-        mainAvatar.update(deltaTime);
         entityWorld.update(deltaTime);
         updateCamera();
         checkSpawnMeals(deltaTime);
@@ -163,6 +160,7 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
                     }
                     extraMeal = true;
                 }
+                Enemy dark = entityWorld.getDark();
                 if (dark != null && dark.isEnabled()) {
                     dark.setCurrentState(EnemyStateFactory.explode(dark, false));
                 }
@@ -187,11 +185,11 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
                 levelHurryTimer -= deltaTime;
             }
             if (levelDarkTimer < 0) {
-                if (dark != null) {
-                    dark.update(deltaTime);
+                if (entityWorld.getDark() != null) {
+                    entityWorld.getDark().update(deltaTime);
                 } else if (!noMoreEnemies) {
                     getMediaManager().playSound(MediaManager.SOUND_DARK);
-                    dark = EntityFactory.enemy(EnemyType.DARK, Constant.DARK_SPAWN_POSITION.x, Constant.DARK_SPAWN_POSITION.y, DirectionType.RIGHT, this);
+                    entityWorld.setDark(EntityFactory.enemy(EnemyType.DARK, Constant.DARK_SPAWN_POSITION.x, Constant.DARK_SPAWN_POSITION.y, DirectionType.RIGHT, this));
                 }
             } else {
                 levelDarkTimer -= deltaTime;
@@ -202,16 +200,16 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     private void checkKeyboardInput() {
 
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-            mainAvatar.left();
+            entityWorld.getMainAvatar().left();
         }
         if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-            mainAvatar.right();
+            entityWorld.getMainAvatar().right();
         }
         if (Gdx.input.isKeyPressed(Input.Keys.W)) {
-            mainAvatar.jump();
+            entityWorld.getMainAvatar().jump();
         }
         if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
-            mainAvatar.fire();
+            entityWorld.getMainAvatar().fire();
         }
         if (Gdx.input.isKeyPressed(Input.Keys.F9)) {
             debug = !debug;
@@ -238,10 +236,6 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
             roomDebugRenderer.render(runState.getCurrentRoom(), camera.combined);
         }
         entityWorld.render(batch);
-        mainAvatar.render(batch);
-        if (dark != null) {
-            dark.render(batch);
-        }
     }
 
     public void resize(int width, int height) {
@@ -265,9 +259,6 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
         leftGuide.clear();
         rightGuide.clear();
 
-        if (dark != null) {
-            dark.free();
-        }
     }
 
     private void loadMap(int levelNumber) {
@@ -280,12 +271,12 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     }
 
     private void updateCamera() {
-        if (mainAvatar == null || tmxStage == null) {
+        if (entityWorld.getMainAvatar() == null || tmxStage == null) {
             return;
         }
 
-        float targetX = mainAvatar.position.x + mainAvatar.dimension.x / 2;
-        float targetY = mainAvatar.position.y + mainAvatar.dimension.y / 2;
+        float targetX = entityWorld.getMainAvatar().position.x + entityWorld.getMainAvatar().dimension.x / 2;
+        float targetY = entityWorld.getMainAvatar().position.y + entityWorld.getMainAvatar().dimension.y / 2;
         gameplayCamera.follow(targetX, targetY, tmxStage.getWorldWidth(), tmxStage.getWorldHeight());
     }
 
@@ -365,7 +356,7 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
 
     private void loadAir() {
         TmxStage.AirSettings airSettings = tmxStage.getAirSettings();
-        guidedAir = airSettings.isGuided() || (airSettings.hasExtraAir() && !mainAvatar.isAirSkilled());
+        guidedAir = airSettings.isGuided() || (airSettings.hasExtraAir() && !entityWorld.getMainAvatar().isAirSkilled());
         if (guidedAir) {
             leftGuide.addAll(airSettings.getLeftGuide());
             rightGuide.addAll(airSettings.getRightGuide());
@@ -405,8 +396,8 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
 
     public void mainAvatarDead() {
         initLevelTime();
-        if (dark != null) {
-            dark.setCurrentState(EnemyStateFactory.explode(dark, false));
+        if (entityWorld.getDark() != null) {
+            entityWorld.getDark().setCurrentState(EnemyStateFactory.explode(entityWorld.getDark(), false));
         }
         for (Enemy enemy : entityWorld.getEnemies()) {
             enemy.anger(false);
@@ -416,9 +407,9 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
 
     private void loadMainAvatar() {
         if (gameStatus.getLives() > 0) {
-            mainAvatar = EntityFactory.mainAvatar(DataManager.INSTANCE.getCurrentCharacter(), Constant.MAIN_AVATAR_SPAWN_POSITION.x, Constant.MAIN_AVATAR_SPAWN_POSITION.y, DirectionType.RIGHT, this);
+            entityWorld.setMainAvatar(EntityFactory.mainAvatar(DataManager.INSTANCE.getCurrentCharacter(), Constant.MAIN_AVATAR_SPAWN_POSITION.x, Constant.MAIN_AVATAR_SPAWN_POSITION.y, DirectionType.RIGHT, this));
         } else {
-            mainAvatar = EntityFactory.empty(this);
+            entityWorld.setMainAvatar(EntityFactory.empty(this));
         }
     }
 

@@ -45,7 +45,7 @@ public abstract class Boss extends Enemy {
             setCurrentState(EnemyStateFactory.explode(this, true));
             createFruits();
         } else {
-            if (!getParent().mainAvatar.isSpecialBusted() && !isBoostAlive()) {
+            if (!getParent().getEntityWorld().getMainAvatar().isSpecialBusted() && !isBoostAlive()) {
                 getParent().addMeal(EntityFactory.boost((Constant.SCREEN_WIDTH - boostType.getDimension().x) / 2,
                         Constant.SCREEN_HEIGHT + Constant.SCREEN_GAME_Y_OFFSET - boostType.getDimension().y, boostType, getParent(), false));
             }

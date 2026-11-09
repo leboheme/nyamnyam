@@ -28,7 +28,7 @@ public class DarkEnemy extends Enemy {
     @Override
     public void remove() {
         super.remove();
-        parent.dark = null;
+        parent.getEntityWorld().setDark(null);
     }
 
     @Override

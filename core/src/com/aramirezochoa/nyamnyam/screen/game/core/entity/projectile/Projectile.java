@@ -56,8 +56,8 @@ public class Projectile extends Entity {
                     }
                 }
             } else {
-                if (box.overlaps(getParent().mainAvatar.box)) {
-                    getParent().mainAvatar.hit();
+                if (box.overlaps(getParent().getEntityWorld().getMainAvatar().box)) {
+                    getParent().getEntityWorld().getMainAvatar().hit();
                 }
             }
         }
@@ -113,7 +113,7 @@ public class Projectile extends Entity {
     }
 
     public void transform() {
-        if (getParent().mainAvatar.isTornadoBoost()) {
+        if (getParent().getEntityWorld().getMainAvatar().isTornadoBoost()) {
             getParent().addMeal(EntityFactory.tornado(MealType.AIR_TORNADO, RaiseType.AUTOMATIC, position.x, position.y, getLookingAt(), getParent()));
         } else {
             getParent().addMeal(EntityFactory.air(MealType.AIR, RaiseType.AUTOMATIC, position.x, position.y, getLookingAt(), getParent()));

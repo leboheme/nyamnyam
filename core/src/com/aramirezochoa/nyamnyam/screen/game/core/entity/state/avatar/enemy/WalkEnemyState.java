@@ -34,13 +34,13 @@ public class WalkEnemyState extends EnemyState {
     public boolean update(float deltaTime) {
         GameWrapperAssistant.updateEntity(getEnemy(), deltaTime, false);
         if (timer < 0) {
-            if (avatar.getParent().mainAvatar.velocity.y == 0 && avatar.getParent().mainAvatar.position.y > avatar.position.y) {
+            if (avatar.getParent().getEntityWorld().getMainAvatar().velocity.y == 0 && avatar.getParent().getEntityWorld().getMainAvatar().position.y > avatar.position.y) {
                 avatar.setCurrentState(EnemyStateFactory.sequence(EnemyStateFactory.think(avatar, 0.5f), EnemyStateFactory.jump(getEnemy(), false)));
                 return false;
             }
             return true;
         }
-        if (avatar.getParent().mainAvatar.position.y == avatar.position.y) {
+        if (avatar.getParent().getEntityWorld().getMainAvatar().position.y == avatar.position.y) {
             if (!GameWrapperAssistant.isNextStepGrounded(getEnemy(), getEnemy().getParent().getMap())) {
                 if (avatar.velocity.y == 0) {
                     avatar.setCurrentState(EnemyStateFactory.jump(getEnemy(), true));

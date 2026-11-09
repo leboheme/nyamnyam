@@ -42,28 +42,28 @@ public class GamePad extends InputAdapter implements GameScreen.GameScreenCompon
         leftButton = new Button(atlas.findRegion("BUTTON", 0), atlas.findRegion("BUTTON", 1), 8, 8, camera, Constant.GAME_BUTTON_PAD_WIDTH, Constant.GAME_BUTTON_PAD_HEIGHT) {
             @Override
             public void execute() {
-                gameWrapper.mainAvatar.left();
+                gameWrapper.getEntityWorld().getMainAvatar().left();
             }
         };
         // Right button
         rightButton = new Button(atlas.findRegion("BUTTON", 0), atlas.findRegion("BUTTON", 1), 96, 8, camera, Constant.GAME_BUTTON_PAD_WIDTH, Constant.GAME_BUTTON_PAD_HEIGHT) {
             @Override
             public void execute() {
-                gameWrapper.mainAvatar.right();
+                gameWrapper.getEntityWorld().getMainAvatar().right();
             }
         };
         // Fire button
         fireButton = new Button(atlas.findRegion("BUTTON", 0), atlas.findRegion("BUTTON", 1), 176, 8, camera, Constant.GAME_BUTTON_PAD_WIDTH, Constant.GAME_BUTTON_PAD_HEIGHT) {
             @Override
             public void execute() {
-                gameWrapper.mainAvatar.fire();
+                gameWrapper.getEntityWorld().getMainAvatar().fire();
             }
         };
         // Jump button
         jumpButton = new Button(atlas.findRegion("BUTTON", 0), atlas.findRegion("BUTTON", 1), 264, 8, camera, Constant.GAME_BUTTON_PAD_WIDTH, Constant.GAME_BUTTON_PAD_HEIGHT) {
             @Override
             public void execute() {
-                gameWrapper.mainAvatar.jump();
+                gameWrapper.getEntityWorld().getMainAvatar().jump();
             }
         };
     }
