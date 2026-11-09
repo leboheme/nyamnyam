@@ -21,9 +21,9 @@ public class PetTflyAvatar extends PetAvatar {
 
     @Override
     protected void checkCollisions() {
-        for (int i = 0; i < getParent().enemies.size; i++) {
-            if (box.overlaps(getParent().enemies.get(i).box)) {
-                getParent().enemies.get(i).hit(false);
+        for (int i = 0; i < getParent().getEntityWorld().getEnemies().size; i++) {
+            if (box.overlaps(getParent().getEntityWorld().getEnemies().get(i).box)) {
+                getParent().getEntityWorld().getEnemies().get(i).hit(false);
             }
         }
     }

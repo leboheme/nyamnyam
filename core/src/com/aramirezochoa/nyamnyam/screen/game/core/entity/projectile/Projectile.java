@@ -46,7 +46,7 @@ public class Projectile extends Entity {
     protected void checkCollisions() {
         if (enabled) {
             if (friendly) {
-                for (Enemy enemy : getParent().enemies) {
+                for (Enemy enemy : getParent().getEntityWorld().getEnemies()) {
                     if (enemy.box.overlaps(box)) {
                         enemy.hit(transformToCandy);
                         if (!ProjectileType.SPIKE.equals(getType())) {
@@ -71,7 +71,7 @@ public class Projectile extends Entity {
     @Override
     public void remove() {
         super.remove();
-        parent.projectiles.removeValue(this, true);
+        parent.getEntityWorld().removeProjectile(this);
     }
 
     @Override

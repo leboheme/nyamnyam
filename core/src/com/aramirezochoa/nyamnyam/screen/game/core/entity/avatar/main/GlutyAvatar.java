@@ -112,16 +112,16 @@ public class GlutyAvatar extends MainAvatar {
     @Override
     protected void checkCollisions() {
         if (canPerformAction()) {
-            for (Meal meal : getParent().food) {
+            for (Meal meal : getParent().getEntityWorld().getFood()) {
                 if (meal.box.overlaps(box)) checkEdible(meal);
             }
-            for (int i = 0; i < getParent().enemies.size; i++) {
-                if (getParent().enemies.get(i).isEnabled()
-                        && box.overlaps(getParent().enemies.get(i).box)) {
-                    if (garlicBoost && getParent().enemies.get(i).isEdible()) {
-                        eat(getParent().enemies.get(i));
+            for (int i = 0; i < getParent().getEntityWorld().getEnemies().size; i++) {
+                if (getParent().getEntityWorld().getEnemies().get(i).isEnabled()
+                        && box.overlaps(getParent().getEntityWorld().getEnemies().get(i).box)) {
+                    if (garlicBoost && getParent().getEntityWorld().getEnemies().get(i).isEdible()) {
+                        eat(getParent().getEntityWorld().getEnemies().get(i));
                     } else if (firing) {
-                        getParent().enemies.get(i).hit(false);
+                        getParent().getEntityWorld().getEnemies().get(i).hit(false);
                     } else {
                         hit();
                     }

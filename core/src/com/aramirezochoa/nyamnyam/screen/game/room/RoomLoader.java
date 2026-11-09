@@ -58,4 +58,8 @@ public class RoomLoader {
 
         return new RoomInstance(config.width, config.height, config.tileSize, materials);
     }
+
+    public RoomInstance loadIfPresent(String internalPath) {
+        return Gdx.files.internal(internalPath).exists() ? load(internalPath) : null;
+    }
 }

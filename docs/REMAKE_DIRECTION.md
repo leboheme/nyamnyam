@@ -18,3 +18,52 @@ Haremos pruebas pequeñas antes de decidir cambios de diseño. Las líneas abier
 - Revisar el papel de Nyam, Gluty y Tfly.
 
 Estas exploraciones guían el remake, pero no forman parte de la primera versión hasta que una prueba justifique incorporarlas.
+
+## Arquitectura objetivo (borrador)
+
+Este dibujo expresa una dirección para experimentar, no un contrato que haya que implementar literalmente. La idea es que Tiled siga siendo una herramienta de edición y que el runtime use datos propios sin cargar TMX.
+
+```mermaid
+flowchart TD
+    subgraph Authoring["Autoría"]
+        Tiled["Tiled: room.tmx"] --> Compiler["Compilador de contenido"]
+        Compiler --> RoomJson["RoomConfig JSON"]
+        RunJson["RunConfig JSON<br/>floors, pools y pesos"]
+    end
+
+    subgraph Runtime["Runtime"]
+        Loader["Loaders LibGDX Json"]
+        RoomJson --> Loader
+        RunJson --> Loader
+        Loader --> Configs["Configuración tipada<br/>RoomConfig + RunConfig"]
+        Configs --> Factory["RunFactory<br/>selección reproducible con seed"]
+        Factory --> RunState["RunState"]
+        RunState --> FloorState["FloorState<br/>salas y conexiones"]
+        FloorState --> Room["RoomInstance<br/>material mutable y colisión cacheada<br/>layout y estado local"]
+        Room --> Actors["Entidades de la sala<br/>EnemyType / MealType"]
+
+        Wrapper["GameWrapper<br/>coordinador"] --> RunState
+        Wrapper --> Systems["Sistemas de gameplay<br/>movimiento, combate, spawns y transiciones"]
+        Systems --> Room
+        Systems --> Actors
+        Renderer["Renderers"] --> Room
+        Renderer --> Actors
+        Status["GameStatus<br/>vidas, score y estado"] --> Wrapper
+    end
+```
+
+### Responsabilidades orientativas
+
+- `RoomConfig` describe geometría, materiales, propiedades de sala y alternativas de layout. Cada layout combina enemigos y comidas.
+- `RunConfig` describe floors, candidatos de salas, pesos de selección, pools de contenido y temas visuales.
+- Los loaders convierten los JSON en datos Java tipados. Los enums representan conceptos cerrados del juego, como materiales, enemigos, comidas y tipos de conexión. Los nombres de archivo localizan contenido editable.
+- `RunFactory` crea una run con una semilla. Las selecciones usan el mismo generador aleatorio para poder reproducir una run durante depuración.
+- `RunState` conserva el estado que cambia durante la partida: semilla, floor actual, conexiones y sala activa.
+- `RoomInstance` copia solo los datos que necesita para jugar. Conserva la cuadrícula mutable, la colisión derivada y el estado local; no guarda el `RoomConfig` original.
+- `GameWrapper` coordina sistemas y render, mientras el estado de la run y de la sala vive en sus propios objetos.
+
+`GameStatus` ya gestiona vidas, puntuación y estados del juego. Su relación futura con el progreso de `RunState` queda abierta hasta decidir cómo funcionan las runs y la persistencia.
+
+### Paso actual
+
+La partida todavía usa TMX para jugar. `GameScreen` mantiene un `RunState` con una sala JSON opcional; `GameWrapper` puede mostrarla con F10 sobre el TMX. Esto permite comparar los datos en paralelo antes de migrar render, colisiones y entidades.

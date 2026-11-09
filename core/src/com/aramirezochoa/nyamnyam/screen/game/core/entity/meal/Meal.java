@@ -80,7 +80,7 @@ public abstract class Meal extends Entity {
     @Override
     public void remove() {
         super.remove();
-        parent.food.removeValue(this, true);
+        parent.getEntityWorld().removeMeal(this);
     }
 
 }

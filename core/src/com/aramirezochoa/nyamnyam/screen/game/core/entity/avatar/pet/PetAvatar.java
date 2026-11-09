@@ -15,7 +15,7 @@ public abstract class PetAvatar extends Avatar {
     @Override
     public void remove() {
         super.remove();
-        parent.pets.removeValue(this, true);
+        parent.getEntityWorld().removePet(this);
     }
 
 }

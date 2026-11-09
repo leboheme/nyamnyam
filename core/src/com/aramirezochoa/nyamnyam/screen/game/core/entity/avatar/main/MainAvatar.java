@@ -118,14 +118,14 @@ public abstract class MainAvatar extends Avatar {
     @Override
     protected void checkCollisions() {
         if (canPerformAction()) {
-            for (Meal meal : getParent().food) {
+            for (Meal meal : getParent().getEntityWorld().getFood()) {
                 if (meal.box.overlaps(box)) checkEdible(meal);
             }
-            for (int i = 0; i < getParent().enemies.size; i++) {
-                if (getParent().enemies.get(i).isEnabled()
-                        && box.overlaps(getParent().enemies.get(i).box)) {
-                    if (garlicBoost && getParent().enemies.get(i).isEdible()) {
-                        eat(getParent().enemies.get(i));
+            for (int i = 0; i < getParent().getEntityWorld().getEnemies().size; i++) {
+                if (getParent().getEntityWorld().getEnemies().get(i).isEnabled()
+                        && box.overlaps(getParent().getEntityWorld().getEnemies().get(i).box)) {
+                    if (garlicBoost && getParent().getEntityWorld().getEnemies().get(i).isEdible()) {
+                        eat(getParent().getEntityWorld().getEnemies().get(i));
                     } else {
                         hit();
                     }
@@ -228,8 +228,8 @@ public abstract class MainAvatar extends Avatar {
     private void scareEnemies(boolean scare) {
         garlicBoost = scare;
         garlicBoostTimer = Constant.MAIN_AVATAR_TIME_GARLIC_BOOST;
-        for (int i = 0; i < getParent().enemies.size; i++) {
-            getParent().enemies.get(i).setScared(scare);
+        for (int i = 0; i < getParent().getEntityWorld().getEnemies().size; i++) {
+            getParent().getEntityWorld().getEnemies().get(i).setScared(scare);
         }
     }
 
@@ -300,8 +300,8 @@ public abstract class MainAvatar extends Avatar {
     public void dieStuff() {
         DataManager.INSTANCE.getGameStatus().decreaseLive();
         if (petBoost) {
-            for (int i = 0; i < getParent().pets.size; i++) {
-                getParent().pets.get(i).die();
+            for (int i = 0; i < getParent().getEntityWorld().getPets().size; i++) {
+                getParent().getEntityWorld().getPets().get(i).die();
             }
         }
     }

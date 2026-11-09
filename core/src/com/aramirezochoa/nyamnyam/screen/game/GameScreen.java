@@ -13,6 +13,8 @@ import com.aramirezochoa.nyamnyam.screen.game.debug.DebugConsole;
 import com.aramirezochoa.nyamnyam.screen.game.debug.StageCommand;
 import com.aramirezochoa.nyamnyam.screen.game.gui.GameUserInterface;
 import com.aramirezochoa.nyamnyam.screen.game.input.GamePad;
+import com.aramirezochoa.nyamnyam.screen.game.room.RoomLoader;
+import com.aramirezochoa.nyamnyam.screen.game.run.RunState;
 import com.aramirezochoa.nyamnyam.screen.game.status.GameStatus;
 import com.aramirezochoa.nyamnyam.screen.menu.MenuAction;
 import com.aramirezochoa.nyamnyam.store.StoreManager;
@@ -32,6 +34,8 @@ public class GameScreen extends AbstractScreen {
     private GamePad gamePad;
     private DebugConsole debugConsole;
     private ExtendViewport hudViewport;
+    private RunState runState;
+    private final RoomLoader roomLoader = new RoomLoader();
 
     public GameScreen() {
         super(MediaManager.GAME);
@@ -43,10 +47,11 @@ public class GameScreen extends AbstractScreen {
 
         hudViewport = new ExtendViewport(Constant.SCREEN_WIDTH, Constant.SCREEN_HEIGHT);
         hudViewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
+        runState = new RunState();
         gameUserInterface = new GameUserInterface(getMediaManager(), hudViewport);
         gameStatus.addListener(gameUserInterface);
 
-        gameWrapper = new GameWrapper(getMediaManager(), gameStatus, gameUserInterface);
+        gameWrapper = new GameWrapper(getMediaManager(), gameStatus, gameUserInterface, runState);
         gameStatus.addListener(gameWrapper);
 
         gamePad = new GamePad(getMediaManager(), gameWrapper, hudViewport);
@@ -68,6 +73,7 @@ public class GameScreen extends AbstractScreen {
 
     private void init(GameStatus gameStatus) {
         gameUserInterface.init(gameStatus.getLevel(), gameStatus.getLives(), gameStatus.getScore());
+        runState.setCurrentRoom(roomLoader.loadIfPresent("data/rooms/" + gameStatus.getLevel() + ".json"));
         gameWrapper.init(getMediaManager(), gameStatus);
 
         gameWrapper.getGameStatus().setGameState(GameState.IN_GAME);

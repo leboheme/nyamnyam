@@ -54,7 +54,7 @@ public class BombProjectile extends Projectile {
     @Override
     protected void checkCollisions() {
         if (exploded) {
-            for (Enemy enemy : getParent().enemies) {
+            for (Enemy enemy : getParent().getEntityWorld().getEnemies()) {
                 if (enemy.box.overlaps(box)
                         && enemy.isEnabled()) {
                     enemy.hit(false);

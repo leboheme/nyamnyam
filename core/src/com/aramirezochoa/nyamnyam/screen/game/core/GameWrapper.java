@@ -21,6 +21,9 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.EntityStateFacto
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.avatar.enemy.EnemyStateFactory;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.meal.common.RaiseType;
 import com.aramirezochoa.nyamnyam.screen.game.gui.GameUserInterface;
+import com.aramirezochoa.nyamnyam.screen.game.room.RoomDebugRenderer;
+import com.aramirezochoa.nyamnyam.screen.game.room.RoomInstance;
+import com.aramirezochoa.nyamnyam.screen.game.run.RunState;
 import com.aramirezochoa.nyamnyam.screen.game.status.GameStatus;
 import com.aramirezochoa.nyamnyam.screen.game.status.GameStatusListener;
 import com.badlogic.gdx.Gdx;
@@ -39,7 +42,6 @@ import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.SnapshotArray;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 /**
@@ -52,16 +54,17 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     private SpriteBatch batch;
     private OrthographicCamera camera;
     private FitViewport viewport;
+    public static ShapeRenderer debugRenderer;
 
     private TiledMap map;
     private OrthogonalTiledMapRenderer mapRenderer;
+    private final RoomDebugRenderer roomDebugRenderer;
+    private final RunState runState;
+    private final EntityWorld entityWorld = new EntityWorld();
+    private boolean showRoomPreview;
 
     public MainAvatar mainAvatar;
     public Enemy dark;
-    public final SnapshotArray<Enemy> enemies = new SnapshotArray(true, 10, Enemy.class);
-    public final SnapshotArray<Meal> food = new SnapshotArray(true, 4, Meal.class);
-    public final SnapshotArray<Projectile> projectiles = new SnapshotArray(true, 4, Projectile.class);
-    public final SnapshotArray<Avatar> pets = new SnapshotArray(true, 4, Avatar.class);
     private GameStatus gameStatus;
     private TextureRegion background;
     private TextureAtlas textureAtlas;
@@ -72,7 +75,6 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     public Array<Constant.Coordinates> leftGuide = new Array<Constant.Coordinates>(true, 6);
     public Array<Constant.Coordinates> rightGuide = new Array<Constant.Coordinates>(true, 6);
 
-    public static ShapeRenderer debugRenderer;
     public static boolean debug;
     private boolean bossLevel;
 
@@ -84,9 +86,12 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     private float levelDarkTimer, levelHurryTimer;
     private boolean noMoreEnemies, hurryAdvised;
 
-    public GameWrapper(MediaManager mediaManager, GameStatus gameStatus, GameUserInterface gameUserInterface) {
+    public GameWrapper(MediaManager mediaManager, GameStatus gameStatus, GameUserInterface gameUserInterface,
+                       RunState runState) {
         this.gameUserInterface = gameUserInterface;
         this.mediaManager = mediaManager;
+        this.runState = runState;
+        this.roomDebugRenderer = new RoomDebugRenderer();
         this.batch = new SpriteBatch();
         this.camera = new OrthographicCamera(Constant.GAMEPLAY_VIEWPORT_WIDTH, Constant.GAMEPLAY_VIEWPORT_HEIGHT);
         this.viewport = new FitViewport(Constant.GAMEPLAY_VIEWPORT_WIDTH, Constant.GAMEPLAY_VIEWPORT_HEIGHT, camera);
@@ -147,27 +152,16 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
         checkKeyboardInput();
 
         mainAvatar.update(deltaTime);
-        for (int i = 0; i < enemies.size; i++) {
-            enemies.get(i).update(deltaTime);
-        }
-        for (int i = 0; i < food.size; i++) {
-            food.get(i).update(deltaTime);
-        }
-        for (int i = 0; i < projectiles.size; i++) {
-            projectiles.get(i).update(deltaTime);
-        }
-        for (int i = 0; i < pets.size; i++) {
-            pets.get(i).update(deltaTime);
-        }
+        entityWorld.update(deltaTime);
         updateCamera();
         checkSpawnMeals(deltaTime);
         checkSpawnAir(deltaTime);
         checkLevelTime(deltaTime);
 
-        if (enemies.size == 0) {
+        if (!entityWorld.hasEnemies()) {
             boolean enemyTrapped = false;
-            for (int i = 0; i < food.size; i++) {
-                if (food.get(i).getType().isCandy()) {
+            for (int i = 0; i < entityWorld.getFood().size; i++) {
+                if (entityWorld.getFood().get(i).getType().isCandy()) {
                     enemyTrapped = true;
                 }
             }
@@ -178,10 +172,10 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
                 }
                 winCounter -= deltaTime;
                 if (!extraMeal) {
-                    for (int i = 0; i < food.size; i++) {
-                        if (food.get(i).getType().isAir()) {
-                            food.get(i).setCurrentState(EntityStateFactory.die(food.get(i)));
-                            addMeal(EntityFactory.randomVerdure(food.get(i).position.x + food.get(i).dimension.x / 2, food.get(i).position.y, this));
+                    for (int i = 0; i < entityWorld.getFood().size; i++) {
+                        if (entityWorld.getFood().get(i).getType().isAir()) {
+                            entityWorld.getFood().get(i).setCurrentState(EntityStateFactory.die(entityWorld.getFood().get(i)));
+                            addMeal(EntityFactory.randomVerdure(entityWorld.getFood().get(i).position.x + entityWorld.getFood().get(i).dimension.x / 2, entityWorld.getFood().get(i).position.y, this));
                         }
                     }
                     extraMeal = true;
@@ -203,7 +197,7 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
                 getMediaManager().playSound(MediaManager.SOUND_HURRY);
                 gameUserInterface.showMessage(LanguageManager.INSTANCE.getString("hurry"));
                 hurryAdvised = true;
-                for (Enemy enemy : enemies) {
+                for (Enemy enemy : entityWorld.getEnemies()) {
                     enemy.anger(true);
                 }
             } else {
@@ -239,6 +233,9 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
         if (Gdx.input.isKeyPressed(Input.Keys.F9)) {
             debug = !debug;
         }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F10)) {
+            showRoomPreview = !showRoomPreview;
+        }
     }
 
     @Override
@@ -255,18 +252,10 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
         batch.end();
 
         mapRenderer.render();
-        for (int i = 0; i < food.size; i++) {
-            food.get(i).render(batch);
+        if (showRoomPreview && runState.getCurrentRoom() != null) {
+            roomDebugRenderer.render(runState.getCurrentRoom(), camera.combined);
         }
-        for (int i = 0; i < projectiles.size; i++) {
-            projectiles.get(i).render(batch);
-        }
-        for (int i = 0; i < pets.size; i++) {
-            pets.get(i).render(batch);
-        }
-        for (int i = 0; i < enemies.size; i++) {
-            enemies.get(i).render(batch);
-        }
+        entityWorld.render(batch);
         mainAvatar.render(batch);
         if (dark != null) {
             dark.render(batch);
@@ -280,6 +269,7 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     @Override
     public void dispose() {
         debugRenderer.dispose();
+        roomDebugRenderer.dispose();
         batch.dispose();
         map.dispose();
         mapRenderer.dispose();
@@ -287,22 +277,7 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     }
 
     private void cleanEntities() {
-        for (int i = 0; i < enemies.size; i++) {
-            enemies.get(i).free();
-        }
-        enemies.clear();
-        for (int i = 0; i < food.size; i++) {
-            food.get(i).free();
-        }
-        food.clear();
-        for (int i = 0; i < projectiles.size; i++) {
-            projectiles.get(i).free();
-        }
-        projectiles.clear();
-        for (int i = 0; i < pets.size; i++) {
-            pets.get(i).free();
-        }
-        pets.clear();
+        entityWorld.clear();
 
         leftGuide.clear();
         rightGuide.clear();
@@ -314,6 +289,7 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
 
     private void loadMap(int levelNumber) {
         map = MediaManager.GAME.loadMap("data/stages/" + levelNumber + ".tmx");
+        showRoomPreview = false;
         bossLevel = Boolean.parseBoolean((String) map.getProperties().get("bossLevel"));
         mapRenderer = new OrthogonalTiledMapRenderer(map, 1);
         mapRenderer.setView(camera);
@@ -350,7 +326,7 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
                 if (bossLevel && enemy.isBoss()) {
                     ((Boss) enemy).setBoostType(MealType.valueOf((String) map.getProperties().get("bossBoost")));
                 }
-                enemies.add(enemy);
+                entityWorld.addEnemy(enemy);
             } catch (Exception e) {
                 Gdx.app.error("Game", "Error parsing enemy value", e);
             }
@@ -365,9 +341,9 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
                 float posX = mapObject instanceof RectangleMapObject ? ((RectangleMapObject) mapObject).getRectangle().x : ((TiledMapTileMapObject) mapObject).getX();
                 float posY = mapObject instanceof RectangleMapObject ? ((RectangleMapObject) mapObject).getRectangle().y : ((TiledMapTileMapObject) mapObject).getY();
                 if (mealType.isBoost()) {
-                    food.add(EntityFactory.boost(posX, posY, mealType, this, true));
+                    entityWorld.addMeal(EntityFactory.boost(posX, posY, mealType, this, true));
                 } else {
-                    food.add(EntityFactory.fruit(posX, posY, mealType, this));
+                    entityWorld.addMeal(EntityFactory.fruit(posX, posY, mealType, this));
                 }
                 map.getLayers().get(MEAL_LAYER).getObjects().remove(0);
                 loadMealTimer = Constant.MEAL_SPAWN_DELAY;
@@ -393,26 +369,26 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
                 switch (mealType) {
                     case AIR:
                         if (leftGuide.size > 0) {
-                            food.add(EntityFactory.air(mealType, RaiseType.LEFT_GUIDED, leftGuide.first().x - mealType.getDimension().x / 2, leftGuide.first().y - mealType.getDimension().y / 2, DirectionType.LEFT, this));
+                            entityWorld.addMeal(EntityFactory.air(mealType, RaiseType.LEFT_GUIDED, leftGuide.first().x - mealType.getDimension().x / 2, leftGuide.first().y - mealType.getDimension().y / 2, DirectionType.LEFT, this));
                         }
                         if (rightGuide.size > 0) {
-                            food.add(EntityFactory.air(mealType, RaiseType.RIGHT_GUIDED, rightGuide.first().x - mealType.getDimension().x / 2, rightGuide.first().y - mealType.getDimension().y / 2, DirectionType.RIGHT, this));
+                            entityWorld.addMeal(EntityFactory.air(mealType, RaiseType.RIGHT_GUIDED, rightGuide.first().x - mealType.getDimension().x / 2, rightGuide.first().y - mealType.getDimension().y / 2, DirectionType.RIGHT, this));
                         }
                         break;
                     case AIR_TORNADO:
                         if (leftGuide.size > 0) {
-                            food.add(EntityFactory.tornado(mealType, RaiseType.LEFT_GUIDED, leftGuide.first().x - mealType.getDimension().x / 2, leftGuide.first().y - mealType.getDimension().y / 2, DirectionType.LEFT, this));
+                            entityWorld.addMeal(EntityFactory.tornado(mealType, RaiseType.LEFT_GUIDED, leftGuide.first().x - mealType.getDimension().x / 2, leftGuide.first().y - mealType.getDimension().y / 2, DirectionType.LEFT, this));
                         }
                         if (rightGuide.size > 0) {
-                            food.add(EntityFactory.tornado(mealType, RaiseType.RIGHT_GUIDED, rightGuide.first().x - mealType.getDimension().x / 2, rightGuide.first().y - mealType.getDimension().y / 2, DirectionType.RIGHT, this));
+                            entityWorld.addMeal(EntityFactory.tornado(mealType, RaiseType.RIGHT_GUIDED, rightGuide.first().x - mealType.getDimension().x / 2, rightGuide.first().y - mealType.getDimension().y / 2, DirectionType.RIGHT, this));
                         }
                         break;
                     case AIR_SPIKES:
                         if (leftGuide.size > 0) {
-                            food.add(EntityFactory.spikes(mealType, RaiseType.LEFT_GUIDED, leftGuide.first().x - mealType.getDimension().x / 2, leftGuide.first().y - mealType.getDimension().y / 2, DirectionType.LEFT, this));
+                            entityWorld.addMeal(EntityFactory.spikes(mealType, RaiseType.LEFT_GUIDED, leftGuide.first().x - mealType.getDimension().x / 2, leftGuide.first().y - mealType.getDimension().y / 2, DirectionType.LEFT, this));
                         }
                         if (rightGuide.size > 0) {
-                            food.add(EntityFactory.spikes(mealType, RaiseType.RIGHT_GUIDED, rightGuide.first().x - mealType.getDimension().x / 2, rightGuide.first().y - mealType.getDimension().y / 2, DirectionType.RIGHT, this));
+                            entityWorld.addMeal(EntityFactory.spikes(mealType, RaiseType.RIGHT_GUIDED, rightGuide.first().x - mealType.getDimension().x / 2, rightGuide.first().y - mealType.getDimension().y / 2, DirectionType.RIGHT, this));
                         }
                         break;
                 }
@@ -454,19 +430,23 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     }
 
     public void addEnemy(Enemy enemy) {
-        enemies.add(enemy);
+        entityWorld.addEnemy(enemy);
     }
 
     public void addMeal(Meal meal) {
-        food.add(meal);
+        entityWorld.addMeal(meal);
     }
 
     public void addProjectile(Projectile projectile) {
-        projectiles.add(projectile);
+        entityWorld.addProjectile(projectile);
     }
 
     public void addPet(Avatar avatar) {
-        pets.add(avatar);
+        entityWorld.addPet(avatar);
+    }
+
+    public EntityWorld getEntityWorld() {
+        return entityWorld;
     }
 
     public GameStatus getGameStatus() {
@@ -482,7 +462,7 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
         if (dark != null) {
             dark.setCurrentState(EnemyStateFactory.explode(dark, false));
         }
-        for (Enemy enemy : enemies) {
+        for (Enemy enemy : entityWorld.getEnemies()) {
             enemy.anger(false);
         }
         loadMainAvatar();

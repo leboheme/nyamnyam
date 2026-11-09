@@ -24,8 +24,8 @@ public abstract class AbstractAir extends Meal {
         super.staffBeforeEaten(avatar);
         // check other air / candies
         Meal meal;
-        for (int i = 0; i < getParent().food.size; i++) {
-            meal = getParent().food.get(i);
+        for (int i = 0; i < getParent().getEntityWorld().getFood().size; i++) {
+            meal = getParent().getEntityWorld().getFood().get(i);
             if (meal.isEnabled()
                     && meal.box.overlaps(box)
                     && (meal.getType().isAir() || meal.getType().isCandy())) {

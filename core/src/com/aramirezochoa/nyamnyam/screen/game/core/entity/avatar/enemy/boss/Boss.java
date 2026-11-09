@@ -53,8 +53,8 @@ public abstract class Boss extends Enemy {
     }
 
     private boolean isBoostAlive() {
-        for (int i = 0; i < getParent().food.size; i++) {
-            if (getParent().food.get(i).getType().isBoost()) return true;
+        for (int i = 0; i < getParent().getEntityWorld().getFood().size; i++) {
+            if (getParent().getEntityWorld().getFood().get(i).getType().isBoost()) return true;
         }
         return false;
     }

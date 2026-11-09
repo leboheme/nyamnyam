@@ -28,7 +28,7 @@ public abstract class Enemy extends Avatar {
     @Override
     public void remove() {
         super.remove();
-        parent.enemies.removeValue(this, true);
+        parent.getEntityWorld().removeEnemy(this);
     }
 
     @Override
