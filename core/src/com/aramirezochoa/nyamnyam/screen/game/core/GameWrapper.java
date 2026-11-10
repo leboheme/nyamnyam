@@ -15,7 +15,6 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.enemy.boss.Boss
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.types.DirectionType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.Meal;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.Projectile;
-import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.EntityStateFactory;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.avatar.enemy.EnemyStateFactory;
 import com.aramirezochoa.nyamnyam.screen.game.gui.GameUserInterface;
 import com.aramirezochoa.nyamnyam.screen.game.room.RoomDebugRenderer;
@@ -45,24 +44,20 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     private final GameplayCamera gameplayCamera;
     public static ShapeRenderer debugRenderer;
 
-    private TmxStage tmxStage;
     private final RoomDebugRenderer roomDebugRenderer;
     private final RunState runState;
     private final EntityWorld entityWorld = new EntityWorld();
     private final StageContentSpawner stageContentSpawner = new StageContentSpawner(this);
     private final StageTimers stageTimers = new StageTimers();
+    private final StageCompletion stageCompletion = new StageCompletion(this);
+    private TmxStage tmxStage;
     private boolean showRoomPreview;
 
     private GameStatus gameStatus;
     private TextureRegion background;
     private TextureAtlas textureAtlas;
-    private boolean extraMeal;
-    private float winCounter;
-
     public static boolean debug;
-    private boolean bossLevel;
 
-    private boolean noMoreEnemies;
 
     public GameWrapper(MediaManager mediaManager, GameStatus gameStatus, GameUserInterface gameUserInterface,
                        RunState runState) {
@@ -88,13 +83,12 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
         cleanEntities();
         loadMainAvatar();
         loadMap(gameStatus.getLevel());
+        showRoomPreview = false;
         updateCamera();
         loadEnemies();
 
-        extraMeal = false;
+        stageCompletion.reset();
         stageContentSpawner.initialize(tmxStage, entityWorld.getMainAvatar());
-
-        winCounter = Constant.GAME_WIN_FREE_TIME;
 
         getMediaManager().stopAllThemes();
         getMediaManager().playTheme(isBossLevel() ? MediaManager.THEME_BOSS : MediaManager.THEME_NORMAL);
@@ -108,7 +102,7 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
         gameUserInterface.showMessage("");
         stageTimers.reset();
         entityWorld.setDark(null);
-        noMoreEnemies = false;
+        stageCompletion.resetNoMoreEnemies();
     }
 
     private void setBackground(MediaManager mediaManager) {
@@ -125,52 +119,21 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
         stageContentSpawner.update(deltaTime);
         checkLevelTime(deltaTime);
 
-        if (!entityWorld.hasEnemies()) {
-            boolean enemyTrapped = false;
-            for (int i = 0; i < entityWorld.getFood().size; i++) {
-                if (entityWorld.getFood().get(i).getType().isCandy()) {
-                    enemyTrapped = true;
-                }
-            }
-            if (!enemyTrapped) {
-                noMoreEnemies = true;
-                if (winCounter < 0) {
-                    gameStatus.setGameState(GameState.WIN);
-                }
-                winCounter -= deltaTime;
-                if (!extraMeal) {
-                    for (int i = 0; i < entityWorld.getFood().size; i++) {
-                        if (entityWorld.getFood().get(i).getType().isAir()) {
-                            entityWorld.getFood().get(i).setCurrentState(EntityStateFactory.die(entityWorld.getFood().get(i)));
-                            addMeal(EntityFactory.randomVerdure(entityWorld.getFood().get(i).position.x + entityWorld.getFood().get(i).dimension.x / 2, entityWorld.getFood().get(i).position.y, this));
-                        }
-                    }
-                    extraMeal = true;
-                }
-                Enemy dark = entityWorld.getDark();
-                if (dark != null && dark.isEnabled()) {
-                    dark.setCurrentState(EnemyStateFactory.explode(dark, false));
-                }
-            }
-        }
-        // here or in gameStatus??
-        if (gameStatus.getLives() <= 0) {
-            gameStatus.setGameState(GameState.LOSE);
-        }
+        stageCompletion.update(deltaTime, gameStatus);
     }
 
     private void checkLevelTime(float deltaTime) {
-        if (stageTimers.updateHurry(deltaTime, bossLevel)) {
+        if (stageTimers.updateHurry(deltaTime, isBossLevel())) {
             getMediaManager().playSound(MediaManager.SOUND_HURRY);
             gameUserInterface.showMessage(LanguageManager.INSTANCE.getString("hurry"));
             for (Enemy enemy : entityWorld.getEnemies()) {
                 enemy.anger(true);
             }
         }
-        if (stageTimers.updateDark(deltaTime, bossLevel)) {
+        if (stageTimers.updateDark(deltaTime, isBossLevel())) {
             if (entityWorld.getDark() != null) {
                 entityWorld.getDark().update(deltaTime);
-            } else if (!noMoreEnemies) {
+            } else if (!stageCompletion.hasNoMoreEnemies()) {
                 getMediaManager().playSound(MediaManager.SOUND_DARK);
                 entityWorld.setDark(EntityFactory.enemy(EnemyType.DARK, Constant.DARK_SPAWN_POSITION.x, Constant.DARK_SPAWN_POSITION.y, DirectionType.RIGHT, this));
             }
@@ -244,7 +207,6 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
         }
         tmxStage = new TmxStage(MediaManager.GAME.loadMap("data/stages/" + levelNumber + ".tmx"));
         showRoomPreview = false;
-        bossLevel = tmxStage.isBossLevel();
     }
 
     private void updateCamera() {
@@ -353,7 +315,7 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     }
 
     public boolean isBossLevel() {
-        return bossLevel;
+        return tmxStage != null && tmxStage.isBossLevel();
     }
 
     public int getAutomaticAirMode() {
