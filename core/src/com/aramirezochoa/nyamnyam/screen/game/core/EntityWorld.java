@@ -8,7 +8,7 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.Projectile;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.SnapshotArray;
 
-/** Owns the non-player entities currently active in the gameplay world. */
+/** Owns the entities currently active in the gameplay world. */
 public class EntityWorld {
 
     private final SnapshotArray<Enemy> enemies = new SnapshotArray(true, 10, Enemy.class);

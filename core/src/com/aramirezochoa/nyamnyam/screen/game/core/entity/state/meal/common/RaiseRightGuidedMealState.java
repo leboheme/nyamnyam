@@ -10,6 +10,6 @@ public class RaiseRightGuidedMealState extends RaiseGuidedMealState {
 
     @Override
     protected Array<Constant.Coordinates> getGuide() {
-        return meal.getParent().rightGuide;
+        return meal.getParent().getRightGuide();
     }
 }

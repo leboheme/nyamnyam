@@ -12,14 +12,11 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.Avatar;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.enemy.Enemy;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.enemy.EnemyType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.enemy.boss.Boss;
-import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.main.MainAvatar;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.types.DirectionType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.Meal;
-import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.MealType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.Projectile;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.EntityStateFactory;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.avatar.enemy.EnemyStateFactory;
-import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.meal.common.RaiseType;
 import com.aramirezochoa.nyamnyam.screen.game.gui.GameUserInterface;
 import com.aramirezochoa.nyamnyam.screen.game.room.RoomDebugRenderer;
 import com.aramirezochoa.nyamnyam.screen.game.room.RoomInstance;
@@ -52,17 +49,14 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     private final RoomDebugRenderer roomDebugRenderer;
     private final RunState runState;
     private final EntityWorld entityWorld = new EntityWorld();
+    private final StageContentSpawner stageContentSpawner = new StageContentSpawner(this);
     private boolean showRoomPreview;
 
     private GameStatus gameStatus;
     private TextureRegion background;
     private TextureAtlas textureAtlas;
-    private float loadMealTimer, loadAirTimer;
-    private boolean loadMealFinished, guidedAir, specialAir, extraMeal;
-    private int automaticAirMode, mealSpawnIndex;
+    private boolean extraMeal;
     private float winCounter;
-    public Array<Constant.Coordinates> leftGuide = new Array<Constant.Coordinates>(true, 6);
-    public Array<Constant.Coordinates> rightGuide = new Array<Constant.Coordinates>(true, 6);
 
     public static boolean debug;
     private boolean bossLevel;
@@ -96,13 +90,9 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
         loadMap(gameStatus.getLevel());
         updateCamera();
         loadEnemies();
-        loadAir();
 
-        loadMealTimer = Constant.MEAL_SPAWN_DELAY;
-        loadMealFinished = false;
-        mealSpawnIndex = 0;
         extraMeal = false;
-        specialAir = true;
+        stageContentSpawner.initialize(tmxStage, entityWorld.getMainAvatar());
 
         winCounter = Constant.GAME_WIN_FREE_TIME;
 
@@ -134,8 +124,7 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
 
         entityWorld.update(deltaTime);
         updateCamera();
-        checkSpawnMeals(deltaTime);
-        checkSpawnAir(deltaTime);
+        stageContentSpawner.update(deltaTime);
         checkLevelTime(deltaTime);
 
         if (!entityWorld.hasEnemies()) {
@@ -256,9 +245,6 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     private void cleanEntities() {
         entityWorld.clear();
 
-        leftGuide.clear();
-        rightGuide.clear();
-
     }
 
     private void loadMap(int levelNumber) {
@@ -290,82 +276,6 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
         }
     }
 
-    private void checkSpawnMeals(float deltaTime) {
-        if (!loadMealFinished && loadMealTimer < 0) {
-            if (mealSpawnIndex < tmxStage.getMealSpawns().size) {
-                TmxStage.MealSpawn spawn = tmxStage.getMealSpawns().get(mealSpawnIndex);
-                MealType mealType = spawn.getType() == null ? MealType.randomFruit() : spawn.getType();
-                if (mealType.isBoost()) {
-                    entityWorld.addMeal(EntityFactory.boost(spawn.getX(), spawn.getY(), mealType, this, true));
-                } else {
-                    entityWorld.addMeal(EntityFactory.fruit(spawn.getX(), spawn.getY(), mealType, this));
-                }
-                mealSpawnIndex++;
-                loadMealTimer = Constant.MEAL_SPAWN_DELAY;
-
-                if (mealSpawnIndex == tmxStage.getMealSpawns().size) {
-                    loadMealFinished = true;
-                }
-            }
-        } else {
-            loadMealTimer -= deltaTime;
-        }
-    }
-
-    private void checkSpawnAir(float deltaTime) {
-        if (guidedAir) {
-            if (loadAirTimer < 0) {
-                MealType mealType;
-                if (!specialAir) {
-                    mealType = MealType.AIR;
-                } else {
-                    mealType = tmxStage.getAirSettings().getSpecialAir();
-                }
-                switch (mealType) {
-                    case AIR:
-                        if (leftGuide.size > 0) {
-                            entityWorld.addMeal(EntityFactory.air(mealType, RaiseType.LEFT_GUIDED, leftGuide.first().x - mealType.getDimension().x / 2, leftGuide.first().y - mealType.getDimension().y / 2, DirectionType.LEFT, this));
-                        }
-                        if (rightGuide.size > 0) {
-                            entityWorld.addMeal(EntityFactory.air(mealType, RaiseType.RIGHT_GUIDED, rightGuide.first().x - mealType.getDimension().x / 2, rightGuide.first().y - mealType.getDimension().y / 2, DirectionType.RIGHT, this));
-                        }
-                        break;
-                    case AIR_TORNADO:
-                        if (leftGuide.size > 0) {
-                            entityWorld.addMeal(EntityFactory.tornado(mealType, RaiseType.LEFT_GUIDED, leftGuide.first().x - mealType.getDimension().x / 2, leftGuide.first().y - mealType.getDimension().y / 2, DirectionType.LEFT, this));
-                        }
-                        if (rightGuide.size > 0) {
-                            entityWorld.addMeal(EntityFactory.tornado(mealType, RaiseType.RIGHT_GUIDED, rightGuide.first().x - mealType.getDimension().x / 2, rightGuide.first().y - mealType.getDimension().y / 2, DirectionType.RIGHT, this));
-                        }
-                        break;
-                    case AIR_SPIKES:
-                        if (leftGuide.size > 0) {
-                            entityWorld.addMeal(EntityFactory.spikes(mealType, RaiseType.LEFT_GUIDED, leftGuide.first().x - mealType.getDimension().x / 2, leftGuide.first().y - mealType.getDimension().y / 2, DirectionType.LEFT, this));
-                        }
-                        if (rightGuide.size > 0) {
-                            entityWorld.addMeal(EntityFactory.spikes(mealType, RaiseType.RIGHT_GUIDED, rightGuide.first().x - mealType.getDimension().x / 2, rightGuide.first().y - mealType.getDimension().y / 2, DirectionType.RIGHT, this));
-                        }
-                        break;
-                }
-                loadAirTimer = Constant.AIR_SPAWN_RATE;
-                specialAir = !specialAir;
-            }
-            loadAirTimer -= deltaTime;
-        }
-    }
-
-    private void loadAir() {
-        TmxStage.AirSettings airSettings = tmxStage.getAirSettings();
-        guidedAir = airSettings.isGuided() || (airSettings.hasExtraAir() && !entityWorld.getMainAvatar().isAirSkilled());
-        if (guidedAir) {
-            leftGuide.addAll(airSettings.getLeftGuide());
-            rightGuide.addAll(airSettings.getRightGuide());
-
-            loadAirTimer = Constant.AIR_SPAWN_RATE;
-        }
-        automaticAirMode = airSettings.getAutomaticMode();
-    }
-
     public void addEnemy(Enemy enemy) {
         entityWorld.addEnemy(enemy);
     }
@@ -380,6 +290,14 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
 
     public void addPet(Avatar avatar) {
         entityWorld.addPet(avatar);
+    }
+
+    public Array<Constant.Coordinates> getLeftGuide() {
+        return stageContentSpawner.getLeftGuide();
+    }
+
+    public Array<Constant.Coordinates> getRightGuide() {
+        return stageContentSpawner.getRightGuide();
     }
 
     public EntityWorld getEntityWorld() {
@@ -448,7 +366,7 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     }
 
     public int getAutomaticAirMode() {
-        return automaticAirMode;
+        return stageContentSpawner.getAutomaticAirMode();
     }
 
     public void notifyMessage(String message, float x, float y) {
