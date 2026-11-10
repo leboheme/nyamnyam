@@ -3,7 +3,7 @@ package com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.enemy.boss;
 import com.aramirezochoa.nyamnyam.Constant;
 import com.aramirezochoa.nyamnyam.i18n.LanguageManager;
 import com.aramirezochoa.nyamnyam.media.MediaManager;
-import com.aramirezochoa.nyamnyam.screen.game.core.GameWrapper;
+import com.aramirezochoa.nyamnyam.screen.game.core.GameplayContext;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.EntityFactory;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.EntityType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.enemy.Enemy;
@@ -21,7 +21,7 @@ public abstract class Boss extends Enemy {
     private MealType boostType;
 
     @Override
-    public void init(EntityType type, float x, float y, DirectionType lookingAt, GameWrapper gameWrapper) {
+    public void init(EntityType type, float x, float y, DirectionType lookingAt, GameplayContext gameWrapper) {
         super.init(type, x, y, lookingAt, gameWrapper);
         lives = getLives();
         maxLives = lives;

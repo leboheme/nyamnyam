@@ -1,7 +1,7 @@
 package com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.fruit;
 
 import com.aramirezochoa.nyamnyam.Constant;
-import com.aramirezochoa.nyamnyam.screen.game.core.GameWrapper;
+import com.aramirezochoa.nyamnyam.screen.game.core.GameplayContext;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.Meal;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.MealType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.EntityState;
@@ -12,7 +12,7 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.meal.MealStateFa
  */
 public class Fruit extends Meal {
 
-    public void init(float x, float y, MealType boostType, GameWrapper gameWrapper) {
+    public void init(float x, float y, MealType boostType, GameplayContext gameWrapper) {
         super.init(boostType, x, y, lookingAt, gameWrapper);
         acceleration.y = 0;
     }

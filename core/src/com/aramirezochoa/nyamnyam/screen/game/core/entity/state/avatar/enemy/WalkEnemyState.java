@@ -41,7 +41,7 @@ public class WalkEnemyState extends EnemyState {
             return true;
         }
         if (avatar.getParent().getEntityWorld().getMainAvatar().position.y == avatar.position.y) {
-            if (!GameWrapperAssistant.isNextStepGrounded(getEnemy(), getEnemy().getParent().getMap())) {
+            if (!GameWrapperAssistant.isNextStepGrounded(getEnemy(), getEnemy().getParent().getCollisionWorld())) {
                 if (avatar.velocity.y == 0) {
                     avatar.setCurrentState(EnemyStateFactory.jump(getEnemy(), true));
                     return false;

@@ -2,7 +2,7 @@ package com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile;
 
 import com.aramirezochoa.nyamnyam.Constant;
 import com.aramirezochoa.nyamnyam.media.MediaManager;
-import com.aramirezochoa.nyamnyam.screen.game.core.GameWrapper;
+import com.aramirezochoa.nyamnyam.screen.game.core.GameplayContext;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.EntityType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.Avatar;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.enemy.Enemy;
@@ -20,7 +20,7 @@ public class BombProjectile extends Projectile {
     private boolean bigExplosion;
 
     @Override
-    public void init(EntityType type, float x, float y, DirectionType lookingAt, GameWrapper gameWrapper, boolean friendly, boolean transformToCandy, Avatar pitcher) {
+    public void init(EntityType type, float x, float y, DirectionType lookingAt, GameplayContext gameWrapper, boolean friendly, boolean transformToCandy, Avatar pitcher) {
         super.init(type, x, y, lookingAt, gameWrapper, friendly, transformToCandy, pitcher);
         bombTimer = Constant.TFLY_BOMB_TIMER; //default
         bigExplosion = false;

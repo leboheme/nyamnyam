@@ -66,4 +66,8 @@ flowchart TD
 
 ### Paso actual
 
-La partida todavía usa TMX para jugar. `GameScreen` mantiene un `RunState` con una sala JSON opcional; `GameWrapper` puede mostrarla con F10 sobre el TMX. Esto permite comparar los datos en paralelo antes de migrar render, colisiones y entidades.
+La migración empieza con dos rutas separadas. Si existe `data/rooms/<nivel>.json`, `RunFactory` crea por ahora una run fija con un floor y una room, asigna a `FLOOR` una apariencia estática de `tiles.png` y `GameScreen` usa `RunRuntime`. Si no hay JSON, `GameScreen` sigue usando el flujo TMX existente. En niveles con ambos formatos, F11 alterna entre los dos flujos para comparar; en la ruta TMX, F10 conserva la previsualización de la geometría JSON.
+
+Esta primera iteración añade al flujo JSON el jugador existente, movimiento y salto por teclado y mando, y colisiones consultadas desde `RoomInstance`. `GameplayContext` separa las entidades de `GameWrapper`; `CollisionWorld` adapta tanto las capas TMX como la geometría JSON. La room JSON representa solo el interior: el runtime impone límites invisibles de un tile alrededor, sin dibujar todavía esas walls.
+
+Todavía faltan fondos y paredes visibles, layouts de enemigos y comidas, el ciclo de combate y transiciones entre rooms. `RunState` ya contiene floors y cada `FloorState` contiene rooms, aunque la factory solo construye uno de cada. La apariencia fija es provisional; no define todavía un catálogo de themes. El siguiente paso es probar movimiento, aterrizajes y límites en runtime; después se puede portar un enemigo y el ciclo de ataque, transformación y comida. La selección reproducible con seed y los pools de floors pertenecen a una etapa posterior, cuando existan sus configuraciones.

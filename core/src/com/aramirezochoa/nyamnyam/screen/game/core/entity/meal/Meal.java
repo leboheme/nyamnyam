@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.aramirezochoa.nyamnyam.Constant;
 import com.aramirezochoa.nyamnyam.screen.game.core.GameWrapper;
+import com.aramirezochoa.nyamnyam.screen.game.core.GameplayContext;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.Entity;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.EntityType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.types.DirectionType;
@@ -20,7 +21,7 @@ public abstract class Meal extends Entity {
     public Rectangle bottomBox = new Rectangle();
 
     @Override
-    public void init(EntityType type, float x, float y, DirectionType lookingAt, GameWrapper gameWrapper) {
+    public void init(EntityType type, float x, float y, DirectionType lookingAt, GameplayContext gameWrapper) {
         super.init(type, x, y, lookingAt, gameWrapper);
         acceleration.y = -Constant.GRAVITY.y;
     }

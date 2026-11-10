@@ -12,6 +12,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Pool;
 import com.aramirezochoa.nyamnyam.Constant;
 import com.aramirezochoa.nyamnyam.screen.game.core.GameWrapper;
+import com.aramirezochoa.nyamnyam.screen.game.core.GameplayContext;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.Avatar;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.types.DirectionType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.EntityState;
@@ -29,7 +30,7 @@ import java.util.Map;
  */
 public abstract class Entity implements Pool.Poolable {
 
-    protected GameWrapper parent;
+    protected GameplayContext parent;
     protected Pool pool;
     protected EntityType type;
     protected DirectionType lookingAt;
@@ -51,7 +52,7 @@ public abstract class Entity implements Pool.Poolable {
     private Map<String, Animation> animations;
     public boolean grounded;
 
-    public void init(EntityType type, float x, float y, DirectionType lookingAt, GameWrapper gameWrapper) {
+    public void init(EntityType type, float x, float y, DirectionType lookingAt, GameplayContext gameWrapper) {
         this.type = type;
         this.lookingAt = lookingAt;
         this.dimension.x = type.getDimension().x;
@@ -220,7 +221,7 @@ public abstract class Entity implements Pool.Poolable {
         this.lookingAt = lookingAt;
     }
 
-    public GameWrapper getParent() {
+    public GameplayContext getParent() {
         return parent;
     }
 

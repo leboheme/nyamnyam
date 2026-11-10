@@ -1,7 +1,7 @@
 package com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.pet;
 
 import com.aramirezochoa.nyamnyam.Constant;
-import com.aramirezochoa.nyamnyam.screen.game.core.GameWrapper;
+import com.aramirezochoa.nyamnyam.screen.game.core.GameplayContext;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.types.DirectionType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.EntityState;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.avatar.AvatarStateFactory;
@@ -11,7 +11,7 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.avatar.AvatarSta
  */
 public class PetGlutyAvatar extends PetAvatar {
 
-    public void init(float x, float y, DirectionType lookingAt, GameWrapper gameWrapper) {
+    public void init(float x, float y, DirectionType lookingAt, GameplayContext gameWrapper) {
         super.init(PetType.GLUTY, x, y, lookingAt, gameWrapper);
     }
 

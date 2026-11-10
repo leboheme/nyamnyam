@@ -8,6 +8,7 @@ import com.aramirezochoa.nyamnyam.Constant;
 import com.aramirezochoa.nyamnyam.DataManager;
 import com.aramirezochoa.nyamnyam.media.MediaManager;
 import com.aramirezochoa.nyamnyam.screen.game.core.GameWrapper;
+import com.aramirezochoa.nyamnyam.screen.game.core.GameplayContext;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.Entity;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.EntityFactory;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.EntityType;
@@ -40,7 +41,7 @@ public abstract class MainAvatar extends Avatar {
     private Rectangle bottomBox = new Rectangle();
 
     @Override
-    public void init(EntityType type, float x, float y, DirectionType lookingAt, GameWrapper gameWrapper) {
+    public void init(EntityType type, float x, float y, DirectionType lookingAt, GameplayContext gameWrapper) {
         super.init(type, x, y, lookingAt, gameWrapper);
         fireTimer = 0;
         fireEnabled = true;

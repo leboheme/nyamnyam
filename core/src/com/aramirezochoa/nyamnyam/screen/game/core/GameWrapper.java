@@ -36,7 +36,7 @@ import com.badlogic.gdx.utils.Array;
 /**
  * Created by boheme on 13/01/15.
  */
-public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusListener {
+public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusListener, GameplayContext {
 
     private final MediaManager mediaManager;
     private final GameUserInterface gameUserInterface;
@@ -51,6 +51,7 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     private final StageTimers stageTimers = new StageTimers();
     private final StageCompletion stageCompletion = new StageCompletion(this);
     private TmxStage tmxStage;
+    private CollisionWorld collisionWorld;
     private boolean showRoomPreview;
 
     private GameStatus gameStatus;
@@ -190,10 +191,21 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
         debugRenderer.dispose();
         roomDebugRenderer.dispose();
         batch.dispose();
+        unloadLegacyStage();
+    }
+
+    public void unloadLegacyStage() {
         if (tmxStage != null) {
             tmxStage.dispose();
+            tmxStage = null;
         }
+        collisionWorld = null;
         cleanEntities();
+    }
+
+    @Override
+    public CollisionWorld getCollisionWorld() {
+        return collisionWorld;
     }
 
     private void cleanEntities() {
@@ -206,6 +218,7 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
             tmxStage.dispose();
         }
         tmxStage = new TmxStage(MediaManager.GAME.loadMap("data/stages/" + levelNumber + ".tmx"));
+        collisionWorld = new TmxCollisionWorld(tmxStage.getMap());
         showRoomPreview = false;
     }
 

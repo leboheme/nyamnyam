@@ -1,6 +1,6 @@
 package com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.pet;
 
-import com.aramirezochoa.nyamnyam.screen.game.core.GameWrapper;
+import com.aramirezochoa.nyamnyam.screen.game.core.GameplayContext;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.Avatar;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.types.DirectionType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.EntityState;
@@ -14,7 +14,7 @@ public class PetTflyAvatar extends PetAvatar {
 
     private Avatar center;
 
-    public void init(Avatar center, GameWrapper gameWrapper) {
+    public void init(Avatar center, GameplayContext gameWrapper) {
         this.center = center;
         super.init(PetType.TFLY, center.position.x, center.position.y, DirectionType.RIGHT, gameWrapper);
     }

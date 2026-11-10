@@ -14,11 +14,14 @@ import com.aramirezochoa.nyamnyam.screen.game.debug.StageCommand;
 import com.aramirezochoa.nyamnyam.screen.game.gui.GameUserInterface;
 import com.aramirezochoa.nyamnyam.screen.game.input.GamePad;
 import com.aramirezochoa.nyamnyam.screen.game.room.RoomLoader;
+import com.aramirezochoa.nyamnyam.screen.game.run.RunRuntime;
+import com.aramirezochoa.nyamnyam.screen.game.run.RunFactory;
 import com.aramirezochoa.nyamnyam.screen.game.run.RunState;
 import com.aramirezochoa.nyamnyam.screen.game.status.GameStatus;
 import com.aramirezochoa.nyamnyam.screen.menu.MenuAction;
 import com.aramirezochoa.nyamnyam.store.StoreManager;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.GL20;
@@ -35,7 +38,12 @@ public class GameScreen extends AbstractScreen {
     private DebugConsole debugConsole;
     private ExtendViewport hudViewport;
     private RunState runState;
-    private final RoomLoader roomLoader = new RoomLoader();
+    private GameStatus gameStatus;
+    private final RunFactory runFactory = new RunFactory(new RoomLoader());
+    private RunRuntime runRuntime;
+    private boolean hasJsonRoom;
+    private boolean useLegacyFlow;
+    private int loadedLevel = -1;
 
     public GameScreen() {
         super(MediaManager.GAME);
@@ -43,7 +51,7 @@ public class GameScreen extends AbstractScreen {
 
     @Override
     public void show() {
-        GameStatus gameStatus = DataManager.INSTANCE.getGameStatus();
+        gameStatus = DataManager.INSTANCE.getGameStatus();
 
         hudViewport = new ExtendViewport(Constant.SCREEN_WIDTH, Constant.SCREEN_HEIGHT);
         hudViewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
@@ -54,7 +62,19 @@ public class GameScreen extends AbstractScreen {
         gameWrapper = new GameWrapper(getMediaManager(), gameStatus, gameUserInterface, runState);
         gameStatus.addListener(gameWrapper);
 
-        gamePad = new GamePad(getMediaManager(), gameWrapper, hudViewport);
+        gamePad = new GamePad(getMediaManager(), new GamePad.PlayerActions() {
+            private com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.main.MainAvatar player() {
+                return runRuntime == null ? gameWrapper.getEntityWorld().getMainAvatar()
+                        : runRuntime.getMainAvatar();
+            }
+
+            @Override public void left() { if (player() != null) player().left(); }
+            @Override public void right() { if (player() != null) player().right(); }
+            @Override public void fire() {
+                if (runRuntime == null && player() != null) player().fire();
+            }
+            @Override public void jump() { if (player() != null) player().jump(); }
+        }, hudViewport);
         gamePad.layoutControls();
         debugConsole = new DebugConsole(getMediaManager(), hudViewport);
         debugConsole.registerCommand(new StageCommand(this::loadStage));
@@ -72,15 +92,29 @@ public class GameScreen extends AbstractScreen {
     }
 
     private void init(GameStatus gameStatus) {
+        if (loadedLevel != gameStatus.getLevel()) {
+            useLegacyFlow = false;
+            loadedLevel = gameStatus.getLevel();
+        }
         gameUserInterface.init(gameStatus.getLevel(), gameStatus.getLives(), gameStatus.getScore());
-        runState.setCurrentRoom(roomLoader.loadIfPresent("data/rooms/" + gameStatus.getLevel() + ".json"));
-        gameWrapper.init(getMediaManager(), gameStatus);
+        hasJsonRoom = runFactory.populate(runState,
+                "data/rooms/" + gameStatus.getLevel() + ".json");
+        if (runRuntime != null) {
+            runRuntime.dispose();
+            runRuntime = null;
+        }
+        if (hasJsonRoom && !useLegacyFlow) {
+            gameWrapper.unloadLegacyStage();
+            runRuntime = new RunRuntime(getMediaManager(), runState, gameStatus);
+        } else {
+            gameWrapper.init(getMediaManager(), gameStatus);
+        }
+        gamePad.setFireVisible(runRuntime == null);
 
-        gameWrapper.getGameStatus().setGameState(GameState.IN_GAME);
+        gameStatus.setGameState(GameState.IN_GAME);
     }
 
     private void loadStage(int stageNumber) {
-        GameStatus gameStatus = gameWrapper.getGameStatus();
         gameStatus.setLevel(stageNumber);
         init(gameStatus);
     }
@@ -92,10 +126,20 @@ public class GameScreen extends AbstractScreen {
             delta = Constant.GAME_MAX_LAG;
         }
 
+        if (hasJsonRoom && Gdx.input.isKeyJustPressed(Input.Keys.F11)) {
+            useLegacyFlow = !useLegacyFlow;
+            init(gameStatus);
+        }
+
         // Update
-        if (!gameWrapper.getGameStatus().isPaused()) {
-            gameWrapper.update(delta);
-            gamePad.update(delta);
+        if (!gameStatus.isPaused()) {
+            if (runRuntime != null) {
+                runRuntime.update(delta);
+                gamePad.update(delta);
+            } else {
+                gameWrapper.update(delta);
+                gamePad.update(delta);
+            }
         }
         gameUserInterface.update(delta);
 
@@ -103,9 +147,13 @@ public class GameScreen extends AbstractScreen {
         Gdx.graphics.getGL20().glClearColor(0, 0, 0, 1);
         Gdx.graphics.getGL20().glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
-        gameWrapper.render(delta);
+        if (runRuntime != null) {
+            runRuntime.render(delta);
+        } else {
+            gameWrapper.render(delta);
+        }
         gameUserInterface.render(delta);
-        if (!gameWrapper.getGameStatus().isPaused()) {
+        if (!gameStatus.isPaused()) {
             gamePad.render(delta);
         }
         debugConsole.render();
@@ -118,10 +166,10 @@ public class GameScreen extends AbstractScreen {
                 MenuAction menuAction = InputManager.INSTANCE.getMenuAction();
                 switch (menuAction) {
                     case PAUSE:
-                        gameWrapper.getGameStatus().setGameState(GameState.PAUSE);
+                        gameStatus.setGameState(GameState.PAUSE);
                         break;
                     case CONTINUE:
-                        gameWrapper.getGameStatus().setGameState(GameState.IN_GAME);
+                        gameStatus.setGameState(GameState.IN_GAME);
                         break;
                     case NEXT:
                         getMediaManager().stopAllThemes();
@@ -140,10 +188,10 @@ public class GameScreen extends AbstractScreen {
                         break;
                     default:
                         if (isBackJustPressed()) {
-                            if (GameState.PAUSE.equals(gameWrapper.getGameStatus().getGameState())) {
-                                gameWrapper.getGameStatus().setGameState(GameState.IN_GAME);
-                            } else if (GameState.IN_GAME.equals(gameWrapper.getGameStatus().getGameState())) {
-                                gameWrapper.getGameStatus().setGameState(GameState.PAUSE);
+                            if (GameState.PAUSE.equals(gameStatus.getGameState())) {
+                                gameStatus.setGameState(GameState.IN_GAME);
+                            } else if (GameState.IN_GAME.equals(gameStatus.getGameState())) {
+                                gameStatus.setGameState(GameState.PAUSE);
                             }
                         }
                 }
@@ -153,14 +201,15 @@ public class GameScreen extends AbstractScreen {
 
     @Override
     public void pause() {
-        if (GameState.IN_GAME.equals(gameWrapper.getGameStatus().getGameState())) {
-            gameWrapper.getGameStatus().setGameState(GameState.PAUSE);
+        if (GameState.IN_GAME.equals(gameStatus.getGameState())) {
+            gameStatus.setGameState(GameState.PAUSE);
         }
     }
 
     @Override
     public void resize(int width, int height) {
         if (gameWrapper != null) gameWrapper.resize(width, height);
+        if (runRuntime != null) runRuntime.resize(width, height);
         if (hudViewport != null) hudViewport.update(width, height, true);
         if (gameUserInterface != null) gameUserInterface.resize();
         if (gamePad != null) gamePad.layoutControls();
@@ -170,6 +219,7 @@ public class GameScreen extends AbstractScreen {
     public void dispose() {
         super.dispose();
         gameWrapper.dispose();
+        if (runRuntime != null) runRuntime.dispose();
         gameUserInterface.dispose();
         gamePad.dispose();
         debugConsole.dispose();

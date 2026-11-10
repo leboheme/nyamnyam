@@ -4,7 +4,7 @@ import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Pools;
 import com.badlogic.gdx.utils.ObjectSet;
 import com.badlogic.gdx.utils.ReflectionPool;
-import com.aramirezochoa.nyamnyam.screen.game.core.GameWrapper;
+import com.aramirezochoa.nyamnyam.screen.game.core.GameplayContext;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.Avatar;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.enemy.Enemy;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.enemy.EnemyType;
@@ -43,37 +43,37 @@ public class EntityFactory {
         return entity;
     }
 
-    public static MainAvatar mainAvatar(MainAvatarType type, float x, float y, DirectionType lookingAt, GameWrapper gameWrapper) {
+    public static MainAvatar mainAvatar(MainAvatarType type, float x, float y, DirectionType lookingAt, GameplayContext gameWrapper) {
         MainAvatar mainAvatar = entity(type.getMainAvatarClass());
         mainAvatar.init(type, x, y, lookingAt, gameWrapper);
         return mainAvatar;
     }
 
-    public static EmptyEntity empty(GameWrapper gameWrapper) {
+    public static EmptyEntity empty(GameplayContext gameWrapper) {
         EmptyEntity empty = entity(EmptyEntity.class);
         empty.init(null, 0, 0, null, gameWrapper);
         return empty;
     }
 
-    public static Enemy enemy(EnemyType enemyType, float x, float y, DirectionType lookingAt, GameWrapper gameWrapper) {
+    public static Enemy enemy(EnemyType enemyType, float x, float y, DirectionType lookingAt, GameplayContext gameWrapper) {
         Enemy enemy = entity(enemyType.getEnemyClass());
         enemy.init(enemyType, x, y, lookingAt, gameWrapper);
         return enemy;
     }
 
-    public static Air air(MealType mealType, RaiseType raiseType, float x, float y, DirectionType lookingAt, GameWrapper gameWrapper) {
+    public static Air air(MealType mealType, RaiseType raiseType, float x, float y, DirectionType lookingAt, GameplayContext gameWrapper) {
         Air air = entity(Air.class);
         air.init(mealType, x, y, lookingAt, gameWrapper, raiseType);
         return air;
     }
 
-    public static AirTornado tornado(MealType mealType, RaiseType raiseType, float x, float y, DirectionType lookingAt, GameWrapper gameWrapper) {
+    public static AirTornado tornado(MealType mealType, RaiseType raiseType, float x, float y, DirectionType lookingAt, GameplayContext gameWrapper) {
         AirTornado tornado = entity(AirTornado.class);
         tornado.init(mealType, x, y, lookingAt, gameWrapper, raiseType);
         return tornado;
     }
 
-    public static AirSpikes spikes(MealType mealType, RaiseType raiseType, float x, float y, DirectionType lookingAt, GameWrapper gameWrapper) {
+    public static AirSpikes spikes(MealType mealType, RaiseType raiseType, float x, float y, DirectionType lookingAt, GameplayContext gameWrapper) {
         AirSpikes spikes = entity(AirSpikes.class);
         spikes.init(mealType, x, y, lookingAt, gameWrapper, raiseType);
         return spikes;
@@ -85,19 +85,19 @@ public class EntityFactory {
         return candy;
     }
 
-    public static Boost boost(float x, float y, MealType boostType, GameWrapper gameWrapper, boolean expiring) {
+    public static Boost boost(float x, float y, MealType boostType, GameplayContext gameWrapper, boolean expiring) {
         Boost boost = entity(Boost.class);
         boost.init(x, y, boostType, gameWrapper, expiring);
         return boost;
     }
 
-    public static Verdure randomVerdure(float x, float y, GameWrapper gameWrapper) {
+    public static Verdure randomVerdure(float x, float y, GameplayContext gameWrapper) {
         Verdure verdure = entity(Verdure.class);
         verdure.init(x, y, MealType.randomVerdure(), gameWrapper);
         return verdure;
     }
 
-    public static Fruit fruit(float x, float y, MealType mealType, GameWrapper gameWrapper) {
+    public static Fruit fruit(float x, float y, MealType mealType, GameplayContext gameWrapper) {
         Fruit fruit = entity(Fruit.class);
         fruit.init(x, y, mealType, gameWrapper);
         return fruit;
@@ -135,7 +135,7 @@ public class EntityFactory {
         return tfly;
     }
 
-    public static PetGlutyAvatar gluty(float x, float y, DirectionType lookingAt, GameWrapper gameWrapper) {
+    public static PetGlutyAvatar gluty(float x, float y, DirectionType lookingAt, GameplayContext gameWrapper) {
         PetGlutyAvatar gluty = entity(PetGlutyAvatar.class);
         gluty.init(x, y, lookingAt, gameWrapper);
         return gluty;

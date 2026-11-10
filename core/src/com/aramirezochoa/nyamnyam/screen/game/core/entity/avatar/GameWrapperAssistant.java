@@ -1,13 +1,12 @@
 package com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar;
 
-import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.aramirezochoa.nyamnyam.Constant;
 import com.aramirezochoa.nyamnyam.screen.game.core.TileType;
+import com.aramirezochoa.nyamnyam.screen.game.core.CollisionWorld;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.Entity;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.enemy.Enemy;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.Projectile;
@@ -17,7 +16,6 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.Projectile;
  */
 public class GameWrapperAssistant {
 
-    private static final String COLLISION_LAYER = "collision";
     private static Pool<Rectangle> rectPool = new Pool<Rectangle>() {
         @Override
         protected Rectangle newObject() {
@@ -53,11 +51,12 @@ public class GameWrapperAssistant {
         // Check collisions
         checkSides(entity);
         checkBottom(entity);
-        if (collideAllTiles) {
+        CollisionWorld collisionWorld = entity.getParent().getCollisionWorld();
+        if (collideAllTiles || collisionWorld.isEnclosed()) {
             checkTop(entity);
         }
-        checkCollisionX(entity, entity.getParent().getMap(), collideAllTiles);
-        checkCollisionY(entity, entity.getParent().getMap(), collideAllTiles);
+        checkCollisionX(entity, collisionWorld, collideAllTiles);
+        checkCollisionY(entity, collisionWorld, collideAllTiles);
 
         entity.position.add(entity.velocity);
         entity.velocity.scl(1 / deltaTime);
@@ -74,14 +73,14 @@ public class GameWrapperAssistant {
 
         // Check collisions
         checkSides(entity);
-        if (entity.position.y < Constant.TILE_SIZE) {
-            entity.position.y = Constant.TILE_SIZE;
+        CollisionWorld collisionWorld = entity.getParent().getCollisionWorld();
+        int tileSize = collisionWorld.getTileSize();
+        if (entity.position.y < tileSize) {
+            entity.position.y = tileSize;
             entity.velocity.y = 0;
         }
-        TiledMapTileLayer ground = (TiledMapTileLayer) entity.getParent().getMap().getLayers().get("ground");
-        float mapHeight = ground.getHeight() * ground.getTileHeight();
-        if (entity.position.y + entity.dimension.y > mapHeight - Constant.TILE_SIZE) {
-            entity.position.y = mapHeight - Constant.TILE_SIZE - entity.dimension.y;
+        if (entity.position.y + entity.dimension.y > collisionWorld.getHeight() - tileSize) {
+            entity.position.y = collisionWorld.getHeight() - tileSize - entity.dimension.y;
             entity.velocity.y = 0;
         }
 
@@ -104,8 +103,8 @@ public class GameWrapperAssistant {
         projectile.velocity.scl(deltaTime);
 
         if (tileCollision) {
-            checkCollisionX(projectile, projectile.getParent().getMap(), true);
-            checkCollisionY(projectile, projectile.getParent().getMap(), true);
+            checkCollisionX(projectile, projectile.getParent().getCollisionWorld(), true);
+            checkCollisionY(projectile, projectile.getParent().getCollisionWorld(), true);
         }
 
         projectile.position.add(projectile.velocity);
@@ -136,7 +135,7 @@ public class GameWrapperAssistant {
         entity.dampVelocity();
     }
 
-    private static void checkCollisionX(Entity entity, TiledMap map, boolean collideAllTiles) {
+    private static void checkCollisionX(Entity entity, CollisionWorld collisionWorld, boolean collideAllTiles) {
 
         Rectangle avatarRect = createRectangleFromEntity(entity);
         avatarRect.x += entity.velocity.x;
@@ -154,7 +153,7 @@ public class GameWrapperAssistant {
         }
         startY = (int) (entity.position.y);
         endY = (int) (entity.position.y + entity.dimension.y);
-        getTiles(startX, startY, endX, endY, tiles, map, entity.velocity.x > 0);
+        getTiles(startX, startY, endX, endY, tiles, collisionWorld, entity.velocity.x > 0);
 
         boolean walled = false;
         for (Rectangle tile : tiles) {
@@ -168,8 +167,8 @@ public class GameWrapperAssistant {
                     entity.velocity.x = 0;
                     walled = true;
                 } else {
-                    TiledMapTileLayer.Cell cell = getCell(tile.x, tile.y, map);
-                    TileType tileType = TileType.getTileType(cell);
+                    int tileSize = collisionWorld.getTileSize();
+                    TileType tileType = collisionWorld.getTileType((int) tile.x / tileSize, (int) tile.y / tileSize);
                     if (!TileType.NO_BLOCK.equals(tileType)) {
                         if (tileType.checkCollisionX(entity.position.x + entity.dimension.x / 2, entity.position.y, sidePosition.x, sidePosition.y, tile)) {
                             if (entity.velocity.x > 0) {
@@ -190,7 +189,7 @@ public class GameWrapperAssistant {
         rectPool.free(avatarRect);
     }
 
-    private static void checkCollisionY(Entity entity, TiledMap map, boolean collideAllTiles) {
+    private static void checkCollisionY(Entity entity, CollisionWorld collisionWorld, boolean collideAllTiles) {
 
         Rectangle avatarRect = rectPool.obtain();
         avatarRect.set(entity.position.x, entity.position.y, entity.dimension.x, entity.dimension.y);
@@ -205,15 +204,16 @@ public class GameWrapperAssistant {
         int startX, startY, endX, endY;
         if (entity.velocity.y <= 0) {
             startY = (int) (avatarRect.y);
-            endY = (int) (avatarRect.y) + Constant.TILE_SIZE;
+            endY = (int) (avatarRect.y) + collisionWorld.getTileSize();
         } else {
             startY = endY = (int) (avatarRect.y + avatarRect.height);
         }
         startX = (int) avatarRect.x + 5;
         endX = (int) (avatarRect.x + avatarRect.getWidth() - 5);
-        getTiles(startX, startY, endX, endY, tiles, map, entity.velocity.x >= 0);
+        getTiles(startX, startY, endX, endY, tiles, collisionWorld, entity.velocity.x >= 0);
 
-        entity.grounded = false;
+        entity.grounded = collisionWorld.isEnclosed()
+                && entity.position.y <= collisionWorld.getTileSize();
         // It gets the tiles ordered depending on the direction side (left/right)
         for (Rectangle tile : tiles) {
             if (avatarRect.overlaps(tile)) {
@@ -226,7 +226,8 @@ public class GameWrapperAssistant {
                     }
                     entity.velocity.y = 0;
                 } else {
-                    TileType tileType = TileType.getTileType(getCell(tile.x, tile.y, map));
+                    int tileSize = collisionWorld.getTileSize();
+                    TileType tileType = collisionWorld.getTileType((int) tile.x / tileSize, (int) tile.y / tileSize);
                     if (!TileType.NO_BLOCK.equals(tileType)) {
                         if (entity.velocity.y <= 0) {
                             Vector2 intersection = tileType.checkCollisionY(entity.position.x + entity.dimension.x / 2, entity.position.y, collisionPoint.x, collisionPoint.y, tile);
@@ -246,31 +247,42 @@ public class GameWrapperAssistant {
     }
 
     private static void checkTop(Entity entity) {
-        TiledMapTileLayer ground = (TiledMapTileLayer) entity.getParent().getMap().getLayers().get("ground");
-        float mapHeight = ground.getHeight() * ground.getTileHeight();
-        if (entity.position.y > mapHeight + entity.dimension.y) {
+        CollisionWorld collisionWorld = entity.getParent().getCollisionWorld();
+        float top = collisionWorld.getHeight() - collisionWorld.getTileSize();
+        if (collisionWorld.isEnclosed()) {
+            if (entity.position.y + entity.dimension.y > top) {
+                entity.position.y = top - entity.dimension.y;
+                entity.velocity.y = 0;
+            }
+        } else if (entity.position.y > collisionWorld.getHeight() + entity.dimension.y) {
             entity.position.y = -entity.dimension.y;
         }
     }
 
     private static void checkBottom(Entity entity) {
-        TiledMapTileLayer ground = (TiledMapTileLayer) entity.getParent().getMap().getLayers().get("ground");
-        float mapHeight = ground.getHeight() * ground.getTileHeight();
-        if (entity.position.y < -entity.dimension.y) {
-            entity.position.y = mapHeight;
+        CollisionWorld collisionWorld = entity.getParent().getCollisionWorld();
+        float bottom = collisionWorld.getTileSize();
+        if (collisionWorld.isEnclosed()) {
+            if (entity.position.y < bottom) {
+                entity.position.y = bottom;
+                entity.velocity.y = 0;
+                entity.grounded = true;
+            }
+        } else if (entity.position.y < -entity.dimension.y) {
+            entity.position.y = collisionWorld.getHeight();
         }
     }
 
     private static void checkSides(Entity entity) {
-        TiledMapTileLayer ground = (TiledMapTileLayer) entity.getParent().getMap().getLayers().get("ground");
-        float mapWidth = ground.getWidth() * ground.getTileWidth();
-        if (entity.position.x < Constant.TILE_SIZE) {
-            entity.position.x = Constant.TILE_SIZE;
+        CollisionWorld collisionWorld = entity.getParent().getCollisionWorld();
+        float tileSize = collisionWorld.getTileSize();
+        if (entity.position.x < tileSize) {
+            entity.position.x = tileSize;
             entity.velocity.x = 0;
             entity.notifyWall();
         }
-        if (entity.position.x + entity.dimension.x > mapWidth - Constant.TILE_SIZE) {
-            entity.position.x = mapWidth - entity.dimension.x - Constant.TILE_SIZE;
+        if (entity.position.x + entity.dimension.x > collisionWorld.getWidth() - tileSize) {
+            entity.position.x = collisionWorld.getWidth() - entity.dimension.x - tileSize;
             entity.velocity.x = 0;
             entity.notifyWall();
         }
@@ -292,17 +304,15 @@ public class GameWrapperAssistant {
         }*/
     }
 
-    private static void getTiles(int startX, int startY, int endX, int endY, Array<Rectangle> tiles, TiledMap map, boolean right) {
-        TiledMapTileLayer layer = (TiledMapTileLayer) map.getLayers().get(COLLISION_LAYER);
-        int tileSize = Constant.TILE_SIZE;
+    private static void getTiles(int startX, int startY, int endX, int endY, Array<Rectangle> tiles, CollisionWorld collisionWorld, boolean right) {
+        int tileSize = collisionWorld.getTileSize();
         rectPool.freeAll(tiles);
         tiles.clear();
 
         if (right) {
             for (int y = startY / tileSize; y <= endY / tileSize; y++) {
                 for (int x = startX / tileSize; x <= endX / tileSize; x++) {
-                    TiledMapTileLayer.Cell cell = layer.getCell(x, y);
-                    if (cell != null) {
+                    if (collisionWorld.hasTile(x, y)) {
                         Rectangle rect = rectPool.obtain();
                         rect.set(x * tileSize, y * tileSize, tileSize, tileSize);
                         tiles.add(rect);
@@ -312,8 +322,7 @@ public class GameWrapperAssistant {
         } else {
             for (int y = startY / tileSize; y <= endY / tileSize; y++) {
                 for (int x = endX / tileSize; x >= startX / tileSize; x--) {
-                    TiledMapTileLayer.Cell cell = layer.getCell(x, y);
-                    if (cell != null) {
+                    if (collisionWorld.hasTile(x, y)) {
                         Rectangle rect = rectPool.obtain();
                         rect.set(x * tileSize, y * tileSize, tileSize, tileSize);
                         tiles.add(rect);
@@ -323,25 +332,19 @@ public class GameWrapperAssistant {
         }
     }
 
-    private static TiledMapTileLayer.Cell getCell(float x, float y, TiledMap map) {
-        TiledMapTileLayer layer = (TiledMapTileLayer) map.getLayers().get(COLLISION_LAYER);
-        return layer.getCell((int) x / Constant.TILE_SIZE, (int) y / Constant.TILE_SIZE);
-    }
-
     private static Rectangle createRectangleFromEntity(Entity entity) {
         Rectangle rect = rectPool.obtain();
         rect.set(entity.position.x, entity.position.y, entity.dimension.x, entity.dimension.y);
         return rect;
     }
 
-    public static boolean isNextStepGrounded(Enemy enemy, TiledMap map) {
+    public static boolean isNextStepGrounded(Enemy enemy, CollisionWorld collisionWorld) {
         boolean isGrounded = false;
         Rectangle avatarRect = rectPool.obtain();
         avatarRect.set(enemy.position.x, enemy.position.y, enemy.dimension.x, enemy.dimension.y);
         avatarRect.x += Math.signum(enemy.velocity.x) * (enemy.dimension.x / 2);
-        TiledMapTileLayer ground = (TiledMapTileLayer) map.getLayers().get("ground");
-        float mapWidth = ground.getWidth() * ground.getTileWidth();
-        if (avatarRect.x < Constant.TILE_SIZE || avatarRect.x > mapWidth - Constant.TILE_SIZE) {
+        float mapWidth = collisionWorld.getWidth();
+        if (avatarRect.x < collisionWorld.getTileSize() || avatarRect.x > mapWidth - collisionWorld.getTileSize()) {
             avatarRect.x = enemy.position.x;
         }
         avatarRect.y -= 5f;
@@ -352,15 +355,16 @@ public class GameWrapperAssistant {
 
         int startX, startY, endX, endY;
         startY = (int) (avatarRect.y);
-        endY = (int) (avatarRect.y) + Constant.TILE_SIZE;
+        endY = (int) (avatarRect.y) + collisionWorld.getTileSize();
         startX = (int) avatarRect.x;
         endX = (int) (avatarRect.x + avatarRect.getWidth() - 1);
 
-        getTiles(startX, startY, endX, endY, tiles, map, enemy.velocity.x >= 0);
+        getTiles(startX, startY, endX, endY, tiles, collisionWorld, enemy.velocity.x >= 0);
 
         for (Rectangle tile : tiles) {
             if (avatarRect.overlaps(tile)) {
-                TileType tileType = TileType.getTileType(getCell(tile.x, tile.y, map));
+                int tileSize = collisionWorld.getTileSize();
+                TileType tileType = collisionWorld.getTileType((int) tile.x / tileSize, (int) tile.y / tileSize);
                 if (!TileType.NO_BLOCK.equals(tileType)) {
                     Vector2 intersection = tileType.checkCollisionY(enemy.position.x + enemy.dimension.x / 2, enemy.position.y, collisionPoint.x, collisionPoint.y, tile);
                     if (intersection != null) {

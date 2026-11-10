@@ -1,5 +1,6 @@
 package com.aramirezochoa.nyamnyam.screen.game.room;
 
+import java.util.EnumMap;
 import com.aramirezochoa.nyamnyam.screen.game.core.TileType;
 
 /** Mutable room cells with collision types cached and refreshed when a cell changes. */
@@ -10,6 +11,7 @@ public class RoomInstance {
     private final int tileSize;
     private final RoomMaterial[][] materials;
     private final TileType[][] collisionTypes;
+    private final EnumMap<RoomMaterial, RoomAppearance> appearances = new EnumMap<RoomMaterial, RoomAppearance>(RoomMaterial.class);
 
     RoomInstance(int width, int height, int tileSize, RoomMaterial[][] sourceMaterials) {
         this.width = width;
@@ -43,6 +45,18 @@ public class RoomInstance {
     public TileType getCollisionTypeAt(int x, int y) {
         checkCoordinates(x, y);
         return collisionTypes[y][x];
+    }
+
+    public void setAppearance(RoomMaterial material, RoomAppearance appearance) {
+        if (material == null || appearance == null) {
+            throw new IllegalArgumentException("Material and appearance are required");
+        }
+        appearances.put(material, appearance);
+    }
+
+    public RoomAppearance getAppearanceAt(int x, int y) {
+        RoomMaterial material = getMaterialAt(x, y);
+        return material == null ? null : appearances.get(material);
     }
 
     /** Use a null material to make the cell empty. */

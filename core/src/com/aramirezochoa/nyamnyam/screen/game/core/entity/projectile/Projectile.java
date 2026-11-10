@@ -1,6 +1,6 @@
 package com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile;
 
-import com.aramirezochoa.nyamnyam.screen.game.core.GameWrapper;
+import com.aramirezochoa.nyamnyam.screen.game.core.GameplayContext;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.Entity;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.EntityFactory;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.EntityType;
@@ -22,7 +22,7 @@ public class Projectile extends Entity {
     private boolean friendly, transformToCandy;
     private int germination;
 
-    public void init(EntityType type, float x, float y, DirectionType lookingAt, GameWrapper gameWrapper, boolean friendly, boolean transformToCandy, Avatar pitcher) {
+    public void init(EntityType type, float x, float y, DirectionType lookingAt, GameplayContext gameWrapper, boolean friendly, boolean transformToCandy, Avatar pitcher) {
         this.friendly = friendly;
         this.transformToCandy = transformToCandy;
         this.pitcher = pitcher;
@@ -30,7 +30,7 @@ public class Projectile extends Entity {
         super.init(type, x, y, lookingAt, gameWrapper);
     }
 
-    public void init(EntityType type, float x, float y, DirectionType lookingAt, GameWrapper gameWrapper, boolean friendly, boolean transformToCandy, int germination) {
+    public void init(EntityType type, float x, float y, DirectionType lookingAt, GameplayContext gameWrapper, boolean friendly, boolean transformToCandy, int germination) {
         this.friendly = friendly;
         this.transformToCandy = transformToCandy;
         super.init(type, x, y, lookingAt, gameWrapper);

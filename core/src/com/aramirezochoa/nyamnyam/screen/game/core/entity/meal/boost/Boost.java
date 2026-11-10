@@ -1,7 +1,7 @@
 package com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.boost;
 
 import com.aramirezochoa.nyamnyam.Constant;
-import com.aramirezochoa.nyamnyam.screen.game.core.GameWrapper;
+import com.aramirezochoa.nyamnyam.screen.game.core.GameplayContext;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.Meal;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.MealType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.EntityState;
@@ -14,7 +14,7 @@ public class Boost extends Meal {
 
     private boolean expiring;
 
-    public void init(float x, float y, MealType boostType, GameWrapper gameWrapper, boolean expiring) {
+    public void init(float x, float y, MealType boostType, GameplayContext gameWrapper, boolean expiring) {
         this.expiring = expiring;
         super.init(boostType, x, y, lookingAt, gameWrapper);
         acceleration.y = 0;

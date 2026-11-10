@@ -2,7 +2,6 @@ package com.aramirezochoa.nyamnyam.screen.game.core.entity.state.projectile;
 
 import com.aramirezochoa.nyamnyam.Constant;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.GameWrapperAssistant;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.types.DirectionType;
 
 /**
@@ -23,11 +22,11 @@ public class ParabolicProjectileState extends ProjectileState {
     @Override
     public boolean update(float deltaTime) {
         GameWrapperAssistant.updateProjectile(getProjectile(), deltaTime, getProjectile().getType().isTileCollision());
-        TiledMapTileLayer ground = (TiledMapTileLayer) getProjectile().getParent().getMap().getLayers().get("ground");
-        float mapWidth = ground.getWidth() * ground.getTileWidth();
+        float mapWidth = getProjectile().getParent().getCollisionWorld().getWidth();
+        int tileSize = getProjectile().getParent().getCollisionWorld().getTileSize();
         if (getProjectile().position.y < -getProjectile().dimension.y
-                || getProjectile().position.x < Constant.TILE_SIZE
-                || getProjectile().position.x + getProjectile().dimension.x > mapWidth - Constant.TILE_SIZE) {
+                || getProjectile().position.x < tileSize
+                || getProjectile().position.x + getProjectile().dimension.x > mapWidth - tileSize) {
             return true;
         }
         return false;

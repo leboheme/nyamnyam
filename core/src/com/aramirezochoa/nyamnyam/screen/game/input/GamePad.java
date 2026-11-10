@@ -29,7 +29,7 @@ public class GamePad extends InputAdapter implements GameScreen.GameScreenCompon
     private final ExtendViewport viewport;
     private Vector3 coords = new Vector3();
 
-    public GamePad(MediaManager mediaManager, final GameWrapper gameWrapper, ExtendViewport viewport) {
+    public GamePad(MediaManager mediaManager, final PlayerActions playerActions, ExtendViewport viewport) {
         this.batch = new SpriteBatch();
         this.viewport = viewport;
         this.camera = (OrthographicCamera) viewport.getCamera();
@@ -42,28 +42,28 @@ public class GamePad extends InputAdapter implements GameScreen.GameScreenCompon
         leftButton = new Button(atlas.findRegion("BUTTON", 0), atlas.findRegion("BUTTON", 1), 8, 8, camera, Constant.GAME_BUTTON_PAD_WIDTH, Constant.GAME_BUTTON_PAD_HEIGHT) {
             @Override
             public void execute() {
-                gameWrapper.getEntityWorld().getMainAvatar().left();
+                playerActions.left();
             }
         };
         // Right button
         rightButton = new Button(atlas.findRegion("BUTTON", 0), atlas.findRegion("BUTTON", 1), 96, 8, camera, Constant.GAME_BUTTON_PAD_WIDTH, Constant.GAME_BUTTON_PAD_HEIGHT) {
             @Override
             public void execute() {
-                gameWrapper.getEntityWorld().getMainAvatar().right();
+                playerActions.right();
             }
         };
         // Fire button
         fireButton = new Button(atlas.findRegion("BUTTON", 0), atlas.findRegion("BUTTON", 1), 176, 8, camera, Constant.GAME_BUTTON_PAD_WIDTH, Constant.GAME_BUTTON_PAD_HEIGHT) {
             @Override
             public void execute() {
-                gameWrapper.getEntityWorld().getMainAvatar().fire();
+                playerActions.fire();
             }
         };
         // Jump button
         jumpButton = new Button(atlas.findRegion("BUTTON", 0), atlas.findRegion("BUTTON", 1), 264, 8, camera, Constant.GAME_BUTTON_PAD_WIDTH, Constant.GAME_BUTTON_PAD_HEIGHT) {
             @Override
             public void execute() {
-                gameWrapper.getEntityWorld().getMainAvatar().jump();
+                playerActions.jump();
             }
         };
     }
@@ -94,6 +94,17 @@ public class GamePad extends InputAdapter implements GameScreen.GameScreenCompon
         fireButton.setPosition(176 + rightOffset, 8);
         jumpButton.setPosition(264 + rightOffset, 8);
         batch.setProjectionMatrix(camera.combined);
+    }
+
+    public void setFireVisible(boolean visible) {
+        fireButton.setVisible(visible);
+    }
+
+    public interface PlayerActions {
+        void left();
+        void right();
+        void fire();
+        void jump();
     }
 
     @Override
@@ -140,6 +151,7 @@ public class GamePad extends InputAdapter implements GameScreen.GameScreenCompon
         private TextureRegion currentFrame;
         private float x, y;
         private boolean pressed;
+        private boolean visible = true;
         private final Rectangle box = new Rectangle();
         private int pointer;
         private Vector3 coords = new Vector3();
@@ -162,6 +174,10 @@ public class GamePad extends InputAdapter implements GameScreen.GameScreenCompon
         public abstract void execute();
 
         public void update(float deltaTime) {
+            if (!visible) {
+                setPressed(false);
+                return;
+            }
             if (pressed) {
                 execute();
             }
@@ -174,6 +190,9 @@ public class GamePad extends InputAdapter implements GameScreen.GameScreenCompon
         }
 
         public void render(Batch batch) {
+            if (!visible) {
+                return;
+            }
             batch.begin();
             batch.draw(currentFrame, x, y);
             batch.end();
@@ -190,7 +209,14 @@ public class GamePad extends InputAdapter implements GameScreen.GameScreenCompon
         }
 
         public boolean contains(float screenX, float screenY) {
-            return box.contains(screenX, screenY);
+            return visible && box.contains(screenX, screenY);
+        }
+
+        public void setVisible(boolean visible) {
+            this.visible = visible;
+            if (!visible) {
+                setPressed(false);
+            }
         }
 
         public void setPressed(boolean pressed) {
