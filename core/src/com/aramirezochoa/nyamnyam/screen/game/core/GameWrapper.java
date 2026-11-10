@@ -50,6 +50,7 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     private final RunState runState;
     private final EntityWorld entityWorld = new EntityWorld();
     private final StageContentSpawner stageContentSpawner = new StageContentSpawner(this);
+    private final StageTimers stageTimers = new StageTimers();
     private boolean showRoomPreview;
 
     private GameStatus gameStatus;
@@ -61,8 +62,7 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     public static boolean debug;
     private boolean bossLevel;
 
-    private float levelDarkTimer, levelHurryTimer;
-    private boolean noMoreEnemies, hurryAdvised;
+    private boolean noMoreEnemies;
 
     public GameWrapper(MediaManager mediaManager, GameStatus gameStatus, GameUserInterface gameUserInterface,
                        RunState runState) {
@@ -106,11 +106,9 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
 
     private void initLevelTime() {
         gameUserInterface.showMessage("");
-        levelDarkTimer = Constant.GAME_LEVEL_DARK_TIME;
-        levelHurryTimer = Constant.GAME_LEVEL_HURRY_TIME;
+        stageTimers.reset();
         entityWorld.setDark(null);
         noMoreEnemies = false;
-        hurryAdvised = false;
     }
 
     private void setBackground(MediaManager mediaManager) {
@@ -162,26 +160,19 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
     }
 
     private void checkLevelTime(float deltaTime) {
-        if (!bossLevel) {
-            if (levelHurryTimer < 0 && !hurryAdvised) {
-                getMediaManager().playSound(MediaManager.SOUND_HURRY);
-                gameUserInterface.showMessage(LanguageManager.INSTANCE.getString("hurry"));
-                hurryAdvised = true;
-                for (Enemy enemy : entityWorld.getEnemies()) {
-                    enemy.anger(true);
-                }
-            } else {
-                levelHurryTimer -= deltaTime;
+        if (stageTimers.updateHurry(deltaTime, bossLevel)) {
+            getMediaManager().playSound(MediaManager.SOUND_HURRY);
+            gameUserInterface.showMessage(LanguageManager.INSTANCE.getString("hurry"));
+            for (Enemy enemy : entityWorld.getEnemies()) {
+                enemy.anger(true);
             }
-            if (levelDarkTimer < 0) {
-                if (entityWorld.getDark() != null) {
-                    entityWorld.getDark().update(deltaTime);
-                } else if (!noMoreEnemies) {
-                    getMediaManager().playSound(MediaManager.SOUND_DARK);
-                    entityWorld.setDark(EntityFactory.enemy(EnemyType.DARK, Constant.DARK_SPAWN_POSITION.x, Constant.DARK_SPAWN_POSITION.y, DirectionType.RIGHT, this));
-                }
-            } else {
-                levelDarkTimer -= deltaTime;
+        }
+        if (stageTimers.updateDark(deltaTime, bossLevel)) {
+            if (entityWorld.getDark() != null) {
+                entityWorld.getDark().update(deltaTime);
+            } else if (!noMoreEnemies) {
+                getMediaManager().playSound(MediaManager.SOUND_DARK);
+                entityWorld.setDark(EntityFactory.enemy(EnemyType.DARK, Constant.DARK_SPAWN_POSITION.x, Constant.DARK_SPAWN_POSITION.y, DirectionType.RIGHT, this));
             }
         }
     }
