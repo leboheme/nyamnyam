@@ -56,7 +56,28 @@ public class RoomLoader {
             }
         }
 
-        return new RoomInstance(config.width, config.height, config.tileSize, materials);
+        RoomLayout layout = loadFirstLayout(config, internalPath);
+        return new RoomInstance(config.width, config.height, config.tileSize, materials, layout);
+    }
+
+    private RoomLayout loadFirstLayout(RoomConfig config, String internalPath) {
+        RoomLayout layout = new RoomLayout();
+        if (config.layouts == null || config.layouts.length == 0) {
+            return layout;
+        }
+        RoomLayoutConfig source = config.layouts[0];
+        if (source == null || source.enemies == null) {
+            return layout;
+        }
+        for (EnemySpawnConfig enemy : source.enemies) {
+            if (enemy == null || enemy.type == null || enemy.facing == null
+                    || enemy.x < 0 || enemy.x >= config.width
+                    || enemy.y < 0 || enemy.y >= config.height) {
+                throw new IllegalArgumentException("Invalid enemy spawn in " + internalPath);
+            }
+            layout.addEnemy(new RoomEnemySpawn(enemy.type, enemy.x, enemy.y, enemy.facing));
+        }
+        return layout;
     }
 
     public RoomInstance loadIfPresent(String internalPath) {

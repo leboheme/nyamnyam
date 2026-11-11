@@ -11,6 +11,7 @@ public class RoomConfig {
     public int tileSize;
     public HashMap<String, RoomMaterial> materials;
     public String[] cells;
+    public RoomLayoutConfig[] layouts;
 
     public RoomConfig() {
     }

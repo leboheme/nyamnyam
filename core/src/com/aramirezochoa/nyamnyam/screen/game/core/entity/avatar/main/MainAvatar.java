@@ -46,6 +46,7 @@ public abstract class MainAvatar extends Avatar {
         fireTimer = 0;
         fireEnabled = true;
         jumpIfPossible = false;
+        secondJump = false;
         petBoost = false;
         garlicBoost = false;
         chilliBoost = false;
@@ -80,7 +81,7 @@ public abstract class MainAvatar extends Avatar {
                 scareEnemies(false);
             }
         }
-        if (velocity.y == 0) {
+        if (grounded) {
             secondJump = false;
         }
     }
@@ -244,7 +245,7 @@ public abstract class MainAvatar extends Avatar {
 
     public void jump() {
         if (canPerformAction()) {
-            if (velocity.y == 0) {
+            if (grounded) {
                 createJump();
             } else if (velocity.y < 0) {
                 jumpIfPossible = true;

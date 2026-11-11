@@ -11,12 +11,14 @@ public class RoomInstance {
     private final int tileSize;
     private final RoomMaterial[][] materials;
     private final TileType[][] collisionTypes;
+    private final RoomLayout layout;
     private final EnumMap<RoomMaterial, RoomAppearance> appearances = new EnumMap<RoomMaterial, RoomAppearance>(RoomMaterial.class);
 
-    RoomInstance(int width, int height, int tileSize, RoomMaterial[][] sourceMaterials) {
+    RoomInstance(int width, int height, int tileSize, RoomMaterial[][] sourceMaterials, RoomLayout layout) {
         this.width = width;
         this.height = height;
         this.tileSize = tileSize;
+        this.layout = layout;
         materials = new RoomMaterial[height][width];
         collisionTypes = new TileType[height][width];
         for (int y = 0; y < height; y++) {
@@ -35,6 +37,10 @@ public class RoomInstance {
 
     public int getTileSize() {
         return tileSize;
+    }
+
+    public RoomLayout getLayout() {
+        return layout;
     }
 
     public RoomMaterial getMaterialAt(int x, int y) {

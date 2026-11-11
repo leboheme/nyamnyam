@@ -71,7 +71,7 @@ public class GameScreen extends AbstractScreen {
             @Override public void left() { if (player() != null) player().left(); }
             @Override public void right() { if (player() != null) player().right(); }
             @Override public void fire() {
-                if (runRuntime == null && player() != null) player().fire();
+                if (player() != null) player().fire();
             }
             @Override public void jump() { if (player() != null) player().jump(); }
         }, hudViewport);
@@ -109,8 +109,6 @@ public class GameScreen extends AbstractScreen {
         } else {
             gameWrapper.init(getMediaManager(), gameStatus);
         }
-        gamePad.setFireVisible(runRuntime == null);
-
         gameStatus.setGameState(GameState.IN_GAME);
     }
 

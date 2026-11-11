@@ -15,6 +15,7 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.main.MainAvatar
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.types.DirectionType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.Meal;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.Projectile;
+import com.aramirezochoa.nyamnyam.screen.game.room.RoomEnemySpawn;
 import com.aramirezochoa.nyamnyam.screen.game.room.RoomInstance;
 import com.aramirezochoa.nyamnyam.screen.game.room.RoomRenderer;
 import com.aramirezochoa.nyamnyam.screen.game.status.GameStatus;
@@ -48,6 +49,7 @@ public class RunRuntime implements GameplayContext {
         roomRenderer = new RoomRenderer(mediaManager.get("data/stages/tiles.png"));
         collisionWorld = new RoomCollisionWorld(runState.getCurrentRoom());
         loadMainAvatar();
+        loadEnemies();
     }
 
     public void update(float deltaTime) {
@@ -56,6 +58,7 @@ public class RunRuntime implements GameplayContext {
             if (Gdx.input.isKeyPressed(Input.Keys.A)) player.left();
             if (Gdx.input.isKeyPressed(Input.Keys.D)) player.right();
             if (Gdx.input.isKeyPressed(Input.Keys.W)) player.jump();
+            if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) player.fire();
         }
         entityWorld.update(deltaTime);
     }
@@ -103,6 +106,21 @@ public class RunRuntime implements GameplayContext {
             avatar = EntityFactory.empty(this);
         }
         entityWorld.setMainAvatar(avatar);
+    }
+
+    private void loadEnemies() {
+        RoomInstance room = runState.getCurrentRoom();
+        if (room == null || room.getLayout() == null) {
+            return;
+        }
+        int tileSize = room.getTileSize();
+        for (int i = 0; i < room.getLayout().getEnemies().size; i++) {
+            RoomEnemySpawn spawn = room.getLayout().getEnemies().get(i);
+            Enemy enemy = EntityFactory.enemy(spawn.getType(),
+                    (spawn.getX() + 1) * tileSize, (spawn.getY() + 1) * tileSize,
+                    spawn.getFacing(), this);
+            entityWorld.addEnemy(enemy);
+        }
     }
 
     @Override public TextureAtlas getTextureAtlas() { return textureAtlas; }

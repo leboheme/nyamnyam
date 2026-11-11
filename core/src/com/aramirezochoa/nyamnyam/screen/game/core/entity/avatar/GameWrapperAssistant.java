@@ -213,7 +213,8 @@ public class GameWrapperAssistant {
         getTiles(startX, startY, endX, endY, tiles, collisionWorld, entity.velocity.x >= 0);
 
         entity.grounded = collisionWorld.isEnclosed()
-                && entity.position.y <= collisionWorld.getTileSize();
+                && entity.position.y <= collisionWorld.getTileSize()
+                && entity.velocity.y <= 0;
         // It gets the tiles ordered depending on the direction side (left/right)
         for (Rectangle tile : tiles) {
             if (avatarRect.overlaps(tile)) {
@@ -250,7 +251,8 @@ public class GameWrapperAssistant {
         CollisionWorld collisionWorld = entity.getParent().getCollisionWorld();
         float top = collisionWorld.getHeight() - collisionWorld.getTileSize();
         if (collisionWorld.isEnclosed()) {
-            if (entity.position.y + entity.dimension.y > top) {
+            float nextTop = entity.position.y + entity.velocity.y + entity.dimension.y;
+            if (nextTop > top) {
                 entity.position.y = top - entity.dimension.y;
                 entity.velocity.y = 0;
             }
@@ -263,7 +265,8 @@ public class GameWrapperAssistant {
         CollisionWorld collisionWorld = entity.getParent().getCollisionWorld();
         float bottom = collisionWorld.getTileSize();
         if (collisionWorld.isEnclosed()) {
-            if (entity.position.y < bottom) {
+            float nextBottom = entity.position.y + entity.velocity.y;
+            if (nextBottom < bottom) {
                 entity.position.y = bottom;
                 entity.velocity.y = 0;
                 entity.grounded = true;

@@ -68,7 +68,7 @@ public class GlutyAvatar extends MainAvatar {
     @Override
     public void jump() {
         if (canPerformAction()) {
-            if (velocity.y == 0) {
+            if (grounded) {
                 createJump();
             } else if (velocity.y < 0) {
                 jumpIfPossible = true;

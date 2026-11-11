@@ -96,10 +96,6 @@ public class GamePad extends InputAdapter implements GameScreen.GameScreenCompon
         batch.setProjectionMatrix(camera.combined);
     }
 
-    public void setFireVisible(boolean visible) {
-        fireButton.setVisible(visible);
-    }
-
     public interface PlayerActions {
         void left();
         void right();
@@ -151,7 +147,6 @@ public class GamePad extends InputAdapter implements GameScreen.GameScreenCompon
         private TextureRegion currentFrame;
         private float x, y;
         private boolean pressed;
-        private boolean visible = true;
         private final Rectangle box = new Rectangle();
         private int pointer;
         private Vector3 coords = new Vector3();
@@ -174,10 +169,6 @@ public class GamePad extends InputAdapter implements GameScreen.GameScreenCompon
         public abstract void execute();
 
         public void update(float deltaTime) {
-            if (!visible) {
-                setPressed(false);
-                return;
-            }
             if (pressed) {
                 execute();
             }
@@ -190,9 +181,6 @@ public class GamePad extends InputAdapter implements GameScreen.GameScreenCompon
         }
 
         public void render(Batch batch) {
-            if (!visible) {
-                return;
-            }
             batch.begin();
             batch.draw(currentFrame, x, y);
             batch.end();
@@ -209,14 +197,7 @@ public class GamePad extends InputAdapter implements GameScreen.GameScreenCompon
         }
 
         public boolean contains(float screenX, float screenY) {
-            return visible && box.contains(screenX, screenY);
-        }
-
-        public void setVisible(boolean visible) {
-            this.visible = visible;
-            if (!visible) {
-                setPressed(false);
-            }
+            return box.contains(screenX, screenY);
         }
 
         public void setPressed(boolean pressed) {
