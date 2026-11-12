@@ -5,6 +5,7 @@ import argparse
 import base64
 import gzip
 import json
+import re
 import struct
 import zlib
 import xml.etree.ElementTree as ET
@@ -16,6 +17,73 @@ DESIGN_DIR = ROOT / "art_files" / "stages" / "rooms"
 OUTPUT_DIR = ROOT / "assets" / "data" / "rooms"
 GID_MASK = 0x1FFFFFFF
 MATERIAL_CODES = {"floor": "f"}
+JAVA_SOURCE = ROOT / "core" / "src" / "com" / "aramirezochoa" / "nyamnyam" / "screen" / "game" / "core" / "entity"
+
+
+def enum_values(source_path, enum_name):
+    source = source_path.read_text(encoding="utf-8")
+    match = re.search(r"public enum " + re.escape(enum_name) + r"\b[^\{]*\{", source)
+    if not match:
+        raise ValueError("Could not read Java enum " + enum_name)
+    start = match.end()
+    depth = 1
+    end = start
+    while end < len(source):
+        char = source[end]
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+        elif char == ";" and depth == 1:
+            break
+        end += 1
+    return set(re.findall(r"\b([A-Z][A-Z0-9_]*)\s*(?=[(,;])", source[start:end]))
+
+
+def read_content_layouts(map_root, width, height, tile_width, tile_height, source_path):
+    groups = [group for group in map_root.findall("group") if group.get("name") == "content"]
+    if len(groups) > 1:
+        raise ValueError("Room TMX may contain only one group named 'content'")
+    if not groups:
+        return []
+
+    enemy_types = enum_values(JAVA_SOURCE / "avatar" / "enemy" / "EnemyType.java", "EnemyType")
+    meal_types = enum_values(JAVA_SOURCE / "meal" / "MealType.java", "MealType")
+    layouts = []
+    map_pixel_height = height * tile_height
+    for layer in groups[0].findall("objectgroup"):
+        layout = {"name": layer.get("name", ""), "enemies": [], "meals": []}
+        for obj in layer.findall("object"):
+            name = obj.get("name")
+            if not name or obj.get("gid") is None:
+                raise ValueError("Content objects must be named tile objects in " + str(source_path))
+            x = float(obj.get("x", "0"))
+            y = float(obj.get("y", "0"))
+            tile_x = round(x / tile_width)
+            tile_y = round((map_pixel_height - y) / tile_height)
+            if abs(x - tile_x * tile_width) > 0.001 or abs((map_pixel_height - y) - tile_y * tile_height) > 0.001:
+                raise ValueError("Content objects must be aligned to the room grid: " + name)
+            if not (0 <= tile_x < width and 0 <= tile_y < height):
+                raise ValueError("Content object outside room bounds: " + name)
+
+            if name in enemy_types:
+                facing = read_properties(obj).get("facing", "RIGHT").upper()
+                if facing not in ("LEFT", "RIGHT"):
+                    raise ValueError("Invalid facing for enemy " + name + ": " + facing)
+                layout["enemies"].append({"type": name, "x": tile_x, "y": tile_y, "facing": facing})
+            elif name in meal_types:
+                if name.startswith("AIR") or name.startswith("CANDY"):
+                    raise ValueError("Air and candy are generated dynamically, not authored in room layouts: " + name)
+                properties = read_properties(obj)
+                meal = {"type": name, "x": tile_x, "y": tile_y}
+                if "expiring" in properties:
+                    meal["expiring"] = properties["expiring"].lower() == "true"
+                layout["meals"].append(meal)
+            else:
+                raise ValueError("Unknown enemy or meal enum name in content layer: " + name)
+
+        layouts.append(layout)
+    return layouts
 
 
 def read_properties(element):
@@ -121,6 +189,7 @@ def compile_room(room_id, force=False):
         "tileSize": tile_width,
         "materials": {code: material.upper() for material, code in MATERIAL_CODES.items()},
         "cells": rows,
+        "layoutDefinitions": read_content_layouts(root, width, height, tile_width, tile_height, source),
     }
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)

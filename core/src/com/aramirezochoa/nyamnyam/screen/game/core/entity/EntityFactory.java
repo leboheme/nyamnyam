@@ -97,6 +97,12 @@ public class EntityFactory {
         return verdure;
     }
 
+    public static Verdure verdure(float x, float y, MealType type, GameplayContext gameWrapper) {
+        Verdure verdure = entity(Verdure.class);
+        verdure.init(x, y, type, gameWrapper);
+        return verdure;
+    }
+
     public static Fruit fruit(float x, float y, MealType mealType, GameplayContext gameWrapper) {
         Fruit fruit = entity(Fruit.class);
         fruit.init(x, y, mealType, gameWrapper);

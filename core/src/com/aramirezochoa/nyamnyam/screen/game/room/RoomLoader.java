@@ -2,6 +2,7 @@ package com.aramirezochoa.nyamnyam.screen.game.room;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Json;
+import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.MealType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -61,23 +62,41 @@ public class RoomLoader {
     }
 
     private RoomLayout loadFirstLayout(RoomConfig config, String internalPath) {
-        RoomLayout layout = new RoomLayout();
-        if (config.layouts == null || config.layouts.length == 0) {
+        RoomLayout layout = new RoomLayout(null);
+        if (config.layoutDefinitions == null || config.layoutDefinitions.length == 0) {
             return layout;
         }
-        RoomLayoutConfig source = config.layouts[0];
-        if (source == null || source.enemies == null) {
+        RoomLayoutDefinition source = config.layoutDefinitions[0];
+        if (source == null) {
             return layout;
         }
-        for (EnemySpawnConfig enemy : source.enemies) {
-            if (enemy == null || enemy.type == null || enemy.facing == null
-                    || enemy.x < 0 || enemy.x >= config.width
-                    || enemy.y < 0 || enemy.y >= config.height) {
-                throw new IllegalArgumentException("Invalid enemy spawn in " + internalPath);
+        layout = new RoomLayout(source.name);
+        if (source.enemies != null) {
+            for (EnemySpawnConfig enemy : source.enemies) {
+                if (enemy == null || enemy.type == null || enemy.facing == null
+                        || enemy.x < 0 || enemy.x >= config.width
+                        || enemy.y < 0 || enemy.y >= config.height) {
+                    throw new IllegalArgumentException("Invalid enemy spawn in " + internalPath);
+                }
+                layout.addEnemy(new RoomEnemySpawn(enemy.type, enemy.x, enemy.y, enemy.facing));
             }
-            layout.addEnemy(new RoomEnemySpawn(enemy.type, enemy.x, enemy.y, enemy.facing));
+        }
+        if (source.meals != null) {
+            for (MealSpawnConfig meal : source.meals) {
+                if (meal == null || !isStaticMeal(meal.type)
+                        || meal.x < 0 || meal.x >= config.width
+                        || meal.y < 0 || meal.y >= config.height) {
+                    throw new IllegalArgumentException("Invalid meal spawn in " + internalPath);
+                }
+                layout.addMeal(new RoomMealSpawn(meal.type, meal.x, meal.y, meal.expiring));
+            }
         }
         return layout;
+    }
+
+    private boolean isStaticMeal(MealType type) {
+        return type != null && !type.isAir() && !type.isCandy()
+                && (type.isBoost() || type.isFruit() || type.isVerdure());
     }
 
     public RoomInstance loadIfPresent(String internalPath) {

@@ -113,10 +113,11 @@ public class Projectile extends Entity {
     }
 
     public void transform() {
+        RaiseType raiseType = getParent().getBubbleRaiseType();
         if (getParent().getEntityWorld().getMainAvatar().isTornadoBoost()) {
-            getParent().addMeal(EntityFactory.tornado(MealType.AIR_TORNADO, RaiseType.AUTOMATIC, position.x, position.y, getLookingAt(), getParent()));
+            getParent().addMeal(EntityFactory.tornado(MealType.AIR_TORNADO, raiseType, position.x, position.y, getLookingAt(), getParent()));
         } else {
-            getParent().addMeal(EntityFactory.air(MealType.AIR, RaiseType.AUTOMATIC, position.x, position.y, getLookingAt(), getParent()));
+            getParent().addMeal(EntityFactory.air(MealType.AIR, raiseType, position.x, position.y, getLookingAt(), getParent()));
         }
     }
 }

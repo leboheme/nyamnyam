@@ -19,8 +19,10 @@ public class Candy extends Meal {
 
     public float timerState;
     public EnemyType enemyTrappedType;
+    private RaiseType raiseType;
 
     public void init(Enemy enemy) {
+        raiseType = enemy.getParent().getBubbleRaiseType();
         super.init(MealType.randomCandy(), enemy.position.x, enemy.position.y, lookingAt, enemy.getParent());
         timerState = Constant.CANDY_TIME_TO_LOOSEN;
         enemyTrappedType = (EnemyType) enemy.getType();
@@ -29,7 +31,13 @@ public class Candy extends Meal {
 
     @Override
     protected EntityState getInitialState() {
-        return EntityStateFactory.sequence(MealStateFactory.raise(this, RaiseType.AUTOMATIC), MealStateFactory.liberate(this));
+        return EntityStateFactory.sequence(MealStateFactory.raise(this, raiseType), MealStateFactory.liberate(this));
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        raiseType = RaiseType.AUTOMATIC;
     }
 
     @Override

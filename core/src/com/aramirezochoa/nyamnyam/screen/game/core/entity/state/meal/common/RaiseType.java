@@ -8,6 +8,7 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.meal.MealState;
 public enum RaiseType {
 
     AUTOMATIC(RaiseAutomaticMealState.class),
+    STATIC(RaiseStaticMealState.class),
     LEFT_GUIDED(RaiseLeftGuidedMealState.class),
     RIGHT_GUIDED(RaiseRightGuidedMealState.class);
 

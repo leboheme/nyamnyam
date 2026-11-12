@@ -13,13 +13,13 @@ import com.aramirezochoa.nyamnyam.screen.game.status.GameStatus;
 /** Tracks whether the current stage is ready to finish. */
 public class StageCompletion {
 
-    private final GameWrapper gameWrapper;
+    private final GameplayContext gameplayContext;
     private float winCounter;
     private boolean extraMeal;
     private boolean noMoreEnemies;
 
-    public StageCompletion(GameWrapper gameWrapper) {
-        this.gameWrapper = gameWrapper;
+    public StageCompletion(GameplayContext gameplayContext) {
+        this.gameplayContext = gameplayContext;
     }
 
     public void reset() {
@@ -37,7 +37,7 @@ public class StageCompletion {
     }
 
     public void update(float deltaTime, GameStatus gameStatus) {
-        EntityWorld entityWorld = gameWrapper.getEntityWorld();
+        EntityWorld entityWorld = gameplayContext.getEntityWorld();
         if (!entityWorld.hasEnemies()) {
             boolean enemyTrapped = false;
             for (int i = 0; i < entityWorld.getFood().size; i++) {
@@ -57,8 +57,8 @@ public class StageCompletion {
                         Meal meal = food.get(i);
                         if (meal.getType().isAir()) {
                             meal.setCurrentState(EntityStateFactory.die(meal));
-                            gameWrapper.addMeal(EntityFactory.randomVerdure(
-                                    meal.position.x + meal.dimension.x / 2, meal.position.y, gameWrapper));
+                            gameplayContext.addMeal(EntityFactory.randomVerdure(
+                                    meal.position.x + meal.dimension.x / 2, meal.position.y, gameplayContext));
                         }
                     }
                     extraMeal = true;

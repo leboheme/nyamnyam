@@ -16,6 +16,7 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.types.Direction
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.Meal;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.Projectile;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.avatar.enemy.EnemyStateFactory;
+import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.meal.common.RaiseType;
 import com.aramirezochoa.nyamnyam.screen.game.gui.GameUserInterface;
 import com.aramirezochoa.nyamnyam.screen.game.room.RoomDebugRenderer;
 import com.aramirezochoa.nyamnyam.screen.game.room.RoomInstance;
@@ -333,6 +334,11 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
 
     public int getAutomaticAirMode() {
         return stageContentSpawner.getAutomaticAirMode();
+    }
+
+    @Override
+    public RaiseType getBubbleRaiseType() {
+        return RaiseType.AUTOMATIC;
     }
 
     public void notifyMessage(String message, float x, float y) {

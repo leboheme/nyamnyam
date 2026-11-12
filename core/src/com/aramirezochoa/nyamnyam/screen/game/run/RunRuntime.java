@@ -8,15 +8,19 @@ import com.aramirezochoa.nyamnyam.screen.game.core.EntityWorld;
 import com.aramirezochoa.nyamnyam.screen.game.core.GameplayCamera;
 import com.aramirezochoa.nyamnyam.screen.game.core.GameplayContext;
 import com.aramirezochoa.nyamnyam.screen.game.core.RoomCollisionWorld;
+import com.aramirezochoa.nyamnyam.screen.game.core.StageCompletion;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.EntityFactory;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.Avatar;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.enemy.Enemy;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.main.MainAvatar;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.types.DirectionType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.Meal;
+import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.MealType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.Projectile;
+import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.meal.common.RaiseType;
 import com.aramirezochoa.nyamnyam.screen.game.room.RoomEnemySpawn;
 import com.aramirezochoa.nyamnyam.screen.game.room.RoomInstance;
+import com.aramirezochoa.nyamnyam.screen.game.room.RoomMealSpawn;
 import com.aramirezochoa.nyamnyam.screen.game.room.RoomRenderer;
 import com.aramirezochoa.nyamnyam.screen.game.status.GameStatus;
 import com.badlogic.gdx.Gdx;
@@ -34,6 +38,7 @@ public class RunRuntime implements GameplayContext {
     private final MediaManager mediaManager;
     private final TextureAtlas textureAtlas;
     private final EntityWorld entityWorld = new EntityWorld();
+    private final StageCompletion stageCompletion = new StageCompletion(this);
     private final GameplayCamera camera = new GameplayCamera();
     private final RoomRenderer roomRenderer;
     private final SpriteBatch entityBatch = new SpriteBatch();
@@ -50,6 +55,8 @@ public class RunRuntime implements GameplayContext {
         collisionWorld = new RoomCollisionWorld(runState.getCurrentRoom());
         loadMainAvatar();
         loadEnemies();
+        loadMeals();
+        stageCompletion.reset();
     }
 
     public void update(float deltaTime) {
@@ -61,6 +68,7 @@ public class RunRuntime implements GameplayContext {
             if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) player.fire();
         }
         entityWorld.update(deltaTime);
+        stageCompletion.update(deltaTime, gameStatus);
     }
 
     public void render(float deltaTime) {
@@ -123,6 +131,29 @@ public class RunRuntime implements GameplayContext {
         }
     }
 
+    private void loadMeals() {
+        RoomInstance room = runState.getCurrentRoom();
+        if (room == null || room.getLayout() == null) {
+            return;
+        }
+        int tileSize = room.getTileSize();
+        for (int i = 0; i < room.getLayout().getMeals().size; i++) {
+            RoomMealSpawn spawn = room.getLayout().getMeals().get(i);
+            float x = (spawn.getX() + 1) * tileSize;
+            float y = (spawn.getY() + 1) * tileSize;
+            MealType type = spawn.getType();
+            Meal meal;
+            if (type.isBoost()) {
+                meal = EntityFactory.boost(x, y, type, this, spawn.isExpiring());
+            } else if (type.isFruit()) {
+                meal = EntityFactory.fruit(x, y, type, this);
+            } else {
+                meal = EntityFactory.verdure(x, y, type, this);
+            }
+            entityWorld.addMeal(meal);
+        }
+    }
+
     @Override public TextureAtlas getTextureAtlas() { return textureAtlas; }
     @Override public MediaManager getMediaManager() { return mediaManager; }
     @Override public GameStatus getGameStatus() { return gameStatus; }
@@ -135,6 +166,7 @@ public class RunRuntime implements GameplayContext {
     @Override public void mainAvatarDead() { loadMainAvatar(); }
     @Override public void notifyMessage(String message, float x, float y) { }
     @Override public int getAutomaticAirMode() { return 0; }
+    @Override public RaiseType getBubbleRaiseType() { return RaiseType.STATIC; }
     @Override public Array<Constant.Coordinates> getLeftGuide() { return leftGuide; }
     @Override public Array<Constant.Coordinates> getRightGuide() { return rightGuide; }
 
