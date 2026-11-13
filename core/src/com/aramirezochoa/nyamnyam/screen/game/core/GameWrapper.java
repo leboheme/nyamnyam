@@ -341,6 +341,14 @@ public class GameWrapper implements GameScreen.GameScreenComponent, GameStatusLi
         return RaiseType.AUTOMATIC;
     }
 
+    @Override
+    public com.aramirezochoa.nyamnyam.screen.game.run.BubbleAttractionService getBubbleAttractionService() {
+        return null;
+    }
+
+    @Override
+    public long nextEntityId() { return System.nanoTime(); }
+
     public void notifyMessage(String message, float x, float y) {
         gameUserInterface.showMessage(message);
     }

@@ -2,6 +2,7 @@ package com.aramirezochoa.nyamnyam.screen.game.core.entity.state.meal.common;
 
 import com.aramirezochoa.nyamnyam.Constant;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.meal.MealState;
+import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.GameWrapperAssistant;
 
 /** Keeps a bubble in place for the legacy raise duration before its next state. */
 public class RaiseStaticMealState extends MealState {
@@ -16,8 +17,10 @@ public class RaiseStaticMealState extends MealState {
 
     @Override
     public boolean update(float deltaTime) {
-        meal.velocity.set(0, 0);
-        meal.acceleration.set(0, 0);
+        meal.acceleration.set(0, -Constant.GRAVITY.y);
+        meal.getParent().getBubbleAttractionService().setVelocity(meal.getId(), meal.position.x + meal.dimension.x / 2,
+                meal.position.y + meal.dimension.y / 2, meal.velocity);
+        GameWrapperAssistant.updateEntity(meal, deltaTime, true);
         return checkTimers(deltaTime);
     }
 

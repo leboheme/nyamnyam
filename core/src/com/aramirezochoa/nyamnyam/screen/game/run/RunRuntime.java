@@ -45,6 +45,8 @@ public class RunRuntime implements GameplayContext {
     private final Array<Constant.Coordinates> leftGuide = new Array<Constant.Coordinates>();
     private final Array<Constant.Coordinates> rightGuide = new Array<Constant.Coordinates>();
     private final CollisionWorld collisionWorld;
+    private final BubbleAttractionService bubbleAttractionService;
+    private long nextEntityId;
 
     public RunRuntime(MediaManager mediaManager, RunState runState, GameStatus gameStatus) {
         this.runState = runState;
@@ -53,6 +55,7 @@ public class RunRuntime implements GameplayContext {
         textureAtlas = mediaManager.get("data/game/game.atlas");
         roomRenderer = new RoomRenderer(mediaManager.get("data/stages/tiles.png"));
         collisionWorld = new RoomCollisionWorld(runState.getCurrentRoom());
+        bubbleAttractionService = new BubbleAttractionService(runState.getCurrentRoom());
         loadMainAvatar();
         loadEnemies();
         loadMeals();
@@ -167,6 +170,8 @@ public class RunRuntime implements GameplayContext {
     @Override public void notifyMessage(String message, float x, float y) { }
     @Override public int getAutomaticAirMode() { return 0; }
     @Override public RaiseType getBubbleRaiseType() { return RaiseType.STATIC; }
+    @Override public BubbleAttractionService getBubbleAttractionService() { return bubbleAttractionService; }
+    @Override public long nextEntityId() { return nextEntityId++; }
     @Override public Array<Constant.Coordinates> getLeftGuide() { return leftGuide; }
     @Override public Array<Constant.Coordinates> getRightGuide() { return rightGuide; }
 

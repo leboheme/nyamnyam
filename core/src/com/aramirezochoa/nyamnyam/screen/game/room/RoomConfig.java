@@ -12,6 +12,7 @@ public class RoomConfig {
     public HashMap<String, RoomMaterial> materials;
     public String[] cells;
     public RoomLayoutDefinition[] layoutDefinitions;
+    public RoomAttractorConfig[] attractors;
 
     public RoomConfig() {
     }

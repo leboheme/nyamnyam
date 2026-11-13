@@ -1,6 +1,7 @@
 package com.aramirezochoa.nyamnyam.screen.game.room;
 
 import java.util.EnumMap;
+import com.badlogic.gdx.utils.Array;
 import com.aramirezochoa.nyamnyam.screen.game.core.TileType;
 
 /** Mutable room cells with collision types cached and refreshed when a cell changes. */
@@ -12,13 +13,15 @@ public class RoomInstance {
     private final RoomMaterial[][] materials;
     private final TileType[][] collisionTypes;
     private final RoomLayout layout;
+    private final Array<RoomAttractor> attractors;
     private final EnumMap<RoomMaterial, RoomAppearance> appearances = new EnumMap<RoomMaterial, RoomAppearance>(RoomMaterial.class);
 
-    RoomInstance(int width, int height, int tileSize, RoomMaterial[][] sourceMaterials, RoomLayout layout) {
+    RoomInstance(int width, int height, int tileSize, RoomMaterial[][] sourceMaterials, RoomLayout layout, Array<RoomAttractor> attractors) {
         this.width = width;
         this.height = height;
         this.tileSize = tileSize;
         this.layout = layout;
+        this.attractors = attractors;
         materials = new RoomMaterial[height][width];
         collisionTypes = new TileType[height][width];
         for (int y = 0; y < height; y++) {
@@ -42,6 +45,8 @@ public class RoomInstance {
     public RoomLayout getLayout() {
         return layout;
     }
+
+    public Array<RoomAttractor> getAttractors() { return attractors; }
 
     public RoomMaterial getMaterialAt(int x, int y) {
         checkCoordinates(x, y);

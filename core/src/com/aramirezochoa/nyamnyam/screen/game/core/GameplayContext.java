@@ -7,6 +7,7 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.enemy.Enemy;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.Meal;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.Projectile;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.meal.common.RaiseType;
+import com.aramirezochoa.nyamnyam.screen.game.run.BubbleAttractionService;
 import com.aramirezochoa.nyamnyam.screen.game.status.GameStatus;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.utils.Array;
@@ -26,6 +27,8 @@ public interface GameplayContext {
     void notifyMessage(String message, float x, float y);
     int getAutomaticAirMode();
     RaiseType getBubbleRaiseType();
+    BubbleAttractionService getBubbleAttractionService();
+    long nextEntityId();
     Array<Constant.Coordinates> getLeftGuide();
     Array<Constant.Coordinates> getRightGuide();
 }

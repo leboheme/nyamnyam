@@ -31,6 +31,7 @@ import java.util.Map;
 public abstract class Entity implements Pool.Poolable {
 
     protected GameplayContext parent;
+    private long id;
     protected Pool pool;
     protected EntityType type;
     protected DirectionType lookingAt;
@@ -53,6 +54,8 @@ public abstract class Entity implements Pool.Poolable {
     public boolean grounded;
 
     public void init(EntityType type, float x, float y, DirectionType lookingAt, GameplayContext gameWrapper) {
+        this.parent = gameWrapper;
+        this.id = gameWrapper.nextEntityId();
         this.type = type;
         this.lookingAt = lookingAt;
         this.dimension.x = type.getDimension().x;
@@ -232,6 +235,8 @@ public abstract class Entity implements Pool.Poolable {
     public EntityType getType() {
         return type;
     }
+
+    public long getId() { return id; }
 
     public void die() {
         dead = true;

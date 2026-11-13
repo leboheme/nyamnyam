@@ -58,7 +58,18 @@ public class RoomLoader {
         }
 
         RoomLayout layout = loadFirstLayout(config, internalPath);
-        return new RoomInstance(config.width, config.height, config.tileSize, materials, layout);
+        com.badlogic.gdx.utils.Array<RoomAttractor> attractors = new com.badlogic.gdx.utils.Array<RoomAttractor>();
+        if (config.attractors != null) {
+            for (RoomAttractorConfig attractor : config.attractors) {
+                if (attractor == null || attractor.x < 0 || attractor.x > config.width
+                        || attractor.y < 0 || attractor.y > config.height) {
+                    throw new IllegalArgumentException("Invalid bubble attractor in " + internalPath);
+                }
+                attractors.add(new RoomAttractor((attractor.x + 1) * config.tileSize,
+                        (attractor.y + 1) * config.tileSize, 4 * config.tileSize, 4 * config.tileSize));
+            }
+        }
+        return new RoomInstance(config.width, config.height, config.tileSize, materials, layout, attractors);
     }
 
     private RoomLayout loadFirstLayout(RoomConfig config, String internalPath) {

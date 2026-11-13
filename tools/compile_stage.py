@@ -47,31 +47,34 @@ def read_content_layouts(map_root, width, height, tile_width, tile_height, sourc
     if not groups:
         return []
 
-    enemy_types = enum_values(JAVA_SOURCE / "avatar" / "enemy" / "EnemyType.java", "EnemyType")
-    meal_types = enum_values(JAVA_SOURCE / "meal" / "MealType.java", "MealType")
+    tool_tiles = read_tool_tiles(map_root, source_path)
     layouts = []
     map_pixel_height = height * tile_height
     for layer in groups[0].findall("objectgroup"):
         layout = {"name": layer.get("name", ""), "enemies": [], "meals": []}
         for obj in layer.findall("object"):
-            name = obj.get("name")
-            if not name or obj.get("gid") is None:
-                raise ValueError("Content objects must be named tile objects in " + str(source_path))
+            if obj.get("gid") is None:
+                raise ValueError("Content objects must use a tile from a tool tileset in " + str(source_path))
+            tool = tool_tiles.get(int(obj.get("gid")) & GID_MASK)
+            if not tool:
+                raise ValueError("Object tile has no tool metadata in " + str(source_path))
             x = float(obj.get("x", "0"))
             y = float(obj.get("y", "0"))
             tile_x = round(x / tile_width)
             tile_y = round((map_pixel_height - y) / tile_height)
             if abs(x - tile_x * tile_width) > 0.001 or abs((map_pixel_height - y) - tile_y * tile_height) > 0.001:
-                raise ValueError("Content objects must be aligned to the room grid: " + name)
+                raise ValueError("Content objects must be aligned to the room grid: " + str(obj.get("name", "")))
             if not (0 <= tile_x < width and 0 <= tile_y < height):
-                raise ValueError("Content object outside room bounds: " + name)
+                raise ValueError("Content object outside room bounds: " + str(obj.get("name", "")))
 
-            if name in enemy_types:
+            if tool.get("kind") in ("enemy", "boss"):
+                name = tool.get("enemyType")
                 facing = read_properties(obj).get("facing", "RIGHT").upper()
                 if facing not in ("LEFT", "RIGHT"):
                     raise ValueError("Invalid facing for enemy " + name + ": " + facing)
                 layout["enemies"].append({"type": name, "x": tile_x, "y": tile_y, "facing": facing})
-            elif name in meal_types:
+            elif tool.get("kind") == "meal":
+                name = tool.get("mealType")
                 if name.startswith("AIR") or name.startswith("CANDY"):
                     raise ValueError("Air and candy are generated dynamically, not authored in room layouts: " + name)
                 properties = read_properties(obj)
@@ -80,7 +83,7 @@ def read_content_layouts(map_root, width, height, tile_width, tile_height, sourc
                     meal["expiring"] = properties["expiring"].lower() == "true"
                 layout["meals"].append(meal)
             else:
-                raise ValueError("Unknown enemy or meal enum name in content layer: " + name)
+                raise ValueError("Unsupported tool tile kind in content layer: " + str(tool.get("kind")))
 
         layouts.append(layout)
     return layouts
@@ -92,6 +95,44 @@ def read_properties(element):
     if properties is not None:
         for prop in properties.findall("property"):
             result[prop.get("name")] = prop.get("value", prop.text or "")
+    return result
+
+
+def read_attractors(map_root, width, height, tile_width, tile_height, source_path):
+    groups = [group for group in map_root.findall("objectgroup") if group.get("name") == "attractors"]
+    if len(groups) > 1:
+        raise ValueError("Room TMX may contain only one object layer named 'attractors'")
+    if not groups:
+        return []
+    result = []
+    map_pixel_height = height * tile_height
+    for obj in groups[0].findall("object"):
+        tool = read_tool_tiles(map_root, source_path).get(int(obj.get("gid", "0")) & GID_MASK)
+        if not tool or tool.get("kind") != "bubbleAttractor":
+            raise ValueError("Room objects must use a bubble attractor tool tile in " + str(source_path))
+        x = (float(obj.get("x", "0")) + float(obj.get("width", "0")) / 2) / tile_width
+        y = (map_pixel_height - float(obj.get("y", "0")) - float(obj.get("height", "0")) / 2) / tile_height
+        if not (0 <= x <= width and 0 <= y <= height):
+            raise ValueError("Bubble attractor outside room bounds in " + str(source_path))
+        result.append({"x": x, "y": y})
+    return result
+
+
+def read_tool_tiles(map_root, source_path):
+    result = {}
+    for tileset_ref in map_root.findall("tileset"):
+        first_gid = int(tileset_ref.get("firstgid"))
+        source = tileset_ref.get("source")
+        tileset = tileset_ref
+        if source:
+            path = (source_path.parent / source).resolve()
+            if not path.is_file():
+                raise ValueError("Tileset file not found: " + str(path))
+            tileset = ET.parse(path).getroot()
+        for tile in tileset.findall("tile"):
+            properties = read_properties(tile)
+            if "kind" in properties:
+                result[first_gid + int(tile.get("id"))] = properties
     return result
 
 
@@ -190,6 +231,7 @@ def compile_room(room_id, force=False):
         "materials": {code: material.upper() for material, code in MATERIAL_CODES.items()},
         "cells": rows,
         "layoutDefinitions": read_content_layouts(root, width, height, tile_width, tile_height, source),
+        "attractors": read_attractors(root, width, height, tile_width, tile_height, source),
     }
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
