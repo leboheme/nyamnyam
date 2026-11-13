@@ -13,6 +13,8 @@ public class BubbleAttractionService {
         this.room = room;
     }
 
+    public float getBaseSpeed() { return BASE_SPEED; }
+
     public void setVelocity(long entityId, float x, float y, Vector2 velocity) {
         RoomAttractor nearest = null;
         float targetX = 0;

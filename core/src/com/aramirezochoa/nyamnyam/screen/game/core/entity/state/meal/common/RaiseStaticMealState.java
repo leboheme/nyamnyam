@@ -20,7 +20,8 @@ public class RaiseStaticMealState extends MealState {
         meal.acceleration.set(0, -Constant.GRAVITY.y);
         meal.getParent().getBubbleAttractionService().setVelocity(meal.getId(), meal.position.x + meal.dimension.x / 2,
                 meal.position.y + meal.dimension.y / 2, meal.velocity);
-        GameWrapperAssistant.updateEntity(meal, deltaTime, true);
+        GameWrapperAssistant.updateEntity(meal, deltaTime, true,
+                meal.getParent().getBubbleAttractionService().getBaseSpeed());
         return checkTimers(deltaTime);
     }
 

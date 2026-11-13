@@ -31,6 +31,11 @@ public class GameWrapperAssistant {
     private static Array<Rectangle> tiles = new Array<Rectangle>();
 
     public static void updateEntity(Entity entity, float deltaTime, boolean collideAllTiles) {
+        updateEntity(entity, deltaTime, collideAllTiles, 0);
+    }
+
+    /** Updates an entity and keeps the requested speed when a collision blocks one movement axis. */
+    public static void updateEntity(Entity entity, float deltaTime, boolean collideAllTiles, float collisionSpeed) {
 
         entity.velocity.add(Constant.GRAVITY).add(entity.acceleration);
 
@@ -47,6 +52,8 @@ public class GameWrapperAssistant {
         }
 
         entity.velocity.scl(deltaTime);
+        float requestedX = entity.velocity.x;
+        float requestedY = entity.velocity.y;
 
         // Check collisions
         checkSides(entity);
@@ -57,6 +64,12 @@ public class GameWrapperAssistant {
         }
         checkCollisionX(entity, collisionWorld, collideAllTiles);
         checkCollisionY(entity, collisionWorld, collideAllTiles);
+
+        boolean blockedX = requestedX != 0 && entity.velocity.x == 0;
+        boolean blockedY = requestedY != 0 && entity.velocity.y == 0;
+        if (collisionSpeed > 0 && (blockedX || blockedY) && entity.velocity.len2() > 0) {
+            entity.velocity.nor().scl(collisionSpeed * deltaTime);
+        }
 
         entity.position.add(entity.velocity);
         entity.velocity.scl(1 / deltaTime);
