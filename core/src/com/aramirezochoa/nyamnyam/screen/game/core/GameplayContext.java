@@ -10,6 +10,7 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.meal.common.Rais
 import com.aramirezochoa.nyamnyam.screen.game.run.BubbleAttractionService;
 import com.aramirezochoa.nyamnyam.screen.game.run.RunCombatService;
 import com.aramirezochoa.nyamnyam.screen.game.run.RunDropService;
+import com.aramirezochoa.nyamnyam.screen.game.run.RunSurvivalService;
 import com.aramirezochoa.nyamnyam.screen.game.run.SalivationReserve;
 import com.aramirezochoa.nyamnyam.screen.game.status.GameStatus;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -21,6 +22,7 @@ public interface GameplayContext {
     MediaManager getMediaManager();
     GameStatus getGameStatus();
     EntityWorld getEntityWorld();
+    default RunSurvivalService getSurvivalService() { return null; }
     default RunDropService getDropService() { return null; }
     default RunCombatService getCombatService() { return null; }
     default SalivationReserve getSalivationReserve() { return null; }

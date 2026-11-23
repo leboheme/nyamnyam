@@ -12,6 +12,8 @@ import com.aramirezochoa.nyamnyam.screen.game.core.GameWrapper;
 import com.aramirezochoa.nyamnyam.screen.game.debug.DebugConsole;
 import com.aramirezochoa.nyamnyam.screen.game.debug.StageCommand;
 import com.aramirezochoa.nyamnyam.screen.game.debug.KillAllCommand;
+import com.aramirezochoa.nyamnyam.screen.game.debug.SpawnCommand;
+import com.aramirezochoa.nyamnyam.screen.game.debug.RestartCommand;
 import com.aramirezochoa.nyamnyam.screen.game.gui.GameUserInterface;
 import com.aramirezochoa.nyamnyam.screen.game.input.GamePad;
 import com.aramirezochoa.nyamnyam.screen.game.room.RoomLoader;
@@ -79,6 +81,9 @@ public class GameScreen extends AbstractScreen {
         gamePad.layoutControls();
         debugConsole = new DebugConsole(getMediaManager(), hudViewport);
         debugConsole.registerCommand(new StageCommand(this::loadStage));
+        debugConsole.registerCommand(new RestartCommand(this::restartRun));
+        debugConsole.registerCommand(new SpawnCommand(id -> runRuntime == null
+                ? -1 : runRuntime.getDropService().spawnPickup(id)));
         debugConsole.registerCommand(new KillAllCommand(() -> runRuntime == null
                 ? -1 : runRuntime.getCombatService().defeatAllEnemies()));
 
@@ -99,7 +104,6 @@ public class GameScreen extends AbstractScreen {
             useLegacyFlow = false;
             loadedLevel = gameStatus.getLevel();
         }
-        runState.getSalivationReserve().reset();
         gameUserInterface.init(gameStatus.getLevel(), gameStatus.getLives(), gameStatus.getScore());
         hasJsonRoom = runFactory.populate(runState,
                 "data/rooms/" + gameStatus.getLevel() + ".json");
@@ -114,6 +118,12 @@ public class GameScreen extends AbstractScreen {
             gameWrapper.init(getMediaManager(), gameStatus);
         }
         gameStatus.setGameState(GameState.IN_GAME);
+    }
+
+    private void restartRun() {
+        runState.getSalivationReserve().reset();
+        runState.getToothHealth().reset();
+        init(gameStatus);
     }
 
     private void loadStage(int stageNumber) {
@@ -143,6 +153,7 @@ public class GameScreen extends AbstractScreen {
                 gamePad.update(delta);
             }
         }
+        gameUserInterface.setToothHealth(runRuntime == null ? null : runState.getToothHealth());
         gameUserInterface.setSalivationReserve(runRuntime == null ? null : runState.getSalivationReserve());
         gameUserInterface.update(delta);
 

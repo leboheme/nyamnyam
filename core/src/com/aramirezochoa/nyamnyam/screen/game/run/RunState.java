@@ -8,6 +8,10 @@ public class RunState {
 
     private final Array<FloorState> floors = new Array<FloorState>();
     private int currentFloorIndex;
+    private final ToothHealth toothHealth = new ToothHealth();
+
+    public ToothHealth getToothHealth() { return toothHealth; }
+
     private final SalivationReserve salivationReserve = new SalivationReserve();
 
     public SalivationReserve getSalivationReserve() {

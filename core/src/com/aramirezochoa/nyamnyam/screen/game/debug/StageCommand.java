@@ -18,7 +18,7 @@ public final class StageCommand implements DebugCommand {
 
     @Override
     public String description() {
-        return "Load a stage by number (1-" + Constant.GAME_LEVELS + ")";
+        return "Load a stage, preserving run resources (1-" + Constant.GAME_LEVELS + ")";
     }
 
     @Override

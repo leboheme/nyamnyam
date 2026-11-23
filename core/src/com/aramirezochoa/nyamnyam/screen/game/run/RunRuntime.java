@@ -8,7 +8,6 @@ import com.aramirezochoa.nyamnyam.screen.game.core.EntityWorld;
 import com.aramirezochoa.nyamnyam.screen.game.core.GameplayCamera;
 import com.aramirezochoa.nyamnyam.screen.game.core.GameplayContext;
 import com.aramirezochoa.nyamnyam.screen.game.core.RoomCollisionWorld;
-import com.aramirezochoa.nyamnyam.screen.game.GameState;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.EntityFactory;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.Avatar;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.enemy.Enemy;
@@ -18,6 +17,7 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.Meal;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.MealType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.Projectile;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.meal.common.RaiseType;
+import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.avatar.main.MainAvatarStateFactory;
 import com.aramirezochoa.nyamnyam.screen.game.room.RoomEnemySpawn;
 import com.aramirezochoa.nyamnyam.screen.game.room.RoomInstance;
 import com.aramirezochoa.nyamnyam.screen.game.room.RoomMealSpawn;
@@ -50,6 +50,7 @@ public class RunRuntime implements GameplayContext {
     private final BubbleTerrain bubbleTerrain;
     private final RunCombatService combatService;
     private final RunDropService dropService;
+    private final RunSurvivalService survivalService;
     private long nextEntityId;
 
     public RunRuntime(MediaManager mediaManager, RunState runState, GameStatus gameStatus) {
@@ -64,6 +65,7 @@ public class RunRuntime implements GameplayContext {
         bubbleContactSystem = new BubbleContactSystem(bubbleTerrain);
         combatService = new RunCombatService(this);
         dropService = new RunDropService(this);
+        survivalService = new RunSurvivalService(this, runState.getToothHealth());
         bubbleAttractionService = new BubbleAttractionService(runState.getCurrentRoom());
         loadMainAvatar();
         loadEnemies();
@@ -71,6 +73,12 @@ public class RunRuntime implements GameplayContext {
     }
 
     public void update(float deltaTime) {
+        if (runState.getToothHealth().isDefeated()) {
+            entityWorld.getMainAvatar().update(deltaTime);
+            dropService.update(deltaTime);
+            survivalService.updateDefeat(deltaTime);
+            return;
+        }
         runState.getSalivationReserve().update(deltaTime);
         MainAvatar player = entityWorld.getMainAvatar();
         if (player != null) {
@@ -83,13 +91,9 @@ public class RunRuntime implements GameplayContext {
         float intendedX = player == null ? 0 : player.velocity.x;
         float intendedY = player == null ? 0 : player.velocity.y;
         entityWorld.update(deltaTime);
+        if (runState.getToothHealth().isDefeated()) return;
         dropService.update(deltaTime);
         bubbleContactSystem.update(entityWorld, deltaTime, jumpRequested, intendedX, intendedY);
-        // Preserve the current lives-based loss signal until the survival prototype replaces it.
-        if (gameStatus.getLives() <= 0) {
-            if (gameStatus.getGameState() != GameState.LOSE) gameStatus.setGameState(GameState.LOSE);
-            return;
-        }
         roomCompletionService.update();
     }
 
@@ -111,6 +115,7 @@ public class RunRuntime implements GameplayContext {
         entityBatch.setProjectionMatrix(orthoCamera.combined);
         entityWorld.render(entityBatch);
         dropService.render(entityBatch);
+        dropService.renderTeeth(orthoCamera.combined);
     }
 
     public void resize(int width, int height) {
@@ -122,22 +127,22 @@ public class RunRuntime implements GameplayContext {
             entityWorld.getMainAvatar().free();
             entityWorld.setMainAvatar(null);
         }
-        dropService.clear();
+        dropService.dispose();
         entityWorld.clear();
         roomRenderer.dispose();
         entityBatch.dispose();
     }
 
     private void loadMainAvatar() {
-        MainAvatar avatar;
-        if (gameStatus.getLives() > 0) {
-            avatar = EntityFactory.mainAvatar(DataManager.INSTANCE.getCurrentCharacter(),
-                    Constant.MAIN_AVATAR_SPAWN_POSITION.x, Constant.MAIN_AVATAR_SPAWN_POSITION.y,
-                    DirectionType.RIGHT, this);
-        } else {
-            avatar = EntityFactory.empty(this);
-        }
+        MainAvatar avatar = EntityFactory.mainAvatar(DataManager.INSTANCE.getCurrentCharacter(),
+                Constant.MAIN_AVATAR_SPAWN_POSITION.x, Constant.MAIN_AVATAR_SPAWN_POSITION.y,
+                DirectionType.RIGHT, this);
         entityWorld.setMainAvatar(avatar);
+        // JSON room entry starts playable and vulnerable, without the legacy spawn delay/blink.
+        avatar.setCurrentState(MainAvatarStateFactory.idle(avatar));
+        avatar.spawnTimer = -1;
+        // Debug room loading preserves a defeated run; only an explicit restart restores health.
+        if (runState.getToothHealth().isDefeated()) survivalService.beginDefeat(avatar);
     }
 
     private void loadEnemies() {
@@ -184,6 +189,8 @@ public class RunRuntime implements GameplayContext {
     @Override public GameStatus getGameStatus() { return gameStatus; }
     @Override public EntityWorld getEntityWorld() { return entityWorld; }
     @Override public CollisionWorld getCollisionWorld() { return collisionWorld; }
+    public ToothHealth getToothHealth() { return runState.getToothHealth(); }
+    @Override public RunSurvivalService getSurvivalService() { return survivalService; }
     @Override public RunDropService getDropService() { return dropService; }
     @Override public RunCombatService getCombatService() { return combatService; }
     @Override public SalivationReserve getSalivationReserve() { return runState.getSalivationReserve(); }

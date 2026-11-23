@@ -17,6 +17,19 @@ public final class PrototypeBalance {
     public static final float ATTACK_POWER = 1f;
     public static final float ENEMY_HIT_FEEDBACK_SECONDS = 0.12f;
 
+    // Health is stored in half teeth: 1 unit = 0.5 tooth. Normal containers reserve whole spaces.
+    public static final int STARTING_TOOTH_CONTAINERS = 3;
+    public static final int MAX_TOOTH_SPACES = 8;
+    public static final int BASIC_ENEMY_DAMAGE_HALVES = 1;
+    public static final float PLAYER_HIT_INVULNERABILITY_SECONDS = 1f;
+    // Death presentation advances for this long before the Game over overlay pauses the screen.
+    public static final float PLAYER_DEFEAT_DELAY_SECONDS = 1.2f;
+    // Provisional drop chances: evaluated once per remate, separately from common food.
+    public static final float TOOTH_DROP_CHANCE = 0.2f;
+    public static final float TOOTH_DROP_CARIES_CHANCE = 0.5f;
+    public static final float TOOTH_DROP_HALF_CHANCE = 0.5f;
+    public static final float TOOTH_PICKUP_SIZE = 16f;
+
     // Common food: variants in each family restore the same amount, capped at capacity.
     public static final float FRUIT_SALIVATION_RESTORE = 2f;
     public static final float VERDURE_SALIVATION_RESTORE = 1f;

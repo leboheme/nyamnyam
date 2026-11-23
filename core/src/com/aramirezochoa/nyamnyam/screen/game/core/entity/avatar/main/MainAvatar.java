@@ -333,6 +333,10 @@ public abstract class MainAvatar extends Avatar {
     }
 
     public void hit() {
+        if (getParent().getSurvivalService() != null) {
+            getParent().getSurvivalService().hit(this);
+            return;
+        }
         synchronized (enabled) {
             if (enabled && spawnTimer < 0) {
                 enabled = false;

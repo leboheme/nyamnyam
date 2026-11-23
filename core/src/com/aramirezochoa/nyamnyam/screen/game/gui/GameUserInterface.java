@@ -2,6 +2,8 @@ package com.aramirezochoa.nyamnyam.screen.game.gui;
 
 import com.badlogic.gdx.graphics.Color;
 import com.aramirezochoa.nyamnyam.screen.game.run.SalivationReserve;
+import com.aramirezochoa.nyamnyam.screen.game.run.ToothHealth;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Interpolation;
@@ -48,6 +50,14 @@ public class GameUserInterface implements GameScreen.GameScreenComponent, GameSt
     };
     private String fourthMessage = "";
     private SalivationReserve salivationReserve;
+    private ToothHealth toothHealth;
+    private final ShapeRenderer healthRenderer = new ShapeRenderer();
+    private Label legacyInsertCoinLabel;
+
+    public void setToothHealth(ToothHealth toothHealth) {
+        this.toothHealth = toothHealth;
+        legacyInsertCoinLabel.setVisible(toothHealth == null);
+    }
 
     public void setSalivationReserve(SalivationReserve salivationReserve) {
         this.salivationReserve = salivationReserve;
@@ -152,6 +162,7 @@ public class GameUserInterface implements GameScreen.GameScreenComponent, GameSt
         labelStyle2.font = barFont;
         labelStyle2.fontColor = Color.valueOf("f2ff24");
         label = new Label(LanguageManager.INSTANCE.getString("insertCoin"), labelStyle2);
+        legacyInsertCoinLabel = label;
         label.setAlignment(Align.center);
         label.addAction(Actions.forever(sequence(Actions.fadeOut(0.5f, Interpolation.fade), Actions.fadeIn(0.5f, Interpolation.fade))));
         loseTable.add(label).colspan(2).padTop(15f).row();
@@ -230,6 +241,7 @@ public class GameUserInterface implements GameScreen.GameScreenComponent, GameSt
         stage.getViewport().apply();
         float worldWidth = stage.getViewport().getWorldWidth();
         float worldHeight = stage.getViewport().getWorldHeight();
+        renderToothHealth(worldHeight);
         Color color = stage.getBatch().getColor();
         stage.getBatch().setColor(color.r, color.g, color.b, 1);
         stage.getBatch().begin();
@@ -237,19 +249,20 @@ public class GameUserInterface implements GameScreen.GameScreenComponent, GameSt
         float columnWidth = hudWidth / 3;
         float firstRowY = worldHeight - 16;
         float secondRowY = worldHeight - 42;
-        barFont.draw(stage.getBatch(), LanguageManager.INSTANCE.getString("level") + ": " + level,
-                (worldWidth - hudWidth) / 2f, firstRowY, columnWidth, Align.center, false);
-        barFont.draw(stage.getBatch(), LanguageManager.INSTANCE.getString("lives") + ": " + lives,
-                (worldWidth - hudWidth) / 2f + columnWidth, firstRowY, columnWidth, Align.center, false);
-        barFont.draw(stage.getBatch(), LanguageManager.INSTANCE.getString("score") + ": " + score,
-                (worldWidth - hudWidth) / 2f + columnWidth * 2, firstRowY, columnWidth, Align.center, false);
+        if (toothHealth == null) {
+            barFont.draw(stage.getBatch(), LanguageManager.INSTANCE.getString("level") + ": " + level,
+                    (worldWidth - hudWidth) / 2f, firstRowY, columnWidth, Align.center, false);
+            barFont.draw(stage.getBatch(), LanguageManager.INSTANCE.getString("lives") + ": " + lives,
+                    (worldWidth - hudWidth) / 2f + columnWidth, firstRowY, columnWidth, Align.center, false);
+            barFont.draw(stage.getBatch(), LanguageManager.INSTANCE.getString("score") + ": " + score,
+                    (worldWidth - hudWidth) / 2f + columnWidth * 2, firstRowY, columnWidth, Align.center, false);
+        }
         barFont.draw(stage.getBatch(), fourthMessage, (worldWidth - hudWidth) / 2f, secondRowY, hudWidth, Align.center, false);
         if (salivationReserve != null) {
             int tenths = (int) (salivationReserve.getCurrent() * 10);
             String text = LanguageManager.INSTANCE.getString("salivation") + ": "
                     + (tenths / 10) + "." + (tenths % 10) + "/" + (int) salivationReserve.getCapacity();
-            barFont.draw(stage.getBatch(), text, (worldWidth - hudWidth) / 2f,
-                    secondRowY - 26, hudWidth, Align.center, false);
+            barFont.draw(stage.getBatch(), text, 12, secondRowY, worldWidth - 24, Align.left, false);
         }
         for (VolatileMessage message : messages) {
             message.getFont().draw(stage.getBatch(), message.message, message.x, message.y);
@@ -259,8 +272,27 @@ public class GameUserInterface implements GameScreen.GameScreenComponent, GameSt
         stage.draw();
     }
 
+    private void renderToothHealth(float worldHeight) {
+        if (toothHealth == null) return;
+        healthRenderer.setProjectionMatrix(stage.getViewport().getCamera().combined);
+        healthRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        float size = 18, gap = 6, x = 12, y = worldHeight - 12 - size;
+        for (int i = 0; i < toothHealth.getContainers(); i++) {
+            int halves = Math.max(0, Math.min(2, toothHealth.getNormalHalves() - i * 2));
+            ToothShape.draw(healthRenderer, x + i * (size + gap), y, size, halves, false, 0);
+        }
+        int cariesSpaces = (toothHealth.getCariesHalves() + 1) / 2;
+        for (int i = 0; i < cariesSpaces; i++) {
+            int halves = Math.min(2, toothHealth.getCariesHalves() - i * 2);
+            ToothShape.draw(healthRenderer, x + (toothHealth.getContainers() + i) * (size + gap),
+                    y, size, halves, true, 0);
+        }
+        healthRenderer.end();
+    }
+
     @Override
     public void dispose() {
+        healthRenderer.dispose();
         stage.dispose();
         barFont.dispose();
         messageFont.dispose();
