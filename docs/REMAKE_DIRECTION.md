@@ -1,23 +1,8 @@
-# Nyam Nyam — Dirección del remake
+# Nyam Nyam — Dirección técnica del remake
 
-Queremos publicar una versión web jugable en móvil aprovechando el juego existente. Por ahora conservamos su identidad de plataformas de acción: moverse, saltar, atacar, transformar enemigos en comida y comerla para superar el nivel. La primera versión mantiene el juego en horizontal.
+Fuente de verdad de la **dirección arquitectónica orientativa y la autoría de contenido**, no de las reglas de producto ni del alcance inmediato. Consultar [GAME_DESIGN.md](GAME_DESIGN.md), [PROTOTYPE.md](PROTOTYPE.md) e [IDEAS.md](IDEAS.md) para esos ámbitos.
 
-## Trabajo definido
-
-- Preparar la distribución web; desktop sigue siendo el entorno de desarrollo.
-- Mantener las cuatro acciones táctiles actuales: izquierda, derecha, salto y disparo. Situar sus botones translúcidos sobre la escena para liberar la franja inferior sin ocultar demasiado el juego.
-
-## Exploración
-
-Haremos pruebas pequeñas antes de decidir cambios de diseño. Las líneas abiertas son:
-
-- Reducir la superficie de las arenas, aproximadamente a una cuarta parte, y definir reglas para transformar mapas sin perder plataformas, enemigos, comida ni rutas de aire. Esto permite volver a probar una presentación vertical.
-- Conectar arenas mediante puertas en lugar de avanzar automáticamente.
-- Agrupar arenas en floors y explorar variación o selección aleatoria de mapas.
-- Revisar el catálogo de comida y sus efectos.
-- Revisar el papel de Nyam, Gluty y Tfly.
-
-Estas exploraciones guían el remake, pero no forman parte de la primera versión hasta que una prueba justifique incorporarlas.
+Destino: web jugable en móvil, con desktop como entorno de desarrollo. Mantener el flujo TMX legacy como comparación mientras el flujo de rooms JSON evoluciona. Este documento no es un inventario actualizado de funcionalidades implementadas: verificar el código antes de modificarlo.
 
 ## Arquitectura objetivo (borrador)
 
@@ -48,7 +33,7 @@ flowchart TD
         Systems --> Actors
         Renderer["Renderers"] --> Room
         Renderer --> Actors
-        Status["GameStatus<br/>vidas, score y estado"] --> Wrapper
+        Status["GameStatus<br/>estado legacy durante la migración"] --> Wrapper
     end
 ```
 
@@ -62,14 +47,17 @@ flowchart TD
 - `RoomInstance` copia solo los datos que necesita para jugar. Conserva la cuadrícula mutable, la colisión derivada y el estado local; no guarda el `RoomConfig` original.
 - `GameWrapper` coordina sistemas y render, mientras el estado de la run y de la sala vive en sus propios objetos.
 
-`GameStatus` ya gestiona vidas, puntuación y estados del juego. Su relación futura con el progreso de `RunState` queda abierta hasta decidir cómo funcionan las runs y la persistencia.
+`GameStatus` conserva responsabilidades legacy. Su encaje con los nuevos recursos y `RunState` debe revisarse al implementar cada incremento; no trasladar sus reglas antiguas como requisitos del remake.
 
 En el TMX de una room, la capa `room` define el material. El grupo `content` contiene un object layer por alternativa de layout; los objetos con nombre de enum (`BOOF`, `FRUIT_APPLE`, etc.) se convierten a spawns tipados. Los objetos se alinean a la cuadrícula y usan coordenadas de tiles desde la esquina inferior izquierda en el JSON. Las imágenes de tileset son solo previews de Tiled: `make compile-room ROOM=7 FORCE=1` genera el JSON de runtime sin referencias a esas imágenes.
 
-### Paso actual
+## Criterios de evolución
 
-La migración empieza con dos rutas separadas. Si existe `data/rooms/<nivel>.json`, `RunFactory` crea por ahora una run fija con un floor y una room, asigna a `FLOOR` una apariencia estática de `tiles.png` y `GameScreen` usa `RunRuntime`. Si no hay JSON, `GameScreen` sigue usando el flujo TMX existente. En niveles con ambos formatos, F11 alterna entre los dos flujos para comparar; en la ruta TMX, F10 conserva la previsualización de la geometría JSON.
+- Mantener el estado mutable de partida y sala separado de las definiciones de contenido.
+- Reutilizar las fronteras existentes (`GameplayContext`, `CollisionWorld`, factories y estados) cuando sean útiles, sin ampliar la refactorización TMX salvo que también beneficie al flujo JSON.
+- Configuración mediante JSON tipado y enums para conceptos cerrados; evitar capas de indirección sin uso.
+- La colisión se deriva del material y se cachea de forma que el terreno pueda mutar. Sombras y themes definitivos siguen pendientes.
+- Focos de atracción y destinos deterministas por entidad ya explorados sirven como base de movimiento de burbujas; verificar su implementación antes de extenderlos.
+- No convertir el diagrama en una obligación de crear clases o sistemas anticipadamente. El vocabulario de mundos/áreas del diseño no obliga a renombrar inmediatamente `FloorState`.
 
-La ruta JSON añade al jugador existente, movimiento, salto y disparo por teclado y mando, y colisiones consultadas desde `RoomInstance`. `GameplayContext` separa las entidades de `GameWrapper`; `CollisionWorld` adapta tanto las capas TMX como la geometría JSON. La room JSON representa solo el interior: el runtime impone límites invisibles de un tile alrededor, sin dibujar todavía esas walls. `RoomConfig` admite layouts con spawns tipados de enemigos y comidas estáticas (frutas, verduras y boosts); por ahora se carga el primero. El nivel 7 declara un `BOOF` y una manzana para probar combate, comida y limpieza de la sala. La condición de victoria compartida mantiene la regla de recoger los candies antes de cerrar la sala. En JSON, tanto el candy que deja un enemigo caramelizado como el aire creado al disparar permanecen quietos durante su ciclo de elevación; el flujo TMX conserva su movimiento automático anterior.
-
-Todavía faltan fondos y paredes visibles, comidas temporales/aire con sus paths y transiciones entre rooms. `RunState` ya contiene floors y cada `FloorState` contiene rooms, aunque la factory solo construye uno de cada. La apariencia fija es provisional; no define todavía un catálogo de themes. La selección reproducible con seed y los pools de floors pertenecen a una etapa posterior, cuando existan sus configuraciones.
+El inventario de reglas TMX y las brechas observadas durante la migración se conservan como referencia histórica en [LEGACY_GAME_DESIGN.md](LEGACY_GAME_DESIGN.md#inventario-técnico-de-migración-referencia-histórica).

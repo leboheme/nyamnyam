@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="18" height="23" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="4">
+<map version="1.10" tiledversion="1.12.0" orientation="orthogonal" renderorder="right-down" width="18" height="23" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="5">
  <tileset firstgid="1" name="materials" tilewidth="16" tileheight="16" tilecount="1" columns="1">
   <image source="material.png" width="16" height="16"/>
   <tile id="0">
@@ -29,5 +29,6 @@
  </group>
  <objectgroup id="4" name="attractors">
   <object id="3" gid="194" x="112" y="152" width="64" height="64"/>
+  <object id="4" gid="194" x="192" y="40" width="64" height="64"/>
  </objectgroup>
 </map>
