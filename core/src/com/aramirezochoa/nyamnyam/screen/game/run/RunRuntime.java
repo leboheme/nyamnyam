@@ -49,6 +49,7 @@ public class RunRuntime implements GameplayContext {
     private final BubbleContactSystem bubbleContactSystem;
     private final BubbleTerrain bubbleTerrain;
     private final RunCombatService combatService;
+    private final RunDropService dropService;
     private long nextEntityId;
 
     public RunRuntime(MediaManager mediaManager, RunState runState, GameStatus gameStatus) {
@@ -62,6 +63,7 @@ public class RunRuntime implements GameplayContext {
         bubbleTerrain = new BubbleTerrain(collisionWorld);
         bubbleContactSystem = new BubbleContactSystem(bubbleTerrain);
         combatService = new RunCombatService(this);
+        dropService = new RunDropService(this);
         bubbleAttractionService = new BubbleAttractionService(runState.getCurrentRoom());
         loadMainAvatar();
         loadEnemies();
@@ -81,6 +83,7 @@ public class RunRuntime implements GameplayContext {
         float intendedX = player == null ? 0 : player.velocity.x;
         float intendedY = player == null ? 0 : player.velocity.y;
         entityWorld.update(deltaTime);
+        dropService.update(deltaTime);
         bubbleContactSystem.update(entityWorld, deltaTime, jumpRequested, intendedX, intendedY);
         // Preserve the current lives-based loss signal until the survival prototype replaces it.
         if (gameStatus.getLives() <= 0) {
@@ -107,6 +110,7 @@ public class RunRuntime implements GameplayContext {
         roomRenderer.render(room, orthoCamera.combined);
         entityBatch.setProjectionMatrix(orthoCamera.combined);
         entityWorld.render(entityBatch);
+        dropService.render(entityBatch);
     }
 
     public void resize(int width, int height) {
@@ -118,6 +122,7 @@ public class RunRuntime implements GameplayContext {
             entityWorld.getMainAvatar().free();
             entityWorld.setMainAvatar(null);
         }
+        dropService.clear();
         entityWorld.clear();
         roomRenderer.dispose();
         entityBatch.dispose();
@@ -169,6 +174,7 @@ public class RunRuntime implements GameplayContext {
             } else {
                 meal = EntityFactory.verdure(x, y, type, this);
             }
+            if (type.isFruit() || type.isVerdure()) dropService.prepareFood(meal, false);
             entityWorld.addMeal(meal);
         }
     }
@@ -178,6 +184,7 @@ public class RunRuntime implements GameplayContext {
     @Override public GameStatus getGameStatus() { return gameStatus; }
     @Override public EntityWorld getEntityWorld() { return entityWorld; }
     @Override public CollisionWorld getCollisionWorld() { return collisionWorld; }
+    @Override public RunDropService getDropService() { return dropService; }
     @Override public RunCombatService getCombatService() { return combatService; }
     @Override public SalivationReserve getSalivationReserve() { return runState.getSalivationReserve(); }
     @Override public void addEnemy(Enemy enemy) {

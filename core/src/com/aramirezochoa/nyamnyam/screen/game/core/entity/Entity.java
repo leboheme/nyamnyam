@@ -48,6 +48,7 @@ public abstract class Entity implements Pool.Poolable {
 
     // Frame & animations
     private TextureRegion currentFrame;
+    private float renderRotation;
     private float currentFrameTimer;
     private Animation<TextureRegion> currentAnimation;
     private String currentAnimationKey;
@@ -56,6 +57,7 @@ public abstract class Entity implements Pool.Poolable {
 
     public void init(EntityType type, float x, float y, DirectionType lookingAt, GameplayContext gameWrapper) {
         this.parent = gameWrapper;
+        renderRotation = 0;
         this.id = gameWrapper.nextEntityId();
         this.type = type;
         this.lookingAt = lookingAt;
@@ -183,6 +185,11 @@ public abstract class Entity implements Pool.Poolable {
         currentFrame = currentAnimation.getKeyFrame(currentFrameTimer);
     }
 
+    public void setRenderRotation(float degrees) { renderRotation = degrees; }
+
+    /** Independent region for short visual effects; never retains this pooled entity. */
+    public TextureRegion copyCurrentFrame() { return new TextureRegion(currentFrame); }
+
     protected abstract boolean isLoopAnimation();
 
     public void render(Batch batch) {
@@ -190,7 +197,14 @@ public abstract class Entity implements Pool.Poolable {
         currentFrame.flip(flip, false);
         batch.begin();
         batch.setColor(getColor());
-        batch.draw(currentFrame, position.x - (currentFrame.getRegionWidth() - dimension.x) / 2, position.y);
+        float drawX = position.x - (currentFrame.getRegionWidth() - dimension.x) / 2;
+        if (renderRotation == 0) {
+            batch.draw(currentFrame, drawX, position.y);
+        } else {
+            float width = currentFrame.getRegionWidth(), height = currentFrame.getRegionHeight();
+            batch.draw(currentFrame, drawX, position.y, width / 2, height / 2,
+                    width, height, 1, 1, renderRotation);
+        }
         batch.setColor(1, 1, 1, 1);
         batch.end();
         currentFrame.flip(flip, false);

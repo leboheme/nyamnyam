@@ -17,6 +17,27 @@ public final class PrototypeBalance {
     public static final float ATTACK_POWER = 1f;
     public static final float ENEMY_HIT_FEEDBACK_SECONDS = 0.12f;
 
+    // Common food: variants in each family restore the same amount, capped at capacity.
+    public static final float FRUIT_SALIVATION_RESTORE = 2f;
+    public static final float VERDURE_SALIVATION_RESTORE = 1f;
+    // Drop launch: px/s, px/s²; pickup delay only prevents instant collection at spawn.
+    public static final float DROP_HORIZONTAL_SPEED = 240f;
+    public static final float DROP_SECOND_UPWARD_SPEED_MULTIPLIER = 0.85f;
+    public static final float DROP_UPWARD_SPEED = 360f;
+    public static final float DROP_GRAVITY = 650f;
+    public static final float DROP_ROOM_RESTITUTION = 0.85f;
+    public static final float DROP_PICKUP_DELAY_SECONDS = 0.15f;
+    // Spin uses degrees/s. Movement substeps keep landing accurate at high launch speeds.
+    public static final float DROP_MAX_MOVEMENT_STEP = 4f;
+    public static final float DROP_SPIN_DEGREES_PER_SECOND = 720f;
+    // Defeated body is visual only; it never delays drops or room completion.
+    public static final float DEFEAT_BODY_SECONDS = 1.2f;
+    public static final float DEFEAT_BODY_HORIZONTAL_SPEED = 180f;
+    public static final float DEFEAT_BODY_UPWARD_SPEED = 320f;
+    public static final float DEFEAT_BODY_GRAVITY = 600f;
+    public static final float DEFEAT_BODY_SPIN_DEGREES_PER_SECOND = 720f;
+    public static final float DEFEAT_BODY_FADE_SECONDS = 0.25f;
+
     // Bubble lifetime phases (also select the existing cold/warm/hot atlas animation).
     // Empty and occupied bubbles currently share these phases: total lifetime = their sum.
     public static final float BUBBLE_COLD_SECONDS = 5f;

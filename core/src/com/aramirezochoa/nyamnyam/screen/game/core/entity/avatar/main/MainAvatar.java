@@ -140,6 +140,8 @@ public abstract class MainAvatar extends Avatar {
     }
 
     protected void checkEdible(Meal meal) {
+        // JSON common food is collected by its resource service, without legacy eating rewards.
+        if (getParent().getDropService() != null && (meal.getType().isFruit() || meal.getType().isVerdure())) return;
         if (meal.isEnabled()) {
             if (meal.getType().isBoost()) {
                 checkBoost(meal);

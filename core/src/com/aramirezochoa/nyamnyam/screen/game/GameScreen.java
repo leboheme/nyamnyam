@@ -11,6 +11,7 @@ import com.aramirezochoa.nyamnyam.screen.ScreenType;
 import com.aramirezochoa.nyamnyam.screen.game.core.GameWrapper;
 import com.aramirezochoa.nyamnyam.screen.game.debug.DebugConsole;
 import com.aramirezochoa.nyamnyam.screen.game.debug.StageCommand;
+import com.aramirezochoa.nyamnyam.screen.game.debug.KillAllCommand;
 import com.aramirezochoa.nyamnyam.screen.game.gui.GameUserInterface;
 import com.aramirezochoa.nyamnyam.screen.game.input.GamePad;
 import com.aramirezochoa.nyamnyam.screen.game.room.RoomLoader;
@@ -78,6 +79,8 @@ public class GameScreen extends AbstractScreen {
         gamePad.layoutControls();
         debugConsole = new DebugConsole(getMediaManager(), hudViewport);
         debugConsole.registerCommand(new StageCommand(this::loadStage));
+        debugConsole.registerCommand(new KillAllCommand(() -> runRuntime == null
+                ? -1 : runRuntime.getCombatService().defeatAllEnemies()));
 
         InputMultiplexer im = new InputMultiplexer();
         im.addProcessor(debugConsole);

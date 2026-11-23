@@ -24,6 +24,10 @@ public class SalivationReserve {
         current = Math.min(SALIVATION_CAPACITY, current + SALIVATION_REGENERATION_PER_SECOND * deltaTime);
     }
 
+    public void restore(float amount) {
+        current = Math.min(SALIVATION_CAPACITY, current + amount);
+    }
+
     public void reset() {
         current = SALIVATION_CAPACITY;
     }
