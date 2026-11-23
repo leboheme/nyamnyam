@@ -10,6 +10,8 @@
 
 El alcance inmediato, su secuencia y los criterios de prueba viven únicamente en [PROTOTYPE.md](PROTOTYPE.md). Las expansiones sin compromiso viven en [IDEAS.md](IDEAS.md). La dirección técnica está en [REMAKE_DIRECTION.md](REMAKE_DIRECTION.md); el comportamiento anterior, en [LEGACY_GAME_DESIGN.md](LEGACY_GAME_DESIGN.md).
 
+La escala visual, anatomía compartida y convenciones de producción de assets se definen únicamente en [ART_GUIDE.md](ART_GUIDE.md).
+
 ## Visión general
 
 Un glotón se apunta a un tour gastronómico por mundos imposibles. Explora, captura y remata criaturas, recoge comida para recargar la salivación y obtiene platos que transforman su build. Objetivo de ritmo: tours estándar de unos 15–20 minutos, ampliables mediante rutas extra.
@@ -129,7 +131,7 @@ Se mantiene la utilidad de las burbujas como apoyo en plataformas; las burbujas 
 
 Prototipo inicial: cuando una captura expira, el enemigo recupera su resistencia inicial y pasa a ENFADADO. Esta es una regla de prueba, no un comportamiento universal definitivo. En P10 se podrán definir reacciones diferentes por especie, incluyendo enemigos que se debilitan, se fortalecen o huyen.
 
-El enemigo aturdido queda capturado dentro de una burbuja, sin necesitar un estado conceptual adicional. Las burbujas, incluso al reducir resistencia, NO derrotan por sí solas. La derrota exige un remate válido. No hay reacción automática en cadena entre grupos de burbujas por defecto.
+El enemigo aturdido queda capturado dentro de una burbuja, sin necesitar un estado conceptual adicional. Las burbujas, incluso al reducir resistencia, NO derrotan por sí solas. La derrota exige un remate válido. Las burbujas admiten arrastre/empuje limitado, agrupación y estallido en cadena como dirección acordada. Quedan por concretar el significado de «colapsar», alcance y propagación, interacción con obstáculos y qué eventos inician la cadena. No asumir que expirar remata otras capturas.
 
 ### P7.B · Barra de salivación y comida común
 

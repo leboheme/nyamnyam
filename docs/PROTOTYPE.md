@@ -13,6 +13,8 @@ Nyam, una sala artesanal, pocos enemigos y plataformas. Usar el flujo nuevo de r
 Implementar en incrementos jugables, revisando el código antes de concretar cada cambio:
 
 1. **Combate y captura:** resistencia, captura, remate por contacto y fuga. Reglas en [P7.A](GAME_DESIGN.md#p7a--ciclo-básico-de-combate); propiedades compartidas en P4 y P8.
+La interacción de burbujas de P7.A se valida como incremento tras captura/liberación y antes de incorporar resistencia/Power. La secuencia concreta y sus dependencias están en [la tarjeta de interacción](https://trello.com/c/OiN62Nqe); no ampliar la tarea de captura que ya está en curso.
+
 2. **Salivación:** reserva, consumo, regeneración y representación mínima que permita probar el recurso. Reglas en [P7.B](GAME_DESIGN.md#p7b--barra-de-salivación-y-comida-común).
 3. **Drops:** evaluación tras derrotar y frutas/verduras recogibles. Funciones en P7.B y [P9.A](GAME_DESIGN.md#p9a--comida-bebidas-y-economía).
 4. **Supervivencia:** dientes normales y caries, daño y derrota. Reglas en [P7.C](GAME_DESIGN.md#p7c--supervivencia-cuatro-dientes).

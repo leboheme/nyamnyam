@@ -4,6 +4,8 @@ Fuente de verdad de la **dirección arquitectónica orientativa y la autoría de
 
 Destino: web jugable en móvil, con desktop como entorno de desarrollo. Mantener el flujo TMX legacy como comparación mientras el flujo de rooms JSON evoluciona. Este documento no es un inventario actualizado de funcionalidades implementadas: verificar el código antes de modificarlo.
 
+La referencia de escala y las convenciones de producción de arte viven en [ART_GUIDE.md](ART_GUIDE.md). Sus tamaños de canvas no cambian automáticamente las dimensiones lógicas ni las colisiones.
+
 ## Arquitectura objetivo (borrador)
 
 Este dibujo expresa una dirección para experimentar, no un contrato que haya que implementar literalmente. La idea es que Tiled siga siendo una herramienta de edición y que el runtime use datos propios sin cargar TMX.
