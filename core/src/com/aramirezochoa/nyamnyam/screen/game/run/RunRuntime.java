@@ -46,6 +46,8 @@ public class RunRuntime implements GameplayContext {
     private final Array<Constant.Coordinates> rightGuide = new Array<Constant.Coordinates>();
     private final CollisionWorld collisionWorld;
     private final BubbleAttractionService bubbleAttractionService;
+    private final BubbleContactSystem bubbleContactSystem;
+    private final BubbleTerrain bubbleTerrain;
     private long nextEntityId;
 
     public RunRuntime(MediaManager mediaManager, RunState runState, GameStatus gameStatus) {
@@ -55,6 +57,8 @@ public class RunRuntime implements GameplayContext {
         textureAtlas = mediaManager.get("data/game/game.atlas");
         roomRenderer = new RoomRenderer(mediaManager.get("data/stages/tiles.png"));
         collisionWorld = new RoomCollisionWorld(runState.getCurrentRoom());
+        bubbleTerrain = new BubbleTerrain(collisionWorld);
+        bubbleContactSystem = new BubbleContactSystem(bubbleTerrain);
         bubbleAttractionService = new BubbleAttractionService(runState.getCurrentRoom());
         loadMainAvatar();
         loadEnemies();
@@ -70,7 +74,11 @@ public class RunRuntime implements GameplayContext {
             if (Gdx.input.isKeyPressed(Input.Keys.W)) player.jump();
             if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) player.fire();
         }
+        boolean jumpRequested = player != null && player.consumeJumpRequest();
+        float intendedX = player == null ? 0 : player.velocity.x;
+        float intendedY = player == null ? 0 : player.velocity.y;
         entityWorld.update(deltaTime);
+        bubbleContactSystem.update(entityWorld, deltaTime, jumpRequested, intendedX, intendedY);
         stageCompletion.update(deltaTime, gameStatus);
     }
 
@@ -174,6 +182,8 @@ public class RunRuntime implements GameplayContext {
     @Override public long nextEntityId() { return nextEntityId++; }
     @Override public Array<Constant.Coordinates> getLeftGuide() { return leftGuide; }
     @Override public Array<Constant.Coordinates> getRightGuide() { return rightGuide; }
+
+    public BubbleTerrain getBubbleTerrain() { return bubbleTerrain; }
 
     public MainAvatar getMainAvatar() {
         return entityWorld.getMainAvatar();

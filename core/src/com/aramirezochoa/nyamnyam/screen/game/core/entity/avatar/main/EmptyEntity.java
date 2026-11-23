@@ -51,7 +51,7 @@ public class EmptyEntity extends MainAvatar {
     }
 
     @Override
-    protected boolean canPerformAction() {
+    public boolean canPerformAction() {
         return false;
     }
 

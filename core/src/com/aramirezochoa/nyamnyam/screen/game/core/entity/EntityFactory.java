@@ -18,7 +18,7 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.MealType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.air.Air;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.air.AirSpikes;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.air.AirTornado;
-import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.air.Bubble;
+import com.aramirezochoa.nyamnyam.screen.game.core.entity.bubble.Bubble;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.boost.Boost;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.candy.Candy;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.fruit.Fruit;

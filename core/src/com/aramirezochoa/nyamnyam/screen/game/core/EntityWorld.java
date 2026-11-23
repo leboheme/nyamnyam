@@ -4,6 +4,7 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.Avatar;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.enemy.Enemy;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.main.MainAvatar;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.Meal;
+import com.aramirezochoa.nyamnyam.screen.game.core.entity.bubble.Bubble;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.Projectile;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.SnapshotArray;
@@ -15,7 +16,12 @@ public class EntityWorld {
     private final SnapshotArray<Meal> food = new SnapshotArray(true, 4, Meal.class);
     private final SnapshotArray<Projectile> projectiles = new SnapshotArray(true, 4, Projectile.class);
     private final SnapshotArray<Avatar> pets = new SnapshotArray(true, 4, Avatar.class);
+    private final SnapshotArray<Bubble> bubbles = new SnapshotArray(true, 4, Bubble.class);
     private MainAvatar mainAvatar;
+
+    public SnapshotArray<Bubble> getBubbles() { return bubbles; }
+    public void addBubble(Bubble bubble) { bubbles.add(bubble); }
+    public void removeBubble(Bubble bubble) { bubbles.removeValue(bubble, true); }
     private Enemy dark;
 
     public MainAvatar getMainAvatar() {
@@ -92,6 +98,9 @@ public class EntityWorld {
         for (int i = 0; i < food.size; i++) {
             food.get(i).update(deltaTime);
         }
+        for (int i = bubbles.size - 1; i >= 0; i--) {
+            bubbles.get(i).update(deltaTime);
+        }
         for (int i = 0; i < projectiles.size; i++) {
             projectiles.get(i).update(deltaTime);
         }
@@ -101,6 +110,7 @@ public class EntityWorld {
     }
 
     public void render(SpriteBatch batch) {
+        for (int i = 0; i < bubbles.size; i++) bubbles.get(i).render(batch);
         for (int i = 0; i < food.size; i++) {
             food.get(i).render(batch);
         }
@@ -122,10 +132,20 @@ public class EntityWorld {
     }
 
     public boolean hasEnemies() {
-        return enemies.size > 0;
+        if (enemies.size > 0) {
+            return true;
+        }
+        for (int i = 0; i < bubbles.size; i++) {
+            if (bubbles.get(i).hasCapturedEnemy()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void clear() {
+        for (int i = 0; i < bubbles.size; i++) bubbles.get(i).free();
+        bubbles.clear();
         for (int i = 0; i < enemies.size; i++) {
             enemies.get(i).free();
         }

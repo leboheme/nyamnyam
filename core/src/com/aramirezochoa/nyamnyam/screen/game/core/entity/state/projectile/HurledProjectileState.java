@@ -1,6 +1,8 @@
 package com.aramirezochoa.nyamnyam.screen.game.core.entity.state.projectile;
 
 import com.aramirezochoa.nyamnyam.Constant;
+import com.aramirezochoa.nyamnyam.screen.game.run.RunRuntime;
+import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.Projectile;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.Avatar;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.GameWrapperAssistant;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.types.DirectionType;
@@ -28,7 +30,17 @@ public class HurledProjectileState extends ProjectileState {
 
     @Override
     public boolean update(float deltaTime) {
-        GameWrapperAssistant.updateEntity(getProjectile(), deltaTime, false);
+        Projectile projectile = getProjectile();
+        if (projectile.getParent() instanceof RunRuntime) {
+            RunRuntime runtime = (RunRuntime) projectile.getParent();
+            if (!runtime.getBubbleTerrain().canTravel(projectile.position.x, projectile.position.y,
+                    projectile.dimension.x, projectile.dimension.y, projectile.velocity.x * deltaTime, 0)) {
+                if (transformToCandy) projectile.transform(true);
+                projectile.setEnabled(false);
+                return true;
+            }
+        }
+        GameWrapperAssistant.updateEntity(projectile, deltaTime, false);
         if ((getProjectile().velocity.x == 0 || Math.abs(getProjectile().position.x - initX) >= distance)) {
             if (transformToCandy) {
                 getProjectile().transform();

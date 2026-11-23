@@ -1,6 +1,7 @@
 package com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile;
 
 import com.aramirezochoa.nyamnyam.screen.game.core.GameplayContext;
+import com.aramirezochoa.nyamnyam.screen.game.run.RunRuntime;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.Entity;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.EntityFactory;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.EntityType;
@@ -8,6 +9,7 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.Avatar;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.enemy.Enemy;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.types.DirectionType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.MealType;
+import com.aramirezochoa.nyamnyam.screen.game.core.entity.bubble.Bubble;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.EntityState;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.meal.common.RaiseType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.projectile.ProjectileStateFactory;
@@ -46,8 +48,18 @@ public class Projectile extends Entity {
     protected void checkCollisions() {
         if (enabled) {
             if (friendly) {
-                for (Enemy enemy : getParent().getEntityWorld().getEnemies()) {
+                for (int i = 0; i < getParent().getEntityWorld().getEnemies().size; i++) {
+                    Enemy enemy = getParent().getEntityWorld().getEnemies().get(i);
                     if (enemy.box.overlaps(box)) {
+                        if (!enemy.isBoss() && getParent() instanceof RunRuntime) {
+                            Bubble bubble = EntityFactory.bubble(enemy.position.x, enemy.position.y, getLookingAt(), getParent());
+                            if (bubble.capture(enemy)) {
+                                getParent().getEntityWorld().addBubble(bubble);
+                                setCurrentState(ProjectileStateFactory.explode(this, false));
+                                return;
+                            }
+                            bubble.free();
+                        }
                         enemy.hit(transformToCandy);
                         if (!ProjectileType.SPIKE.equals(getType())) {
                             setCurrentState(ProjectileStateFactory.explode(this, false));
@@ -113,9 +125,17 @@ public class Projectile extends Entity {
     }
 
     public void transform() {
+        transform(false);
+    }
+
+    public void transform(boolean blocked) {
         RaiseType raiseType = getParent().getBubbleRaiseType();
-        if (getParent() instanceof com.aramirezochoa.nyamnyam.screen.game.run.RunRuntime) {
-            getParent().addMeal(EntityFactory.bubble(position.x, position.y, getLookingAt(), getParent()));
+        if (getParent() instanceof RunRuntime) {
+            Bubble bubble = EntityFactory.bubble(position.x, position.y, getLookingAt(), getParent());
+            getParent().getEntityWorld().addBubble(bubble);
+            // Terrain stops a shot; only a bubble squeezed against its player bursts at creation.
+            if (blocked && pitcher == getParent().getEntityWorld().getMainAvatar()
+                    && bubble.box.overlaps(pitcher.box)) bubble.burst();
         } else if (getParent().getEntityWorld().getMainAvatar().isTornadoBoost()) {
             getParent().addMeal(EntityFactory.tornado(MealType.AIR_TORNADO, raiseType, position.x, position.y, getLookingAt(), getParent()));
         } else {

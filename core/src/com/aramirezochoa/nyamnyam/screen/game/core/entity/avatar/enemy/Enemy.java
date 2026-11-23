@@ -51,6 +51,32 @@ public abstract class Enemy extends Avatar {
         return true;
     }
 
+    public void captureInBubble() {
+        parent.getEntityWorld().removeEnemy(this);
+        setEnabled(false);
+        velocity.setZero();
+        acceleration.setZero();
+        grounded = false;
+    }
+
+    public void escapeBubble(float x, float y, DirectionType facing) {
+        setPosition(x, y);
+        setLookingAt(facing);
+        velocity.setZero();
+        acceleration.setZero();
+        grounded = false;
+        anger(true);
+        setEnabled(true);
+        parent.addEnemy(this);
+    }
+
+    public void defeatInBubble() {
+        parent.getMediaManager().playSound(MediaManager.SOUND_HIT_PROJECTILE);
+        parent.getGameStatus().addScore(getEatenScore(), position.x + (dimension.x / 2),
+                position.y + dimension.y - Constant.SCREEN_GAME_Y_OFFSET);
+        remove();
+    }
+
     @Override
     protected void checkCollisions() {
         // nothing

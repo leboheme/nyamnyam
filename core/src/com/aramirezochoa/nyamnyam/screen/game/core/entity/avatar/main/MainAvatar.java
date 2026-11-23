@@ -29,6 +29,7 @@ public abstract class MainAvatar extends Avatar {
     public float fireTimer, spawnTimer, garlicBoostTimer;
     protected boolean fireEnabled;
     protected boolean jumpIfPossible;
+    private boolean jumpRequested;
     private boolean petBoost;
     protected boolean garlicBoost;
     private boolean chilliBoost;
@@ -46,6 +47,7 @@ public abstract class MainAvatar extends Avatar {
         fireTimer = 0;
         fireEnabled = true;
         jumpIfPossible = false;
+        jumpRequested = false;
         secondJump = false;
         petBoost = false;
         garlicBoost = false;
@@ -245,12 +247,26 @@ public abstract class MainAvatar extends Avatar {
 
     public void jump() {
         if (canPerformAction()) {
+            jumpRequested = true;
             if (grounded) {
                 createJump();
             } else if (velocity.y < 0) {
                 jumpIfPossible = true;
             }
         }
+    }
+
+    /** Consumed by the runtime after input, before entity updates clear legacy jump flags. */
+    public boolean consumeJumpRequest() {
+        boolean requested = jumpRequested;
+        jumpRequested = false;
+        return requested;
+    }
+
+    public void rebound() {
+        createJump();
+        grounded = false;
+        secondJump = false;
     }
 
     public abstract void fire();
@@ -287,7 +303,7 @@ public abstract class MainAvatar extends Avatar {
         return Constant.BEAM_VELOCITY * (getParent().getGameStatus().isFireVelocityBoost() || isSpecialBusted() ? Constant.MAIN_AVATAR_BOOST_FIRE_VELOCITY : 1f);
     }
 
-    protected boolean canPerformAction() {
+    public boolean canPerformAction() {
         synchronized (enabled) {
             return enabled && !currentState.getCode().equals(SpawnEntityState.CODE);
         }

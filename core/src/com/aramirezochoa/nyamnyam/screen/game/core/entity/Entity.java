@@ -41,6 +41,7 @@ public abstract class Entity implements Pool.Poolable {
 
     public Vector2 dimension = new Vector2(0f, 0f);
     public Rectangle box = new Rectangle();
+    public final Vector2 previousPosition = new Vector2();
     public Vector2 position = new Vector2(0f, 0f);
     public Vector2 velocity = new Vector2(0f, 0f);
     public Vector2 acceleration = new Vector2(0f, 0f);
@@ -64,6 +65,7 @@ public abstract class Entity implements Pool.Poolable {
         this.acceleration.x = this.acceleration.y = 0;
         this.position.x = x;
         this.position.y = y;
+        previousPosition.set(position);
         initBoxes();
         updateBoxes();
         this.currentState = getInitialState();
@@ -101,6 +103,7 @@ public abstract class Entity implements Pool.Poolable {
     }
 
     public void update(float deltaTime) {
+        previousPosition.set(position);
         updateState(deltaTime);
         updateBoxes();
         if (dead) {
@@ -237,6 +240,11 @@ public abstract class Entity implements Pool.Poolable {
     }
 
     public long getId() { return id; }
+
+    public void setPosition(float x, float y) {
+        position.set(x, y);
+        updateBoxes();
+    }
 
     public void die() {
         dead = true;
