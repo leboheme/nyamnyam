@@ -2,6 +2,8 @@ package com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile;
 
 import com.aramirezochoa.nyamnyam.screen.game.core.GameplayContext;
 import com.aramirezochoa.nyamnyam.screen.game.run.RunRuntime;
+import com.aramirezochoa.nyamnyam.screen.game.run.RunCombatService;
+import com.badlogic.gdx.utils.LongSet;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.Entity;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.EntityFactory;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.EntityType;
@@ -23,8 +25,12 @@ public class Projectile extends Entity {
     private Avatar pitcher;
     private boolean friendly, transformToCandy;
     private int germination;
+    private float power;
+    private final LongSet impactedEnemies = new LongSet();
 
     public void init(EntityType type, float x, float y, DirectionType lookingAt, GameplayContext gameWrapper, boolean friendly, boolean transformToCandy, Avatar pitcher) {
+        power = 0;
+        impactedEnemies.clear();
         this.friendly = friendly;
         this.transformToCandy = transformToCandy;
         this.pitcher = pitcher;
@@ -33,6 +39,8 @@ public class Projectile extends Entity {
     }
 
     public void init(EntityType type, float x, float y, DirectionType lookingAt, GameplayContext gameWrapper, boolean friendly, boolean transformToCandy, int germination) {
+        power = 0;
+        impactedEnemies.clear();
         this.friendly = friendly;
         this.transformToCandy = transformToCandy;
         super.init(type, x, y, lookingAt, gameWrapper);
@@ -51,14 +59,10 @@ public class Projectile extends Entity {
                 for (int i = 0; i < getParent().getEntityWorld().getEnemies().size; i++) {
                     Enemy enemy = getParent().getEntityWorld().getEnemies().get(i);
                     if (enemy.box.overlaps(box)) {
-                        if (!enemy.isBoss() && getParent() instanceof RunRuntime) {
-                            Bubble bubble = EntityFactory.bubble(enemy.position.x, enemy.position.y, getLookingAt(), getParent());
-                            if (bubble.capture(enemy)) {
-                                getParent().getEntityWorld().addBubble(bubble);
-                                setCurrentState(ProjectileStateFactory.explode(this, false));
-                                return;
-                            }
-                            bubble.free();
+                        RunCombatService combat = getParent().getCombatService();
+                        if (combat != null) {
+                            if (combat.hit(this, enemy)) return;
+                            continue;
                         }
                         enemy.hit(transformToCandy);
                         if (!ProjectileType.SPIKE.equals(getType())) {
@@ -113,6 +117,10 @@ public class Projectile extends Entity {
         return pitcher;
     }
 
+    public float getPower() { return power; }
+    public void setPower(float power) { this.power = power; }
+    public boolean registerImpact(long enemyId) { return impactedEnemies.add(enemyId); }
+
     public int getGermination() {
         return germination;
     }
@@ -122,6 +130,8 @@ public class Projectile extends Entity {
         super.reset();
         pitcher = null;
         germination = -1;
+        power = 0;
+        impactedEnemies.clear();
     }
 
     public void transform() {

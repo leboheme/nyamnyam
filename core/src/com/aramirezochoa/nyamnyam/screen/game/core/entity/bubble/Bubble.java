@@ -132,7 +132,7 @@ public class Bubble extends Entity {
         burstRequested = false;
         Enemy enemy = capturedEnemy;
         capturedEnemy = null;
-        if (enemy != null) enemy.defeatInBubble();
+        if (enemy != null) parent.getCombatService().defeat(enemy);
         setCurrentState(EntityStateFactory.explode(this, false));
     }
 
@@ -162,7 +162,7 @@ public class Bubble extends Entity {
         if (capturedEnemy != null) {
             Enemy enemy = capturedEnemy;
             capturedEnemy = null;
-            enemy.escapeBubble(position.x + (dimension.x - enemy.dimension.x) / 2,
+            parent.getCombatService().release(enemy, position.x + (dimension.x - enemy.dimension.x) / 2,
                     position.y + (dimension.y - enemy.dimension.y) / 2, getLookingAt());
         }
     }

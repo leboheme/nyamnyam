@@ -1,6 +1,7 @@
 package com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile;
 
 import com.aramirezochoa.nyamnyam.Constant;
+import com.aramirezochoa.nyamnyam.screen.game.run.RunCombatService;
 import com.aramirezochoa.nyamnyam.media.MediaManager;
 import com.aramirezochoa.nyamnyam.screen.game.core.GameplayContext;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.EntityType;
@@ -54,6 +55,14 @@ public class BombProjectile extends Projectile {
     @Override
     protected void checkCollisions() {
         if (exploded) {
+            RunCombatService combat = getParent().getCombatService();
+            if (combat != null) {
+                for (int i = getParent().getEntityWorld().getEnemies().size - 1; i >= 0; i--) {
+                    Enemy enemy = getParent().getEntityWorld().getEnemies().get(i);
+                    if (enemy.box.overlaps(box)) combat.hit(this, enemy);
+                }
+                return;
+            }
             for (Enemy enemy : getParent().getEntityWorld().getEnemies()) {
                 if (enemy.box.overlaps(box)
                         && enemy.isEnabled()) {

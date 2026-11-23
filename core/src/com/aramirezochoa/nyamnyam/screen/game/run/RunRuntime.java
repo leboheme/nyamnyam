@@ -48,6 +48,7 @@ public class RunRuntime implements GameplayContext {
     private final BubbleAttractionService bubbleAttractionService;
     private final BubbleContactSystem bubbleContactSystem;
     private final BubbleTerrain bubbleTerrain;
+    private final RunCombatService combatService;
     private long nextEntityId;
 
     public RunRuntime(MediaManager mediaManager, RunState runState, GameStatus gameStatus) {
@@ -59,6 +60,7 @@ public class RunRuntime implements GameplayContext {
         collisionWorld = new RoomCollisionWorld(runState.getCurrentRoom());
         bubbleTerrain = new BubbleTerrain(collisionWorld);
         bubbleContactSystem = new BubbleContactSystem(bubbleTerrain);
+        combatService = new RunCombatService(this);
         bubbleAttractionService = new BubbleAttractionService(runState.getCurrentRoom());
         loadMainAvatar();
         loadEnemies();
@@ -138,7 +140,7 @@ public class RunRuntime implements GameplayContext {
             Enemy enemy = EntityFactory.enemy(spawn.getType(),
                     (spawn.getX() + 1) * tileSize, (spawn.getY() + 1) * tileSize,
                     spawn.getFacing(), this);
-            entityWorld.addEnemy(enemy);
+            addEnemy(enemy);
         }
     }
 
@@ -170,9 +172,16 @@ public class RunRuntime implements GameplayContext {
     @Override public GameStatus getGameStatus() { return gameStatus; }
     @Override public EntityWorld getEntityWorld() { return entityWorld; }
     @Override public CollisionWorld getCollisionWorld() { return collisionWorld; }
-    @Override public void addEnemy(Enemy enemy) { entityWorld.addEnemy(enemy); }
+    @Override public RunCombatService getCombatService() { return combatService; }
+    @Override public void addEnemy(Enemy enemy) {
+        combatService.prepareEnemy(enemy);
+        entityWorld.addEnemy(enemy);
+    }
     @Override public void addMeal(Meal meal) { entityWorld.addMeal(meal); }
-    @Override public void addProjectile(Projectile projectile) { entityWorld.addProjectile(projectile); }
+    @Override public void addProjectile(Projectile projectile) {
+        combatService.prepareAttack(projectile);
+        entityWorld.addProjectile(projectile);
+    }
     @Override public void addPet(Avatar avatar) { entityWorld.addPet(avatar); }
     @Override public void mainAvatarDead() { loadMainAvatar(); }
     @Override public void notifyMessage(String message, float x, float y) { }
