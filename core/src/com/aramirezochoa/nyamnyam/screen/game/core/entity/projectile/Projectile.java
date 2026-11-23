@@ -114,7 +114,9 @@ public class Projectile extends Entity {
 
     public void transform() {
         RaiseType raiseType = getParent().getBubbleRaiseType();
-        if (getParent().getEntityWorld().getMainAvatar().isTornadoBoost()) {
+        if (getParent() instanceof com.aramirezochoa.nyamnyam.screen.game.run.RunRuntime) {
+            getParent().addMeal(EntityFactory.bubble(position.x, position.y, getLookingAt(), getParent()));
+        } else if (getParent().getEntityWorld().getMainAvatar().isTornadoBoost()) {
             getParent().addMeal(EntityFactory.tornado(MealType.AIR_TORNADO, raiseType, position.x, position.y, getLookingAt(), getParent()));
         } else {
             getParent().addMeal(EntityFactory.air(MealType.AIR, raiseType, position.x, position.y, getLookingAt(), getParent()));

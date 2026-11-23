@@ -18,6 +18,7 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.MealType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.air.Air;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.air.AirSpikes;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.air.AirTornado;
+import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.air.Bubble;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.boost.Boost;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.candy.Candy;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.fruit.Fruit;
@@ -65,6 +66,12 @@ public class EntityFactory {
         Air air = entity(Air.class);
         air.init(mealType, x, y, lookingAt, gameWrapper, raiseType);
         return air;
+    }
+
+    public static Bubble bubble(float x, float y, DirectionType lookingAt, GameplayContext gameWrapper) {
+        Bubble bubble = entity(Bubble.class);
+        bubble.init(x, y, lookingAt, gameWrapper);
+        return bubble;
     }
 
     public static AirTornado tornado(MealType mealType, RaiseType raiseType, float x, float y, DirectionType lookingAt, GameplayContext gameWrapper) {
