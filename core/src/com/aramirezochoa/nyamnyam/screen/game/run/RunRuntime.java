@@ -69,6 +69,7 @@ public class RunRuntime implements GameplayContext {
     }
 
     public void update(float deltaTime) {
+        runState.getSalivationReserve().update(deltaTime);
         MainAvatar player = entityWorld.getMainAvatar();
         if (player != null) {
             if (Gdx.input.isKeyPressed(Input.Keys.A)) player.left();
@@ -178,6 +179,7 @@ public class RunRuntime implements GameplayContext {
     @Override public EntityWorld getEntityWorld() { return entityWorld; }
     @Override public CollisionWorld getCollisionWorld() { return collisionWorld; }
     @Override public RunCombatService getCombatService() { return combatService; }
+    @Override public SalivationReserve getSalivationReserve() { return runState.getSalivationReserve(); }
     @Override public void addEnemy(Enemy enemy) {
         combatService.prepareEnemy(enemy);
         entityWorld.addEnemy(enemy);

@@ -9,6 +9,7 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.Projectile;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.meal.common.RaiseType;
 import com.aramirezochoa.nyamnyam.screen.game.run.BubbleAttractionService;
 import com.aramirezochoa.nyamnyam.screen.game.run.RunCombatService;
+import com.aramirezochoa.nyamnyam.screen.game.run.SalivationReserve;
 import com.aramirezochoa.nyamnyam.screen.game.status.GameStatus;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.utils.Array;
@@ -20,6 +21,7 @@ public interface GameplayContext {
     GameStatus getGameStatus();
     EntityWorld getEntityWorld();
     default RunCombatService getCombatService() { return null; }
+    default SalivationReserve getSalivationReserve() { return null; }
     CollisionWorld getCollisionWorld();
     void addEnemy(Enemy enemy);
     void addMeal(Meal meal);

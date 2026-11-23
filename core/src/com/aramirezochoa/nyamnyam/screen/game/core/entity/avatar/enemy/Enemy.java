@@ -11,12 +11,13 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.types.Direction
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.MealType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.EntityState;
 
+import static com.aramirezochoa.nyamnyam.screen.game.run.PrototypeBalance.*;
+
 /**
  * Created by boheme on 14/01/15.
  */
 public abstract class Enemy extends Avatar {
 
-    private static final float HIT_FEEDBACK_DURATION = 0.12f;
     private float hitFeedbackTimer;
     private boolean angry, scared;
     private float initialResistance, resistance;
@@ -92,7 +93,7 @@ public abstract class Enemy extends Avatar {
 
     /** Temporary visual feedback hook; does not interrupt locomotion or grant invulnerability. */
     public void showHitFeedback() {
-        hitFeedbackTimer = HIT_FEEDBACK_DURATION;
+        hitFeedbackTimer = ENEMY_HIT_FEEDBACK_SECONDS;
     }
 
     @Override

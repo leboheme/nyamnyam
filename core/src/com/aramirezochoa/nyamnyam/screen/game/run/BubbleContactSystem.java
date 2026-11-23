@@ -7,11 +7,10 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FloatArray;
 
+import static com.aramirezochoa.nyamnyam.screen.game.run.PrototypeBalance.*;
+
 /** JSON bubble contacts, soft groups and iterative burst propagation. */
 public class BubbleContactSystem {
-    private static final float CONTACT_EPSILON = 0.25f;
-    private static final float GROUP_SEPARATION_SPEED = 60f;
-    private static final float PUSH_MULTIPLIER = 1.5f;
     private final BubbleTerrain terrain;
     private final Rectangle previousPlayer = new Rectangle();
     private final Rectangle previousBubble = new Rectangle();
@@ -40,7 +39,7 @@ public class BubbleContactSystem {
 
                 float oldGap = previousPlayer.y - (previousBubble.y + previousBubble.height);
                 float newGap = player.box.y - (bubble.box.y + bubble.box.height);
-                if (player.velocity.y < 0 && oldGap >= -CONTACT_EPSILON && newGap <= 0
+                if (player.velocity.y < 0 && oldGap >= -BUBBLE_CONTACT_MARGIN && newGap <= 0
                         && overlapsHorizontallyAtCrossing(player.box, bubble.box, oldGap, newGap)) {
                     if (jumpRequested) {
                         movePlayer(player, 0, -newGap);
@@ -54,10 +53,10 @@ public class BubbleContactSystem {
 
                 float oldHeadGap = previousBubble.y - (previousPlayer.y + previousPlayer.height);
                 float newHeadGap = bubble.box.y - (player.box.y + player.box.height);
-                if (oldHeadGap >= -CONTACT_EPSILON && newHeadGap <= CONTACT_EPSILON
+                if (oldHeadGap >= -BUBBLE_CONTACT_MARGIN && newHeadGap <= BUBBLE_CONTACT_MARGIN
                         && player.box.y < bubble.box.y) {
                     float risingSpeed = Math.max(0, intendedY);
-                    boolean blocked = pushGroup(world, bubble, 0, Math.max(40, risingSpeed));
+                    boolean blocked = pushGroup(world, bubble, 0, Math.max(BUBBLE_MIN_UPWARD_PUSH_SPEED, risingSpeed));
                     if (risingSpeed > 0 || jumpRequested) bubble.press(deltaTime, risingSpeed - bubble.velocity.y, blocked);
                     if (!bubble.isBurstRequested()) {
                         movePlayer(player, 0, Math.min(0, newHeadGap));
@@ -71,8 +70,8 @@ public class BubbleContactSystem {
                 float correction = playerOnLeft ? bubble.box.x - (player.box.x + player.box.width)
                         : bubble.box.x + bubble.box.width - player.box.x;
                 float towardBubble = playerOnLeft ? intendedX : -intendedX;
-                if (towardBubble > 1) {
-                    boolean blocked = pushGroup(world, bubble, intendedX * PUSH_MULTIPLIER, 0);
+                if (towardBubble > BUBBLE_MIN_SIDE_INPUT_SPEED) {
+                    boolean blocked = pushGroup(world, bubble, intendedX * BUBBLE_SIDE_PUSH_MULTIPLIER, 0);
                     float relativeSpeed = playerOnLeft ? intendedX - bubble.velocity.x : bubble.velocity.x - intendedX;
                     bubble.press(deltaTime, relativeSpeed, blocked);
                 }
@@ -98,7 +97,7 @@ public class BubbleContactSystem {
         for (int i = 0; i < group.size; i++) {
             Bubble member = group.get(i);
             if (!terrain.canTravel(member.position.x, member.position.y, member.dimension.x, member.dimension.y,
-                    Math.signum(x) * 2, Math.signum(y) * 2)) blocked = true;
+                    Math.signum(x) * BUBBLE_BLOCKED_PROBE_DISTANCE, Math.signum(y) * BUBBLE_BLOCKED_PROBE_DISTANCE)) blocked = true;
             member.push(x, y);
             for (int j = 0; j < world.getBubbles().size; j++) {
                 Bubble candidate = world.getBubbles().get(j);
@@ -112,7 +111,7 @@ public class BubbleContactSystem {
 
     private void settleGroups(EntityWorld world, float deltaTime) {
         separationBudget.clear();
-        for (int i = 0; i < world.getBubbles().size; i++) separationBudget.add(GROUP_SEPARATION_SPEED * deltaTime);
+        for (int i = 0; i < world.getBubbles().size; i++) separationBudget.add(BUBBLE_GROUP_SEPARATION_SPEED * deltaTime);
         for (int i = 0; i < world.getBubbles().size; i++) {
             Bubble a = world.getBubbles().get(i);
             if (!a.isEnabled() || a.isBurstRequested()) continue;
@@ -124,12 +123,12 @@ public class BubbleContactSystem {
                 float distance = (float) Math.sqrt(dx * dx + dy * dy);
                 float overlap = radius(a) + radius(b) - distance;
                 if (overlap <= 0) continue;
-                if (distance < 0.001f) {
+                if (distance < BUBBLE_COINCIDENT_CENTER_EPSILON) {
                     dx = a.getId() < b.getId() ? 1 : -1;
                     dy = 0;
                     distance = 1;
                 }
-                float correction = Math.min(overlap / 2, GROUP_SEPARATION_SPEED * deltaTime);
+                float correction = Math.min(overlap / 2, BUBBLE_GROUP_SEPARATION_SPEED * deltaTime);
                 float correctionA = Math.min(correction, separationBudget.get(i));
                 float correctionB = Math.min(correction, separationBudget.get(j));
                 if (moveBubble(a, -dx / distance * correctionA, -dy / distance * correctionA)) {
@@ -172,7 +171,7 @@ public class BubbleContactSystem {
     private boolean connected(Bubble a, Bubble b) {
         float dx = centerX(a) - centerX(b);
         float dy = centerY(a) - centerY(b);
-        float reach = radius(a) + radius(b) + CONTACT_EPSILON;
+        float reach = radius(a) + radius(b) + BUBBLE_CONTACT_MARGIN;
         return dx * dx + dy * dy <= reach * reach
                 && terrain.connects(centerX(a), centerY(a), centerX(b), centerY(b));
     }
@@ -182,8 +181,8 @@ public class BubbleContactSystem {
     private float centerY(Bubble bubble) { return bubble.position.y + bubble.dimension.y / 2; }
 
     private boolean touches(Rectangle a, Rectangle b) {
-        return a.x <= b.x + b.width + CONTACT_EPSILON && a.x + a.width + CONTACT_EPSILON >= b.x
-                && a.y <= b.y + b.height + CONTACT_EPSILON && a.y + a.height + CONTACT_EPSILON >= b.y;
+        return a.x <= b.x + b.width + BUBBLE_CONTACT_MARGIN && a.x + a.width + BUBBLE_CONTACT_MARGIN >= b.x
+                && a.y <= b.y + b.height + BUBBLE_CONTACT_MARGIN && a.y + a.height + BUBBLE_CONTACT_MARGIN >= b.y;
     }
 
     private boolean overlapsHorizontallyAtCrossing(Rectangle player, Rectangle bubble, float oldGap, float newGap) {

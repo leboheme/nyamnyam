@@ -12,6 +12,8 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.enemy.Enemy;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.types.DirectionType;
 import com.aramirezochoa.nyamnyam.screen.game.core.GameplayContext;
 
+import static com.aramirezochoa.nyamnyam.screen.game.run.PrototypeBalance.*;
+
 /** Bubble used by the JSON room runtime, optionally carrying an enemy. */
 public class Bubble extends Entity {
 
@@ -21,9 +23,6 @@ public class Bubble extends Entity {
     }
 
     private final FloatingState floatingState = new FloatingState();
-    private static final float MAX_PUSH_SPEED = 200f;
-    private static final float PRESSURE_TIME = 0.65f;
-    private static final float BURST_IMPACT_SPEED = 280f;
     private Enemy capturedEnemy;
     private float pressure;
     private boolean burstRequested;
@@ -50,19 +49,19 @@ public class Bubble extends Entity {
     @Override protected boolean isLoopAnimation() { return true; }
 
     public void push(float x, float y) {
-        impulse.set(x, y).limit(MAX_PUSH_SPEED);
+        impulse.set(x, y).limit(BUBBLE_MAX_PUSH_SPEED);
     }
 
     public boolean isBurstRequested() { return burstRequested; }
 
     public void relaxPressure(float deltaTime) {
-        pressure = Math.max(0, pressure - deltaTime);
+        pressure = Math.max(0, pressure - BUBBLE_PRESSURE_RELAXATION_PER_SECOND * deltaTime);
     }
 
     public void press(float deltaTime, float impactSpeed, boolean blocked) {
-        // Restores this frame's relaxation and then accumulates sustained pressure.
-        pressure += deltaTime * (blocked ? 5 : 2);
-        if (impactSpeed >= BURST_IMPACT_SPEED || pressure >= PRESSURE_TIME) burst();
+        // Gain competes with this frame's relaxation; rates are tuned together.
+        pressure += deltaTime * (blocked ? BUBBLE_BLOCKED_PRESSURE_GAIN_PER_SECOND : BUBBLE_PRESSURE_GAIN_PER_SECOND);
+        if (impactSpeed >= BUBBLE_BURST_IMPACT_SPEED || pressure >= BUBBLE_PRESSURE_THRESHOLD) burst();
     }
 
     private class FloatingState extends EntityState {
@@ -71,23 +70,23 @@ public class Bubble extends Entity {
         @Override public boolean update(float deltaTime) {
             if (burstRequested) return false;
             elapsed += deltaTime;
-            if (elapsed >= Constant.MEAL_RAISE_TIME_1 + Constant.MEAL_RAISE_TIME_2 + Constant.MEAL_RAISE_TIME_3) {
+            if (elapsed >= BUBBLE_COLD_SECONDS + BUBBLE_WARM_SECONDS + BUBBLE_HOT_SECONDS) {
                 expire();
                 return false;
             }
             acceleration.set(0, -Constant.GRAVITY.y);
             parent.getBubbleAttractionService().setVelocity(getId(), position.x + dimension.x / 2,
                     position.y + dimension.y / 2, velocity);
-            velocity.add(impulse).limit(MAX_PUSH_SPEED);
+            velocity.add(impulse).limit(BUBBLE_MAX_PUSH_SPEED);
             GameWrapperAssistant.updateEntity(Bubble.this, deltaTime, true,
                     parent.getBubbleAttractionService().getBaseSpeed());
-            impulse.scl(Math.max(0, 1 - 6 * deltaTime));
+            impulse.scl(Math.max(0, 1 - BUBBLE_IMPULSE_DAMPING_PER_SECOND * deltaTime));
             return false;
         }
 
         @Override public String getCode() {
-            return elapsed < Constant.MEAL_RAISE_TIME_1 ? "RAISE_COLD"
-                    : elapsed < Constant.MEAL_RAISE_TIME_1 + Constant.MEAL_RAISE_TIME_2 ? "RAISE_WARM" : "RAISE_HOT";
+            return elapsed < BUBBLE_COLD_SECONDS ? "RAISE_COLD"
+                    : elapsed < BUBBLE_COLD_SECONDS + BUBBLE_WARM_SECONDS ? "RAISE_WARM" : "RAISE_HOT";
         }
 
         @Override public void reset() { elapsed = 0; }

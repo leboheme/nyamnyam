@@ -4,16 +4,17 @@ import com.aramirezochoa.nyamnyam.screen.game.room.RoomAttractor;
 import com.aramirezochoa.nyamnyam.screen.game.room.RoomInstance;
 import com.badlogic.gdx.math.Vector2;
 
+import static com.aramirezochoa.nyamnyam.screen.game.run.PrototypeBalance.*;
+
 /** Calculates the base velocity that draws a bubble toward its nearest room focus. */
 public class BubbleAttractionService {
-    private static final float BASE_SPEED = 40f;
     private final RoomInstance room;
 
     public BubbleAttractionService(RoomInstance room) {
         this.room = room;
     }
 
-    public float getBaseSpeed() { return BASE_SPEED; }
+    public float getBaseSpeed() { return BUBBLE_ATTRACTION_SPEED; }
 
     public void setVelocity(long entityId, float x, float y, Vector2 velocity) {
         RoomAttractor nearest = null;
@@ -41,7 +42,7 @@ public class BubbleAttractionService {
             velocity.setZero();
             return;
         }
-        velocity.set(targetX - x, targetY - y).nor().scl(BASE_SPEED);
+        velocity.set(targetX - x, targetY - y).nor().scl(BUBBLE_ATTRACTION_SPEED);
     }
 
     private static long mix(long value) {

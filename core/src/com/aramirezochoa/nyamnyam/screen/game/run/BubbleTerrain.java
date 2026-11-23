@@ -2,9 +2,10 @@ package com.aramirezochoa.nyamnyam.screen.game.run;
 
 import com.aramirezochoa.nyamnyam.screen.game.core.CollisionWorld;
 
+import static com.aramirezochoa.nyamnyam.screen.game.run.PrototypeBalance.*;
+
 /** Terrain clearance for JSON bubble movement, shots and contact propagation. */
 public class BubbleTerrain {
-    private static final float EDGE_EPSILON = 0.001f;
     private final CollisionWorld world;
 
     public BubbleTerrain(CollisionWorld world) {
@@ -13,13 +14,13 @@ public class BubbleTerrain {
 
     public boolean canOccupy(float x, float y, float width, float height) {
         int tileSize = world.getTileSize();
-        if (world.isEnclosed() && (x < tileSize - EDGE_EPSILON || y < tileSize - EDGE_EPSILON
-                || x + width > world.getWidth() - tileSize + EDGE_EPSILON
-                || y + height > world.getHeight() - tileSize + EDGE_EPSILON)) return false;
-        int left = (int) Math.floor((x + EDGE_EPSILON) / tileSize);
-        int right = (int) Math.floor((x + width - EDGE_EPSILON) / tileSize);
-        int bottom = (int) Math.floor((y + EDGE_EPSILON) / tileSize);
-        int top = (int) Math.floor((y + height - EDGE_EPSILON) / tileSize);
+        if (world.isEnclosed() && (x < tileSize - BUBBLE_TERRAIN_EDGE_EPSILON || y < tileSize - BUBBLE_TERRAIN_EDGE_EPSILON
+                || x + width > world.getWidth() - tileSize + BUBBLE_TERRAIN_EDGE_EPSILON
+                || y + height > world.getHeight() - tileSize + BUBBLE_TERRAIN_EDGE_EPSILON)) return false;
+        int left = (int) Math.floor((x + BUBBLE_TERRAIN_EDGE_EPSILON) / tileSize);
+        int right = (int) Math.floor((x + width - BUBBLE_TERRAIN_EDGE_EPSILON) / tileSize);
+        int bottom = (int) Math.floor((y + BUBBLE_TERRAIN_EDGE_EPSILON) / tileSize);
+        int top = (int) Math.floor((y + height - BUBBLE_TERRAIN_EDGE_EPSILON) / tileSize);
         for (int tx = left; tx <= right; tx++) {
             for (int ty = bottom; ty <= top; ty++) {
                 if (world.hasTile(tx, ty)) return false;

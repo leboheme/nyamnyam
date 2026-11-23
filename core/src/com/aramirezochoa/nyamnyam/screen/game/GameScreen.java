@@ -96,6 +96,7 @@ public class GameScreen extends AbstractScreen {
             useLegacyFlow = false;
             loadedLevel = gameStatus.getLevel();
         }
+        runState.getSalivationReserve().reset();
         gameUserInterface.init(gameStatus.getLevel(), gameStatus.getLives(), gameStatus.getScore());
         hasJsonRoom = runFactory.populate(runState,
                 "data/rooms/" + gameStatus.getLevel() + ".json");
@@ -139,6 +140,7 @@ public class GameScreen extends AbstractScreen {
                 gamePad.update(delta);
             }
         }
+        gameUserInterface.setSalivationReserve(runRuntime == null ? null : runState.getSalivationReserve());
         gameUserInterface.update(delta);
 
         // Render

@@ -11,11 +11,10 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.Projectile;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.ProjectileType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.projectile.ProjectileStateFactory;
 
+import static com.aramirezochoa.nyamnyam.screen.game.run.PrototypeBalance.*;
+
 /** Prototype JSON combat rules. Locomotion and bubble contact physics remain independent. */
 public class RunCombatService {
-    // Temporary balance values: change Power here to compare ceil(resistance / Power) hits.
-    private static final float INITIAL_RESISTANCE = 3f;
-    private static final float ATTACK_POWER = 1f;
     private final GameplayContext context;
 
     public RunCombatService(GameplayContext context) {
@@ -24,7 +23,7 @@ public class RunCombatService {
 
     public void prepareEnemy(Enemy enemy) {
         // A returning captive retains its original maximum, even if balance values change later.
-        if (enemy.getInitialResistance() == 0) enemy.setInitialResistance(INITIAL_RESISTANCE);
+        if (enemy.getInitialResistance() == 0) enemy.setInitialResistance(ENEMY_INITIAL_RESISTANCE);
     }
 
     public void prepareAttack(Projectile attack) {
