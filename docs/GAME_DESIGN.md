@@ -131,7 +131,19 @@ Se mantiene la utilidad de las burbujas como apoyo en plataformas; las burbujas 
 
 Prototipo inicial: cuando una captura expira, el enemigo recupera su resistencia inicial y pasa a ENFADADO. Esta es una regla de prueba, no un comportamiento universal definitivo. En P10 se podrán definir reacciones diferentes por especie, incluyendo enemigos que se debilitan, se fortalecen o huyen.
 
-El enemigo aturdido queda capturado dentro de una burbuja, sin necesitar un estado conceptual adicional. Las burbujas, incluso al reducir resistencia, NO derrotan por sí solas. La derrota exige un remate válido. Las burbujas admiten arrastre/empuje limitado, agrupación y estallido en cadena como dirección acordada. Quedan por concretar el significado de «colapsar», alcance y propagación, interacción con obstáculos y qué eventos inician la cadena. No asumir que expirar remata otras capturas.
+El enemigo aturdido queda capturado dentro de una burbuja, sin necesitar un estado conceptual adicional. Las burbujas, incluso al reducir resistencia, NO derrotan por sí solas. La derrota exige un remate válido.
+
+Reglas de interacción acordadas y probadas en el prototipo:
+
+- Una burbuja puede estar vacía o contener un enemigo; ambas comparten movimiento, contacto y estallido. Las capturas no se representan como caramelos.
+- El contacto lateral o desde abajo empuja la burbuja y su grupo. La presión sostenida puede romperla; apretarla contra terreno acelera el estallido. Un impacto suficientemente fuerte puede romperla directamente.
+- Al caer sobre una burbuja, mantener salto permite rebotar conservándola; sin salto se revienta.
+- Las burbujas se amontonan manteniendo entidades y capturas independientes, sin fusionarse.
+- Un estallido se propaga entre burbujas en contacto, con una tolerancia técnica mínima; las paredes bloquean la conexión. La propagación no depende de qué haya provocado el estallido. Actualmente el protagonista es quien inicia los estallidos.
+- Tocar una pared por sí solo frena la burbuja, sin romperla. Disparar sin espacio contra una pared puede reventarla por compresión contra el propio protagonista.
+- Expirar es distinto de estallar: elimina la burbuja, libera al cautivo si lo tiene y no inicia cadenas ni remata otras capturas.
+
+La sala queda con el combate resuelto cuando no quedan enemigos libres ni cautivos. La comida, los pickups y las burbujas vacías pendientes no lo bloquean. Resolver combate no decide por sí mismo la apertura de salidas: dependerá de las reglas del tipo de sala. En la sala de prueba se sigue jugando, sin mensaje, WIN, avance automático ni premio por convertir aire en verduras.
 
 ### P7.B · Barra de salivación y comida común
 
@@ -141,6 +153,10 @@ Las frutas y verduras aparecen como drops abundantes (referencia: 0–2 por enem
 
 Las frutas recargan MÁS que las verduras. Las variantes visuales dentro de cada familia tienen el mismo efecto; cantidades pendientes de balance.
 
+En el prototipo, Nyam paga una sola vez al emitir realmente cada ataque; no paga por frame de botón sostenido ni vuelve a pagar al capturar. Disparar al vacío o sin espacio también consume. Cadence y disponibilidad de saliva deben cumplirse a la vez; mantener ataque permite volver a disparar al regenerar lo suficiente. La regeneración es continua, también mientras ataca, limitada a la capacidad y detenida al pausar. Limpiar la sala no rellena la reserva.
+
+La salud y la salivación pertenecen a la run y se conservan al cambiar de sala; un reinicio explícito restaura sus valores iniciales. Los valores de prueba actuales se recogen en [PROTOTYPE.md](PROTOTYPE.md#valores-provisionales-y-balance).
+
 La capacidad máxima de salivación y el coste por burbuja son atributos secundarios modificables; la regeneración es stat principal.
 
 Las burbujas falladas no devuelven salivación al recogerse. Regeneración basal + frutas/verduras sustituyen aquella idea. Las burbujas vacías pueden permanecer como elemento de plataformas y futuras mutaciones.
@@ -149,18 +165,31 @@ Diferencia entre personajes a validar: Gluty puede usar la lengua sin salivació
 
 ### P7.C · Supervivencia: cuatro dientes
 
-Concepto: cuando el protagonista se queda sin dientes, no puede continuar comiendo en el tour. Límite provisional: ocho espacios; representación visual por prototipar.
+Concepto: cuando el protagonista se queda sin dientes, no puede continuar comiendo en el tour. Los cuatro tipos previstos se describen abajo; el prototipo empieza con **tres contenedores normales llenos**, no cuatro. Límite provisional: ocho espacios en total.
+
+Para normales y caries se acuerdan medias piezas: salud y pickups pueden representar medio diente o uno entero. El daño básico inicial es medio diente; sus cantidades y futura escala se ajustarán por configuración y contexto de partida.
 
 | Diente | Efecto acordado |
 | --- | --- |
 | Normal | Vida recuperable. Al perderlo queda el contenedor/base vacío, que puede rellenarse. |
-| Caries | Protege de un golpe; se pierde por completo, sin contenedor. |
+| Caries | Protección temporal, divisible en mitades. La parte consumida desaparece; no deja contenedor. |
 | Colmillo | Protege de un golpe; si el daño fue melee, responde con un mordisco automático. Luego desaparece. Potencia pendiente. |
 | Implante | Diente en formación: al cambiar de mundo o al conseguir otro implante pasa a diente normal. |
 
 La grasa protectora y el aumento de tamaño corporal como mecánica quedan descartados.
 
-Los dientes pueden aparecer entre los drops de enemigos; su distribución, curación y gestión de espacios se ajustarán jugando. Colmillo e implante son contenido acordado para incorporar después de validar la base, no ideas descartables. Pendiente confirmar el instante exacto de fin de run al perder el último diente. La secuencia de implementación vive en [PROTOTYPE.md](PROTOTYPE.md).
+Reglas acordadas para normales y caries:
+
+- El daño consume primero las caries; después, la vida normal. Los contenedores normales se conservan incluso vacíos.
+- El pickup normal rellena vida en contenedores existentes; no crea contenedores nuevos.
+- La caries añade protección en espacios adicionales disponibles, sin sustituir contenedores normales vacíos. Dos medias caries comparten un cuadrado; al agotarse desaparece su espacio.
+- El límite cuenta contenedores normales, estén llenos o vacíos, y los espacios ocupados por caries. No se supera la capacidad; un pickup que no aporta nada permanece en la sala. Si solo cabe parte de una pieza entera, se aplica esa parte y se consume el pickup.
+- La run termina al no quedar ninguna mitad de vida normal ni caries, aunque queden contenedores vacíos. Se desactivan los controles y se deja una espera de presentación con la animación de muerte antes de mostrar Game over; no hay respawn ni consumo de vidas persistentes legacy.
+- No hay invencibilidad ni bloqueo inicial al entrar en la sala JSON. Tras recibir daño sí existe una ventana de invulnerabilidad, de duración provisional.
+
+Los dientes pueden aparecer al rematar enemigos, nunca por capturar o escapar. Las probabilidades y cantidades iniciales son de prueba. Colmillo e implante son contenido acordado para incorporar después de validar la base, no ideas descartables. No se han definido medias piezas para esos otros tipos.
+
+Representación provisional: cuadrados con borde blanco, interior oscuro para contenedor vacío, blanco para vida normal y beige verdoso para caries; relleno por mitades. Se usa en pickups y en el HUD arriba a la izquierda. El arte definitivo sigue pendiente. La secuencia y los valores de implementación viven en [PROTOTYPE.md](PROTOTYPE.md).
 
 ### P7.D · Estadísticas y atributos
 
@@ -192,7 +221,7 @@ Todos los personajes actuales pueden generar burbujas y beneficiarse de sus muta
 | Gluty | Lengüetazo disponible siempre; si golpea al aire genera burbuja desde la punta, consumiendo saliva solo en ese caso. | Si alcanza un enemigo aturdido puede atraerlo hacia sí. |
 | Tfly | Aleteo corto disponible siempre; después puede generar burbuja. | Empuje en el aleteo y en sus burbujas (este último reutilizable como mutación); doble salto. Diseño físico pendiente. |
 
-Burbujas vacías y con enemigo usan una entidad de burbuja común, con propiedades generales y mutaciones compartidas. El detalle de cómo se relaciona esa entidad con el enemigo se concretará al revisar el código existente.
+Burbujas vacías y con enemigo usan una entidad de burbuja común, con propiedades generales y mutaciones compartidas. Durante la captura, la burbuja posee la instancia del enemigo y suspende su actualización y colisiones independientes; escapar devuelve esa misma instancia al mundo y rematar la resuelve una sola vez. La frontera técnica se documenta en [REMAKE_DIRECTION.md](REMAKE_DIRECTION.md#runtime-json-implementado).
 
 Tfly no necesita empujar burbujas ya existentes con el aleteo; no añadir interacciones extra sin justificación.
 
@@ -212,6 +241,12 @@ Posibilidades futuras relacionadas: [IDEAS.md](IDEAS.md).
 | Cócteles | Objetos de una pool especial de coctelería, no clase mecánica exclusiva. |
 | Tickets | Moneda universal del tour, provisional. |
 | Aires | Elementos ambientales; los efectos especiales (tornado, pinchos, etc.) podrán reutilizarse como mutaciones o activas. |
+
+Presentación de recompensas acordada para el prototipo: al rematar, el cuerpo del enemigo sale en parábola, gira y puede rebotar en los límites laterales de la sala, atravesando su geometría interior. Es un efecto visual breve que se desvanece, sin IA, colisiones de combate ni espera para resolver al enemigo.
+
+Los drops sorteados salen simultáneamente, cada uno con su propia parábola y giro, más exagerados que el cuerpo. Rebotan en los límites exteriores, atraviesan la geometría interior al subir y aterrizan sobre la primera superficie cruzada al caer. Son recogibles durante el vuelo tras una breve demora para que lleguen a verse. Si no hay recompensa, solo sale el cuerpo: no se transforma más tarde en comida.
+
+Los perfiles de drops pueden variar por tipo de enemigo, con un perfil común de respaldo. El efecto de la familia recogida es independiente del enemigo de procedencia. Dificultad, Luck y otros criterios futuros no tienen reglas implementadas todavía; disponer de perfiles no autoriza a inventarlas. Los pickups usan IDs numéricos explícitos y estables, independientes de sus nombres provisionales.
 
 Refrescos: propuesta de explosión circular de 1,5 tiles, bloqueada por obstáculos; rompe tiles destructibles y accesos/cofres específicos. Una explosión no atraviesa los tiles que acaba de destruir.
 
@@ -298,6 +333,6 @@ Recarga propuesta previamente: avance por tiempo y recarga completa al limpiar s
 
 ## Próximos temas de diseño
 
-**Pendiente:** valores, duraciones, probabilidades, cantidad y distribución de dientes, fin de run al perder la última pieza, disposición del HUD y aspectos visuales. Los valores de prueba no fijan el balance final.
+**Pendiente:** balance definitivo de valores, duraciones, probabilidades y distribución de dientes; escala de daño y drops por dificultad/contexto; HUD y arte definitivos. El prototipo ya fija una regla de derrota, medias piezas y una representación temporal, sin convertir sus números en balance final.
 
 **P10 pendiente:** diseñar enemigos y bosses, incluidas las reacciones por especie al escapar. También quedan pendientes generación, navegación y duración efectiva de las runs.

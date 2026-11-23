@@ -2,7 +2,7 @@
 
 Fuente de verdad de la **dirección arquitectónica orientativa y la autoría de contenido**, no de las reglas de producto ni del alcance inmediato. Consultar [GAME_DESIGN.md](GAME_DESIGN.md), [PROTOTYPE.md](PROTOTYPE.md) e [IDEAS.md](IDEAS.md) para esos ámbitos.
 
-Destino: web jugable en móvil, con desktop como entorno de desarrollo. Mantener el flujo TMX legacy como comparación mientras el flujo de rooms JSON evoluciona. Este documento no es un inventario actualizado de funcionalidades implementadas: verificar el código antes de modificarlo.
+Destino: web jugable en móvil, con desktop como entorno de desarrollo. Mantener el flujo TMX legacy como comparación mientras el flujo de rooms JSON evoluciona. La sección de runtime implementado refleja el prototipo validado el 23/11/2026; el diagrama objetivo sigue siendo orientativo. Verificar el código antes de modificarlo.
 
 La referencia de escala y las convenciones de producción de arte viven en [ART_GUIDE.md](ART_GUIDE.md). Sus tamaños de canvas no cambian automáticamente las dimensiones lógicas ni las colisiones.
 
@@ -52,6 +52,54 @@ flowchart TD
 `GameStatus` conserva responsabilidades legacy. Su encaje con los nuevos recursos y `RunState` debe revisarse al implementar cada incremento; no trasladar sus reglas antiguas como requisitos del remake.
 
 En el TMX de una room, la capa `room` define el material. El grupo `content` contiene un object layer por alternativa de layout; los objetos con nombre de enum (`BOOF`, `FRUIT_APPLE`, etc.) se convierten a spawns tipados. Los objetos se alinean a la cuadrícula y usan coordenadas de tiles desde la esquina inferior izquierda en el JSON. Las imágenes de tileset son solo previews de Tiled: `make compile-room ROOM=7 FORCE=1` genera el JSON de runtime sin referencias a esas imágenes.
+
+## Runtime JSON implementado
+
+El flujo JSON usa RunRuntime; GameWrapper conserva el flujo TMX para comparación. GameScreen selecciona el runtime y coordina UI/input, sin alojar las reglas nuevas de combate, recursos o resolución de sala.
+
+| Frontera | Responsabilidad actual |
+| --- | --- |
+| `RunState` | Floors/sala actual y recursos que sobreviven a recargas de sala: SalivationReserve y ToothHealth. No es un catálogo anticipado de stats |
+| `RoomInstance` | Material, colisión/layout y combatCleared; sin salud/saliva ni reglas de puertas implícitas |
+| `EntityWorld` | Colecciones y actualización/render/limpieza de enemigos, comida, proyectiles, mascotas y Bubble |
+| `GameplayContext` | Servicios de gameplay accesibles a entidades. Los nuevos servicios opcionales son null en TMX |
+| `RunCombatService` | Resistencia/Power, captura al agotar resistencia, fuga/restauración y remate; atajo debug de derrota masiva |
+| `BubbleContactSystem` / `BubbleTerrain` | Contacto del jugador, presión, agrupación, propagación iterativa y bloqueo por terreno |
+| `BubbleAttractionService` | Velocidad hacia focos de la room; foco/destino por entidad |
+| `RoomCompletionService` | Marca combate resuelto cuando no quedan enemigos libres ni cautivos. No emite WIN, UI, recompensas ni apertura de puertas |
+| `RunDropService` | Evaluación de drops al rematar, recogida de comida/dientes, cuerpo visual y propiedad/limpieza de pickups provisionales |
+| `DropFlight` | Movimiento balístico compartido por DroppedMealState y ToothPickup: giro, rebote exterior y aterrizaje al caer |
+| `RunSurvivalService` | Daño de salud JSON, protección tras impacto y presentación de muerte antes de LOSE, sin respawn/vidas persistentes |
+| `GameUserInterface` / `ToothShape` | Representación provisional en viewport UI; mismo cuadrado de salud para HUD y pickups |
+
+### Captura y ciclo de vida
+
+Bubble es una Entity propia, no Meal/Air/Candy. Puede estar vacía o poseer una instancia Enemy. Capturar retira al enemigo de la colección de enemigos libres, lo deshabilita y suspende IA/colisiones; la burbuja lo posiciona y representa. No hay copia a otro Enemy ni doble actualización.
+
+Expirar devuelve esa misma instancia al mundo mediante el servicio de combate. Estallar limpia la referencia de captura antes de resolver y liberar al enemigo. El reset/cleanup de la burbuja libera un cautivo que siga poseyendo al limpiar la sala, sin generar drops. No reconstruir desde EnemyType ni liberar dos veces una instancia pooled.
+
+Los proyectiles persistentes registran IDs de impactos para no dañar repetidamente al mismo enemigo por solapamiento. Las cadenas descubren vecinos antes de resolver y no conservan referencias a entidades liberadas entre updates.
+
+El cuerpo derrotado es una copia independiente de TextureRegion y posición, nunca un Enemy activo: puede girar/volar/desvanecerse sin retrasar la resolución ni retener el pool. Frutas y verduras siguen usando factories/pools existentes. ToothPickup es un placeholder poligonal propiedad del servicio, sin textura ni entidad pooled; se retira al recoger o limpiar. Los renderers añadidos se liberan al disponer el runtime/HUD.
+
+### Recursos, carga y derrota
+
+ToothHealth guarda unidades enteras de medio diente; SalivationReserve usa una cantidad continua para regeneración. Ambos pertenecen a RunState, no a RoomInstance ni a GameStatus. Los valores y reglas jugables se recogen en GAME_DESIGN.md y PROTOTYPE.md.
+
+`stage <n>` recarga contenido sin restaurar recursos. `restart` los restaura expresamente y recarga la sala actual. Esto todavía no implementa navegación ni conservación de enemigos/comida de salas visitadas. Nueva pantalla/run crea un RunState nuevo.
+
+La entrada JSON usa idle y spawnTimer=-1: sin bloqueo SPAWN ni inmunidad inicial. El daño reutiliza el timer/parpadeo existente para su ventana de protección. Al agotar salud se usa una pose DEAD propia, sin los efectos legacy de DeadEntityState; después de una espera se llama a GameStatus.setGameState(LOSE). Cargar sala a cero no revive. Pausa detiene la espera.
+
+GameStatus sigue siendo la señal de estado para los listeners y conserva puntuación/vidas legacy; no se ha migrado globalmente. El score de remate previo aún pasa por él, pero recoger comida o dientes no da puntos ni vidas extra. La salud JSON no consume vidas persistentes, no reduce boosts al recibir daño y no usa su respawn. StageCompletion queda reservado a TMX.
+
+### Configuración y herramientas de balance
+
+- `PrototypeBalance`: constantes del prototipo JSON agrupadas por recurso, combate, supervivencia, burbujas y vuelos, con unidades/comentarios. Incluye tolerancias numéricas separadas de los controles de balance. Editar y recompilar; sin loader ni configuración en caliente.
+- `EnemyDropConfig`: perfil común y excepciones por EnemyType. Incluye probabilidades de comida y de diente adicional; actualmente todas las especies usan el fallback común. No hay reglas de dificultad/Luck implementadas.
+- `PickupType`: IDs numéricos explícitos y estables para los cuatro pickups provisionales de dientes. No usar ordinal ni nombres provisionales como identidad persistente. Aún no es un catálogo general de objetos.
+- `DebugConsole`: comandos `stage`, `restart`, `killall` y `spawn`; disponibilidad actual solo Desktop. Sintaxis e IDs en [PROTOTYPE.md](PROTOTYPE.md#consola-de-debug).
+
+No se ha introducido ECS ni sistema genérico de stats, drops de calidad o efectos. Las constantes de movimiento/cadencia todavía compartidas con el legacy no se han trasladado indiscriminadamente.
 
 ## Criterios de evolución
 

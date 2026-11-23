@@ -1,6 +1,6 @@
 # Nyam Nyam — Prototipo
 
-Fuente de verdad del **alcance inmediato, orden de implementación y criterios de prueba**. Las reglas pertenecen a [GAME_DESIGN.md](GAME_DESIGN.md); las ideas futuras, a [IDEAS.md](IDEAS.md). Este documento no afirma que lo descrito esté implementado.
+Fuente de verdad del **alcance inmediato, orden de implementación y criterios de prueba**. Las reglas pertenecen a [GAME_DESIGN.md](GAME_DESIGN.md); las ideas futuras, a [IDEAS.md](IDEAS.md). Las secciones de alcance describen lo autorizado; el estado implementado y validado se identifica expresamente más abajo (actualizado el 23/11/2026).
 
 ## Objetivo actual
 
@@ -13,7 +13,7 @@ Nyam, una sala artesanal, pocos enemigos y plataformas. Usar el flujo nuevo de r
 Implementar en incrementos jugables, revisando el código antes de concretar cada cambio:
 
 1. **Combate y captura:** resistencia, captura, remate por contacto y fuga. Reglas en [P7.A](GAME_DESIGN.md#p7a--ciclo-básico-de-combate); propiedades compartidas en P4 y P8.
-La interacción de burbujas de P7.A se valida como incremento tras captura/liberación y antes de incorporar resistencia/Power. La secuencia concreta y sus dependencias están en [la tarjeta de interacción](https://trello.com/c/OiN62Nqe); no ampliar la tarea de captura que ya está en curso.
+La interacción de burbujas se implementó tras captura/liberación y antes de resistencia/Power, mediante [su tarjeta específica](https://trello.com/c/OiN62Nqe).
 
 2. **Salivación:** reserva, consumo, regeneración y representación mínima que permita probar el recurso. Reglas en [P7.B](GAME_DESIGN.md#p7b--barra-de-salivación-y-comida-común).
 3. **Drops:** evaluación tras derrotar y frutas/verduras recogibles. Funciones en P7.B y [P9.A](GAME_DESIGN.md#p9a--comida-bebidas-y-economía).
@@ -32,12 +32,79 @@ Los valores necesarios para jugar serán provisionales y ajustables. No conviert
 - Puede recorrerse y resolverse la sala con el movimiento base. Probar especialmente contacto lateral, contacto desde arriba, rebote y remate, sin decidir prioridades accidentalmente.
 - Probar manualmente el combate en HTML/móvil con una carga representativa, además de desktop. Observar fluidez, respuesta táctil y acumulación de burbujas.
 
-### Decisiones necesarias durante esta iteración
+### Estado implementado y validado
 
-- Prioridades exactas entre apoyo/rebote y remate sobre burbujas, y tratamiento de las vacías.
-- Valores iniciales de resistencia, poder, tiempos, reserva, regeneración y drops.
-- Orden de consumo, reposición y ocupación de espacios de dientes; instante de derrota al perder la última pieza. Son pendientes del maestro, no reglas implícitas heredadas de Isaac o del legacy.
-- Comportamiento al limpiar esta sala de prueba, sin implementar todavía navegación de un tour.
+El usuario ha validado manualmente los incrementos de combate, interacción de burbujas, recursos, drops y supervivencia en la sala JSON. Esto no equivale a una batería exhaustiva de dispositivos o sesiones largas. La gestión viva de tareas sigue en el board configurado en `docs/tasks/tasks.json`.
+
+- **Combate:** resistencia/Power por impacto, feedback rojo breve, captura de la instancia Enemy, fuga con resistencia restaurada y enfado, remate único. Los proyectiles persistentes registran impactos para no repetir daño al mismo enemigo por solapamiento.
+- **Burbujas:** entidad propia, vacía o con cautivo; empuje/arrastre limitado, presión e impacto, rebote con salto mantenido al caer, agrupación sin fusión y cadenas por contacto bloqueadas por paredes. Reglas exactas en P7.A.
+- **Limpieza:** solo enemigos libres/cautivos bloquean resolver el combate. La sala sigue jugable, sin mensaje, WIN, progreso automático ni conversión de aire en verduras. La apertura por tipo de sala sigue pendiente.
+- **Saliva:** pago único por ataque emitido, regeneración continua y texto provisional. No hay devoluciones por fallo ni recarga especial por limpiar.
+- **Recompensas:** perfiles por enemigo con fallback común; fruta/verdura y posibilidad adicional de diente al rematar. Cuerpo visual separado, drops con parábola/giro/rebote exterior, recogida por contacto. Comida y dientes no añaden score ni vidas extra al recogerse; el score de remate previo aún usa GameStatus.
+- **Supervivencia:** normales/caries por mitades, tres contenedores iniciales, prioridad de caries, daño con invulnerabilidad posterior y derrota con presentación antes de Game over. Sin inmunidad de entrada, consumo de vidas persistentes ni respawn JSON. Reglas exactas en P7.C.
+- **HUD provisional:** cuadrados de salud arriba izquierda y saliva debajo, en el viewport de UI existente. Normal blanco, caries beige verdoso y contenedor vacío oscuro, todos con borde blanco. En JSON se ocultan los contadores legacy de nivel/vidas/score y el mensaje de esperar vidas; TMX conserva su presentación.
+
+### Valores provisionales y balance
+
+Editar [`PrototypeBalance.java`](../core/src/com/aramirezochoa/nyamnyam/screen/game/run/PrototypeBalance.java) y recompilar para ajustar recursos, combate, presión/contactos, vuelos y tiempos. Las tolerancias técnicas de colisión están comentadas aparte. No hay panel visual ni recarga de configuración en caliente.
+
+[`EnemyDropConfig.java`](../core/src/com/aramirezochoa/nyamnyam/screen/game/run/EnemyDropConfig.java) concentra los perfiles por EnemyType. Actualmente la tabla de excepciones está vacía: todas las especies usan el perfil común. No se han implementado modificadores de dificultad o Luck.
+
+| Parámetro | Valor actual de prueba |
+| --- | --- |
+| Resistencia enemiga / Power de ataque | 3 / 1: tres impactos para capturar |
+| Feedback de impacto | Rojo durante 0,12 s, sin interrumpir movimiento |
+| Vida de burbuja vacía/cautiva | 5 + 3 + 2 s de fases visuales; 10 s en total |
+| Saliva inicial/máxima, coste y regeneración | 6; 1 por ataque; 0,75/s incluso atacando |
+| Recarga de fruta / verdura | +2 / +1, limitada a capacidad |
+| Piezas de comida por remate | 25 % ninguna, 50 % una, 25 % dos |
+| Familia de cada pieza | 50 % fruta / 50 % verdura; variantes equiprobables |
+| Pickup de diente adicional | 20 % por remate, independiente de la comida |
+| Tipo y tamaño del diente sorteado | 50 % normal/caries y 50 % medio/entero |
+| Salud inicial / capacidad | 3 contenedores normales llenos / 8 espacios totales |
+| Daño básico / protección posterior | 0,5 diente / 1 s de invulnerabilidad |
+| Espera antes de Game over | 1,2 s, con animación DEAD sin respawn |
+| Demora de recogida de drops lanzados | 0,15 s; después se pueden recoger en vuelo |
+| Cuerpo derrotado | 1,2 s de vuelo, fade en los últimos 0,25 s |
+
+Los ajustes de presión, velocidades, gravedad, restitución y rotación viven en el mismo archivo, con unidades y comentarios. No duplicarlos en otras fuentes de balance. La cadencia/movimiento heredados que aún se comparten con TMX siguen fuera de esta configuración.
+
+### Cargar sala y reiniciar run
+
+Salud y saliva viven en RunState, fuera de la geometría de sala y de la persistencia legacy. Cambiar o recargar sala conserva ambos recursos, incluidas las caries; estar a cero no permite revivir mediante un cambio de sala. El contenido de la sala sí vuelve a cargarse: todavía no hay navegación ni persistencia de salas visitadas.
+
+Una nueva run o el comando `restart` restauran tres contenedores llenos, eliminan caries, llenan saliva y recargan la sala actual. `restart` no vuelve al nivel 1 ni reinicia las vidas persistentes legacy. Pausar congela gameplay, regeneración y espera de muerte.
+
+### Consola de debug
+
+La consola existente se abre con la tecla grave (`) y está habilitada solo en Desktop; no se ha ampliado su disponibilidad a HTML/móvil. `help` lista los comandos.
+
+| Comando | Efecto |
+| --- | --- |
+| `stage 7` | Carga/recarga la sala de prueba conservando salud, caries y saliva |
+| `restart` | Reinicia la sala actual con recursos iniciales de la run |
+| `killall` | Resuelve enemigos libres y cautivos con sus cuerpos/drops; no cambia de sala ni reinicia recursos. Repetir devuelve cero |
+| `spawn list` | Lista los IDs numéricos disponibles |
+| `spawn 1` / `spawn 2` | Lanza un pickup normal entero / medio cerca de Nyam |
+| `spawn 3` / `spawn 4` | Lanza una caries entera / media cerca de Nyam |
+| `clear` | Limpia la salida de consola |
+
+`killall` y `spawn` requieren JSON. F11 alterna JSON/TMX cuando existe la room JSON; conserva los recursos de RunState al volver y recarga el contenido. Los IDs se declaran explícitamente en PickupType, no se derivan del orden del enum ni de los nombres; no reutilizar IDs retirados.
+
+### Comprobación de regresión manual
+
+- Capturar, dejar escapar y rematar; comprobar tres impactos base, restauración al escapar y resolución única en cadenas.
+- Empujar lateralmente y desde abajo, apretar contra terreno y caer con/sin salto. Llegar a una pared sin presión del protagonista no revienta la burbuja.
+- Gastar saliva, regenerar y recoger fruta/verdura; no superar capacidad ni cobrar por frame sostenido.
+- Recibir medio diente de daño; rellenar normales y añadir medias/enteras caries. A capacidad o vida llena, los pickups sin efecto permanecen. El exceso parcial se descarta al recoger.
+- Perder la última mitad: controles desactivados, animación de muerte y espera antes de Game over; sin respawn. `stage 7` no cura ni revive; `restart` sí restaura los recursos.
+- Comprobar vuelos, recogida en aire/suelo, pausa, reinicio, redimensionado y controles táctiles. Repetir la comparación TMX con F11 y una sesión HTML/móvil representativa.
+
+Las verificaciones realizadas por el agente han sido `git diff --check`, compilación Java 17 y generación del runtime web; cuando hubo cambios de assets/i18n se ejecutó también el build completo. No se ejecutó la aplicación ni se crearon/modificaron tests. La validación de juego la hizo el usuario. Revisar nuevamente el código y los checks después de futuros cambios.
+
+### Decisiones que siguen abiertas
+
+Balance definitivo, escala de daño y perfiles por dificultad/contexto, arte/HUD definitivos y acceso según tipo de sala. Los criterios ya acordados de contacto, cadenas, pickups y derrota no siguen pendientes: se recogen en GAME_DESIGN.md. No se incorpora contenido futuro solo porque exista un punto de configuración.
 
 ### Fuera del alcance actual
 
