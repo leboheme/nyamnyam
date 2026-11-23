@@ -8,7 +8,7 @@ import com.aramirezochoa.nyamnyam.screen.game.core.EntityWorld;
 import com.aramirezochoa.nyamnyam.screen.game.core.GameplayCamera;
 import com.aramirezochoa.nyamnyam.screen.game.core.GameplayContext;
 import com.aramirezochoa.nyamnyam.screen.game.core.RoomCollisionWorld;
-import com.aramirezochoa.nyamnyam.screen.game.core.StageCompletion;
+import com.aramirezochoa.nyamnyam.screen.game.GameState;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.EntityFactory;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.Avatar;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.enemy.Enemy;
@@ -38,7 +38,7 @@ public class RunRuntime implements GameplayContext {
     private final MediaManager mediaManager;
     private final TextureAtlas textureAtlas;
     private final EntityWorld entityWorld = new EntityWorld();
-    private final StageCompletion stageCompletion = new StageCompletion(this);
+    private final RoomCompletionService roomCompletionService;
     private final GameplayCamera camera = new GameplayCamera();
     private final RoomRenderer roomRenderer;
     private final SpriteBatch entityBatch = new SpriteBatch();
@@ -58,6 +58,7 @@ public class RunRuntime implements GameplayContext {
         textureAtlas = mediaManager.get("data/game/game.atlas");
         roomRenderer = new RoomRenderer(mediaManager.get("data/stages/tiles.png"));
         collisionWorld = new RoomCollisionWorld(runState.getCurrentRoom());
+        roomCompletionService = new RoomCompletionService(runState.getCurrentRoom(), entityWorld);
         bubbleTerrain = new BubbleTerrain(collisionWorld);
         bubbleContactSystem = new BubbleContactSystem(bubbleTerrain);
         combatService = new RunCombatService(this);
@@ -65,7 +66,6 @@ public class RunRuntime implements GameplayContext {
         loadMainAvatar();
         loadEnemies();
         loadMeals();
-        stageCompletion.reset();
     }
 
     public void update(float deltaTime) {
@@ -81,7 +81,12 @@ public class RunRuntime implements GameplayContext {
         float intendedY = player == null ? 0 : player.velocity.y;
         entityWorld.update(deltaTime);
         bubbleContactSystem.update(entityWorld, deltaTime, jumpRequested, intendedX, intendedY);
-        stageCompletion.update(deltaTime, gameStatus);
+        // Preserve the current lives-based loss signal until the survival prototype replaces it.
+        if (gameStatus.getLives() <= 0) {
+            if (gameStatus.getGameState() != GameState.LOSE) gameStatus.setGameState(GameState.LOSE);
+            return;
+        }
+        roomCompletionService.update();
     }
 
     public void render(float deltaTime) {

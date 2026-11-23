@@ -132,7 +132,12 @@ public class EntityWorld {
     }
 
     public boolean hasEnemies() {
-        if (enemies.size > 0) {
+        return enemies.size > 0;
+    }
+
+    /** JSON combat is unresolved while any enemy remains free or owned by a bubble. */
+    public boolean hasUnresolvedEnemies() {
+        if (hasEnemies()) {
             return true;
         }
         for (int i = 0; i < bubbles.size; i++) {

@@ -10,7 +10,7 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.EntityStateFacto
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.avatar.enemy.EnemyStateFactory;
 import com.aramirezochoa.nyamnyam.screen.game.status.GameStatus;
 
-/** Tracks whether the current stage is ready to finish. */
+/** Tracks completion and end-of-stage rewards for the legacy TMX flow. */
 public class StageCompletion {
 
     private final GameplayContext gameplayContext;

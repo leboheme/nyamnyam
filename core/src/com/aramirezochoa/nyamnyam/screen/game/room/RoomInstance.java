@@ -13,6 +13,7 @@ public class RoomInstance {
     private final RoomMaterial[][] materials;
     private final TileType[][] collisionTypes;
     private final RoomLayout layout;
+    private boolean combatCleared;
     private final Array<RoomAttractor> attractors;
     private final EnumMap<RoomMaterial, RoomAppearance> appearances = new EnumMap<RoomMaterial, RoomAppearance>(RoomMaterial.class);
 
@@ -41,6 +42,11 @@ public class RoomInstance {
     public int getTileSize() {
         return tileSize;
     }
+
+    /** Combat completion does not itself decide whether this room's exits are open. */
+    public boolean isCombatCleared() { return combatCleared; }
+
+    public void markCombatCleared() { combatCleared = true; }
 
     public RoomLayout getLayout() {
         return layout;
