@@ -76,6 +76,8 @@ El flujo JSON usa RunRuntime; GameWrapper conserva el flujo TMX para comparació
 
 Bubble es una Entity propia, no Meal/Air/Candy. Puede estar vacía o poseer una instancia Enemy. Capturar retira al enemigo de la colección de enemigos libres, lo deshabilita y suspende IA/colisiones; la burbuja lo posiciona y representa. No hay copia a otro Enemy ni doble actualización.
 
+`RunCombatService` comprueba el contacto de burbujas vacías con enemigos debilitados después de actualizar las entidades. `Bubble` conserva su edad desde el nacimiento; al capturar toma una sola vez el límite de vida efectivo de la build. La mutación no modifica el reloj de las vacías ni los límites ya fijados en otras capturas.
+
 Expirar devuelve esa misma instancia al mundo mediante el servicio de combate. Estallar limpia la referencia de captura antes de resolver y liberar al enemigo. El reset/cleanup de la burbuja libera un cautivo que siga poseyendo al limpiar la sala, sin generar drops. No reconstruir desde EnemyType ni liberar dos veces una instancia pooled.
 
 Los proyectiles persistentes registran IDs de impactos para no dañar repetidamente al mismo enemigo por solapamiento. Las cadenas descubren vecinos antes de resolver y no conservan referencias a entidades liberadas entre updates.
@@ -96,10 +98,10 @@ GameStatus sigue siendo la señal de estado para los listeners y conserva puntua
 
 - `PrototypeBalance`: constantes del prototipo JSON agrupadas por recurso, combate, supervivencia, burbujas y vuelos, con unidades/comentarios. Incluye tolerancias numéricas separadas de los controles de balance. Editar y recompilar; sin loader ni configuración en caliente.
 - `RunStats`: solo modificadores tipados de Power, Cadence y Salivation; conserva las bases en sus fuentes actuales. Calcula `base × (1 + suma de modificadores)` sin componer sobre resultados anteriores. Runtime de combate, cadencia y regeneración consultan el valor efectivo; proyectiles ya emitidos no cambian. La consola Desktop ofrece `stats` como consulta de solo lectura.
-- `RunMutation`: efectos discretos de la build. Burbuja Gigante se registra una vez en `RunState`; cada disparo nuevo conserva su escala hasta convertirse en burbuja vacía o capturar un enemigo. El tamaño de render, caja de impacto y huella ante el terreno comparten esa escala.
+- `RunMutation`: efectos discretos de la build. Burbuja Gigante se registra una vez en `RunState`; cada disparo nuevo conserva su escala hasta convertirse en burbuja vacía o capturar un enemigo. El tamaño de render, caja de impacto y huella ante el terreno comparten esa escala. Captura Prolongada se consulta al iniciar cada captura y fija su límite sin alterar otras burbujas.
 - `RunPickup`: ciclo compartido mínimo (colisión, recogida y render) para `ToothPickup` y `UpgradePickup`. Cada subtipo aplica su resultado específico; no convierte toda recogida en salud. `DropLaunch` mantiene el vuelo visual y materializa el pickup al aterrizar.
 - `EnemyDropConfig`: perfil común y excepciones por EnemyType. Incluye probabilidades de comida y de diente adicional; actualmente todas las especies usan el fallback común. No hay reglas de dificultad/Luck implementadas.
-- `PickupType`: IDs numéricos explícitos y estables: 1–4 dientes provisionales, 5–7 mejoras de stats y 8 Burbuja Gigante de debug. No usar ordinal ni nombres provisionales como identidad persistente. Aún no es un catálogo general de objetos.
+- `PickupType`: IDs numéricos explícitos y estables: 1–4 dientes provisionales, 5–7 mejoras de stats y 8–9 mutaciones de debug. No usar ordinal ni nombres provisionales como identidad persistente. Aún no es un catálogo general de objetos.
 - `DebugConsole`: comandos `stage`, `restart`, `killall`, `spawn` y consulta de stats; disponibilidad actual solo Desktop. Sintaxis e IDs en [PROTOTYPE.md](PROTOTYPE.md#consola-de-debug).
 
 No se ha introducido ECS ni sistema genérico de drops de calidad o efectos. Las constantes de movimiento/cadencia todavía compartidas con el legacy no se han trasladado indiscriminadamente.

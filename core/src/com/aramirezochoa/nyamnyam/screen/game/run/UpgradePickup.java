@@ -15,6 +15,7 @@ public final class UpgradePickup implements RunPickup {
     private static final Color CADENCE_COLOR = Color.valueOf("f4d35e");
     private static final Color SALIVATION_COLOR = Color.valueOf("64d8e5");
     private static final Color GIANT_BUBBLE_COLOR = Color.valueOf("be8cff");
+    private static final Color PROLONGED_CAPTURE_COLOR = Color.valueOf("9bdf8a");
 
     private final PickupType type;
     private final Rectangle box = new Rectangle();
@@ -60,6 +61,14 @@ public final class UpgradePickup implements RunPickup {
             shapes.circle(centerX, centerY, 5f);
             shapes.setColor(Color.WHITE);
             shapes.circle(centerX, centerY, 2f);
+            return;
+        }
+        if (type.mutation == RunMutation.PROLONGED_CAPTURE) {
+            shapes.setColor(PROLONGED_CAPTURE_COLOR);
+            shapes.circle(centerX, centerY, 5f);
+            shapes.setColor(Color.WHITE);
+            shapes.rect(centerX - 0.5f, centerY - 3f, 1f, 6f);
+            shapes.rect(centerX, centerY, 3f, 1f);
             return;
         }
         switch (type.stat) {

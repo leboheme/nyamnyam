@@ -12,7 +12,8 @@ public enum PickupType {
     POWER_UP(5, false, 0, RunStats.Stat.POWER, POWER_PICKUP_MODIFIER),
     CADENCE_UP(6, false, 0, RunStats.Stat.CADENCE, CADENCE_PICKUP_MODIFIER),
     SALIVATION_UP(7, false, 0, RunStats.Stat.SALIVATION, SALIVATION_PICKUP_MODIFIER),
-    GIANT_BUBBLE(8, RunMutation.GIANT_BUBBLE, "pickupGiantBubble");
+    GIANT_BUBBLE(8, RunMutation.GIANT_BUBBLE, "pickupGiantBubble"),
+    PROLONGED_CAPTURE(9, RunMutation.PROLONGED_CAPTURE, "pickupProlongedCapture");
 
     public final int id, halves;
     public final boolean caries;

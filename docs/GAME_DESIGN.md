@@ -142,6 +142,7 @@ Reglas de interacción acordadas y probadas en el prototipo:
 - Un estallido se propaga entre burbujas en contacto, con una tolerancia técnica mínima; las paredes bloquean la conexión. La propagación no depende de qué haya provocado el estallido. Actualmente el protagonista es quien inicia los estallidos.
 - Tocar una pared por sí solo frena la burbuja, sin romperla. Disparar sin espacio contra una pared puede reventarla por compresión contra el propio protagonista.
 - Expirar es distinto de estallar: elimina la burbuja, libera al cautivo si lo tiene y no inicia cadenas ni remata otras capturas.
+- Regla experimental por validar: una burbuja vacía puede capturar por contacto a un enemigo al que le quede como máximo un golpe según el Power actual. La captura conserva la edad de esa burbuja; no reinicia su ciclo. Captura Prolongada amplía solo el límite de vida al capturar, sin alargar burbujas vacías ni modificar capturas anteriores.
 
 La sala queda con el combate resuelto cuando no quedan enemigos libres ni cautivos. La comida, los pickups y las burbujas vacías pendientes no lo bloquean. Resolver combate no decide por sí mismo la apertura de salidas: dependerá de las reglas del tipo de sala. En la sala de prueba se sigue jugando, sin mensaje, WIN, avance automático ni premio por convertir aire en verduras.
 

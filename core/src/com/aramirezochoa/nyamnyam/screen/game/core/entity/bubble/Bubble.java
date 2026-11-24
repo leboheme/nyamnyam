@@ -74,11 +74,14 @@ public class Bubble extends Entity {
 
     private class FloatingState extends EntityState {
         private float elapsed;
+        private float capturedLifetime;
 
         @Override public boolean update(float deltaTime) {
             if (burstRequested) return false;
             elapsed += deltaTime;
-            if (elapsed >= BUBBLE_COLD_SECONDS + BUBBLE_WARM_SECONDS + BUBBLE_HOT_SECONDS) {
+            float lifetime = capturedEnemy == null ? BUBBLE_COLD_SECONDS + BUBBLE_WARM_SECONDS + BUBBLE_HOT_SECONDS
+                    : capturedLifetime;
+            if (elapsed >= lifetime) {
                 expire();
                 return false;
             }
@@ -97,14 +100,24 @@ public class Bubble extends Entity {
                     : elapsed < BUBBLE_COLD_SECONDS + BUBBLE_WARM_SECONDS ? "RAISE_WARM" : "RAISE_HOT";
         }
 
-        @Override public void reset() { elapsed = 0; }
+        public void startCapture(float duration) {
+            // Keep elapsed age, including time spent empty before contact.
+            capturedLifetime = duration;
+        }
+
+        @Override public void reset() {
+            elapsed = 0;
+            capturedLifetime = 0;
+        }
     }
 
-    public boolean capture(Enemy enemy) {
+    public boolean capture(Enemy enemy, float duration) {
         if (capturedEnemy != null || !isEnabled() || !enemy.isEnabled() || enemy.isBoss()) {
             return false;
         }
+        if (duration <= 0f) throw new IllegalArgumentException("Capture duration must be positive");
         capturedEnemy = enemy;
+        floatingState.startCapture(duration);
         enemy.captureInBubble();
         updateCapturedPosition();
         return true;

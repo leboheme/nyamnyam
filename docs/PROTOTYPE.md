@@ -52,7 +52,11 @@ Editar [`PrototypeBalance.java`](../core/src/com/aramirezochoa/nyamnyam/screen/g
 
 La implementación de pickups está en revisión: `spawn 5/6/7` crea mejoras provisionales de Power/Cadence/Salivation. Se aplican una vez al recoger, se acumulan sobre la base y no curan ni recargan la reserva actual. Son solo de debug, no forman parte de drops de enemigo; la validación manual queda pendiente.
 
-La primera mutación está pendiente de prueba manual: `spawn 8` lanza Burbuja Gigante. Es binaria en `RunState`: solo afecta a disparos de Nyam creados después de recogerla y a las burbujas que esos disparos generan, vacías o cautivas. Una segunda copia no aporta efecto y permanece en la sala. El factor provisional es `GIANT_BUBBLE_SCALE` en `PrototypeBalance` (actualmente 1,5: 32 → 48 px). Si el disparo no cabe al emitirlo, estalla en el punto de emisión; en pasillos más estrechos que su tamaño no puede avanzar. La mutación persiste con `stage 7`/F11 y se limpia con `restart`.
+Burbuja Gigante fue validada manualmente por el usuario: `spawn 8` la lanza. Es binaria en `RunState`: solo afecta a disparos de Nyam creados después de recogerla y a las burbujas que esos disparos generan, vacías o cautivas. Una segunda copia no aporta efecto y permanece en la sala. El factor provisional es `GIANT_BUBBLE_SCALE` en `PrototypeBalance` (actualmente 1,5: 32 → 48 px). Si el disparo no cabe al emitirlo, estalla en el punto de emisión; en pasillos más estrechos que su tamaño no puede avanzar. La mutación persiste con `stage 7`/F11 y se limpia con `restart`.
+
+Captura Prolongada está pendiente de prueba manual: `spawn 9` la lanza. Una burbuja vacía puede capturar al tocar a un enemigo al que le queda como máximo un impacto con el Power actual. La edad de la burbuja continúa; el límite se fija al capturar y la mutación añade cinco segundos al límite base, sin alargar burbujas que sigan vacías. Una captura anterior conserva el límite elegido al iniciarse. La segunda copia no aporta efecto y permanece en la sala. También persiste con `stage 7`/F11 y se limpia con `restart`.
+
+Primera build del prototipo 2 implementada: tres modificadores numéricos (Power, Cadence y Salivation) y dos mutaciones binarias (Gigante y Captura Prolongada), todos obtenibles solo por `spawn` en Desktop. Siguen fuera de esta build las otras cuatro stats principales del diseño, los demás efectos del banco P9.C, el catálogo de mutaciones, drops de mejoras, pools, tiendas, inventario, arte definitivo y la navegación roguelike. La sesión completa de juego y la comprobación HTML/móvil aún dependen de prueba manual.
 
 [`EnemyDropConfig.java`](../core/src/com/aramirezochoa/nyamnyam/screen/game/run/EnemyDropConfig.java) concentra los perfiles por EnemyType. Actualmente la tabla de excepciones está vacía: todas las especies usan el perfil común. No se han implementado modificadores de dificultad o Luck.
 
@@ -61,8 +65,9 @@ La primera mutación está pendiente de prueba manual: `spawn 8` lanza Burbuja G
 | Resistencia enemiga / Power de ataque | 3 / 1: tres impactos para capturar |
 | Pickup debug Power / Cadence / Salivation | +50 % / +50 % / +100 % sobre base; provisionales y sumables |
 | Mutación debug Burbuja Gigante | ×1,5 tamaño de disparo y burbuja, una sola vez |
+| Mutación debug Captura Prolongada | +5 s al límite de vida al capturar, una sola vez |
 | Feedback de impacto | Rojo durante 0,12 s, sin interrumpir movimiento |
-| Vida de burbuja vacía/cautiva | 5 + 3 + 2 s de fases visuales; 10 s en total |
+| Vida de burbuja vacía/cautiva base | 5 + 3 + 2 s de fases visuales; 10 s desde el nacimiento, también tras capturar |
 | Saliva inicial/máxima, coste y regeneración | 6; 1 por ataque; 0,75/s incluso atacando |
 | Recarga de fruta / verdura | +2 / +1, limitada a capacidad |
 | Piezas de comida por remate | 25 % ninguna, 50 % una, 25 % dos |
@@ -99,6 +104,7 @@ La consola existente se abre con la tecla grave (`) y está habilitada solo en D
 | `spawn 6` | Lanza mejora Cadence (+50 % de ataques/s base) |
 | `spawn 7` | Lanza mejora Salivation (+100 % de regeneración base) |
 | `spawn 8` | Lanza Burbuja Gigante (×1,5 en disparos y burbujas nuevos) |
+| `spawn 9` | Lanza Captura Prolongada (+5 s al capturar, incluso una vacía ya existente) |
 | `stats` | Muestra base, modificador y resultado de Power, Cadence y Salivation (JSON) |
 | `clear` | Limpia la salida de consola |
 
@@ -113,6 +119,7 @@ La consola existente se abre con la tecla grave (`) y está habilitada solo en D
 - Perder la última mitad: controles desactivados, animación de muerte y espera antes de Game over; sin respawn. `stage 7` no cura ni revive; `restart` sí restaura los recursos.
 - Comprobar vuelos, recogida en aire/suelo, pausa, reinicio, redimensionado y controles táctiles. Repetir la comparación TMX con F11 y una sesión HTML/móvil representativa.
 - Stats: `restart` y ejecutar `stats` para anotar bases/modificadores. Probar `spawn 5`, recoger y observar +50 % Power (el enemigo básico pasa de tres a dos impactos); hacer `restart` antes de aislar `spawn 6` (+50 %, intervalo de 0,5 s) y `spawn 7` (+100 %, 1,5/s sin rellenar la reserva al recoger). Recoger una segunda copia de cada mejora y confirmar la suma. `stage 7`/F11 conservan la build; `restart` la borra. Confirmar que los pickups no alteran dientes/score y que `killall` no los suelta automáticamente.
+- Mutaciones: tras `restart`, capturar sin mejora y observar expiración alrededor del segundo 10. Recoger `spawn 9` y capturar de nuevo: expiración alrededor del segundo 15 desde que nació la burbuja. Una vacía sigue expirando en 10 s. Debilitar un enemigo hasta dejarlo a un golpe, acercarle una burbuja vacía y comprobar captura por contacto sin reiniciar su edad. Probar una captura previa a recoger la mutación, una vacía previa que capture después, doble recogida, composición con `spawn 8` y persistencia con `stage 7`/F11; `restart` limpia ambas.
 
 Las verificaciones realizadas por el agente han sido `git diff --check`, compilación Java 17 y generación del runtime web; cuando hubo cambios de assets/i18n se ejecutó también el build completo. No se ejecutó la aplicación ni se crearon/modificaron tests. La validación de juego la hizo el usuario. Revisar nuevamente el código y los checks después de futuros cambios.
 

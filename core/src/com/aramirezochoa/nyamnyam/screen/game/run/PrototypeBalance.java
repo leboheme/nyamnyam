@@ -68,6 +68,10 @@ public final class PrototypeBalance {
     public static final float BUBBLE_COLD_SECONDS = 5f;
     public static final float BUBBLE_WARM_SECONDS = 3f;
     public static final float BUBBLE_HOT_SECONDS = 2f;
+    // Capture keeps the bubble's elapsed age. Its deadline is sampled on capture;
+    // the base equals the previous 10-second lifetime and the mutation adds 5 seconds.
+    public static final float CAPTURE_BASE_SECONDS = 10f;
+    public static final float PROLONGED_CAPTURE_BONUS_SECONDS = 5f;
 
     // Bubble movement: speeds in px/s; damping removes this fraction of impulse per second.
     public static final float BUBBLE_ATTRACTION_SPEED = 40f;

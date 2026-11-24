@@ -30,6 +30,20 @@ public class RunCombatService {
         attack.setPower(stats == null ? ATTACK_POWER : stats.getPower());
     }
 
+    /** An empty bubble can capture an enemy weakened to one current hit. */
+    public void captureOnBubbleContact() {
+        float oneHit = context.getRunStats().getPower();
+        for (Bubble bubble : context.getEntityWorld().getBubbles()) {
+            if (!bubble.isEnabled() || bubble.isBurstRequested() || bubble.hasCapturedEnemy()) continue;
+            for (int i = context.getEntityWorld().getEnemies().size - 1; i >= 0; i--) {
+                Enemy enemy = context.getEntityWorld().getEnemies().get(i);
+                if (!enemy.isEnabled() || enemy.isBoss() || enemy.getResistance() <= 0f
+                        || enemy.getResistance() > oneHit || !bubble.box.overlaps(enemy.box)) continue;
+                if (bubble.capture(enemy, context.getCaptureDuration())) break;
+            }
+        }
+    }
+
     /** Returns whether this attack applied a new impact; callers stop iterating after capture. */
     public boolean hit(Projectile attack, Enemy enemy) {
         if (!enemy.isEnabled() || enemy.isBoss() || !attack.registerImpact(enemy.getId())) return false;
@@ -46,7 +60,7 @@ public class RunCombatService {
                 y = attack.position.y;
             }
             Bubble bubble = EntityFactory.bubble(x, y, attack.getLookingAt(), attack.getBubbleScale(), context);
-            if (bubble.capture(enemy)) {
+            if (bubble.capture(enemy, context.getCaptureDuration())) {
                 context.getEntityWorld().addBubble(bubble);
             } else {
                 bubble.free();

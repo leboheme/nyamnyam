@@ -97,6 +97,7 @@ public class RunRuntime implements GameplayContext {
         float intendedY = player == null ? 0 : player.velocity.y;
         entityWorld.update(deltaTime);
         if (runState.getToothHealth().isDefeated()) return;
+        combatService.captureOnBubbleContact();
         dropService.update(deltaTime);
         physicsSystem.update(entityWorld, dropService.getPickups(), deltaTime, true);
         bubbleContactSystem.update(entityWorld, deltaTime, jumpRequested, intendedX, intendedY);
@@ -198,6 +199,10 @@ public class RunRuntime implements GameplayContext {
     public ToothHealth getToothHealth() { return runState.getToothHealth(); }
     public float getBubbleScale() {
         return runState.hasMutation(RunMutation.GIANT_BUBBLE) ? PrototypeBalance.GIANT_BUBBLE_SCALE : 1f;
+    }
+    public float getCaptureDuration() {
+        return PrototypeBalance.CAPTURE_BASE_SECONDS + (runState.hasMutation(RunMutation.PROLONGED_CAPTURE)
+                ? PrototypeBalance.PROLONGED_CAPTURE_BONUS_SECONDS : 0f);
     }
     public boolean addMutation(RunMutation mutation) { return runState.addMutation(mutation); }
     @Override public RunSurvivalService getSurvivalService() { return survivalService; }
