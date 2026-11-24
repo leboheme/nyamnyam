@@ -27,7 +27,8 @@ public class RunCombatService {
     }
 
     public void prepareAttack(Projectile attack) {
-        attack.setPower(ATTACK_POWER);
+        RunStats stats = context.getRunStats();
+        attack.setPower(stats == null ? ATTACK_POWER : stats.getPower());
     }
 
     /** Returns whether this attack applied a new impact; callers stop iterating after capture. */

@@ -14,6 +14,7 @@ import com.aramirezochoa.nyamnyam.screen.game.debug.StageCommand;
 import com.aramirezochoa.nyamnyam.screen.game.debug.KillAllCommand;
 import com.aramirezochoa.nyamnyam.screen.game.debug.SpawnCommand;
 import com.aramirezochoa.nyamnyam.screen.game.debug.RestartCommand;
+import com.aramirezochoa.nyamnyam.screen.game.debug.StatsCommand;
 import com.aramirezochoa.nyamnyam.screen.game.gui.GameUserInterface;
 import com.aramirezochoa.nyamnyam.screen.game.input.GamePad;
 import com.aramirezochoa.nyamnyam.screen.game.room.RoomLoader;
@@ -86,6 +87,7 @@ public class GameScreen extends AbstractScreen {
                 ? -1 : runRuntime.getDropService().spawnPickup(id)));
         debugConsole.registerCommand(new KillAllCommand(() -> runRuntime == null
                 ? -1 : runRuntime.getCombatService().defeatAllEnemies()));
+        debugConsole.registerCommand(new StatsCommand(() -> runRuntime == null ? null : runRuntime.getRunStats()));
 
         InputMultiplexer im = new InputMultiplexer();
         im.addProcessor(debugConsole);
@@ -121,6 +123,7 @@ public class GameScreen extends AbstractScreen {
     }
 
     private void restartRun() {
+        runState.getStats().reset();
         runState.getSalivationReserve().reset();
         runState.getToothHealth().reset();
         init(gameStatus);

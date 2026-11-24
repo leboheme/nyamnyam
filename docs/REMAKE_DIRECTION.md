@@ -59,7 +59,7 @@ El flujo JSON usa RunRuntime; GameWrapper conserva el flujo TMX para comparació
 
 | Frontera | Responsabilidad actual |
 | --- | --- |
-| `RunState` | Floors/sala actual y recursos que sobreviven a recargas de sala: SalivationReserve y ToothHealth. No es un catálogo anticipado de stats |
+| `RunState` | Floors/sala actual, recursos persistentes entre salas y modificadores de Power/Cadence/Salivation de la build |
 | `RoomInstance` | Material, colisión/layout y combatCleared; sin salud/saliva ni reglas de puertas implícitas |
 | `EntityWorld` | Colecciones y actualización/render/limpieza de enemigos, comida, proyectiles, mascotas y Bubble |
 | `GameplayContext` | Servicios de gameplay accesibles a entidades. Los nuevos servicios opcionales son null en TMX |
@@ -92,14 +92,15 @@ La entrada JSON usa idle y spawnTimer=-1: sin bloqueo SPAWN ni inmunidad inicial
 
 GameStatus sigue siendo la señal de estado para los listeners y conserva puntuación/vidas legacy; no se ha migrado globalmente. El score de remate previo aún pasa por él, pero recoger comida o dientes no da puntos ni vidas extra. La salud JSON no consume vidas persistentes, no reduce boosts al recibir daño y no usa su respawn. StageCompletion queda reservado a TMX.
 
-### Configuración y herramientas de balance
+### Configuración, stats y herramientas de balance
 
 - `PrototypeBalance`: constantes del prototipo JSON agrupadas por recurso, combate, supervivencia, burbujas y vuelos, con unidades/comentarios. Incluye tolerancias numéricas separadas de los controles de balance. Editar y recompilar; sin loader ni configuración en caliente.
+- `RunStats`: solo modificadores tipados de Power, Cadence y Salivation; conserva las bases en sus fuentes actuales. Calcula `base × (1 + suma de modificadores)` sin componer sobre resultados anteriores. Runtime de combate, cadencia y regeneración consultan el valor efectivo; proyectiles ya emitidos no cambian. La consola Desktop ofrece `stats` como consulta de solo lectura.
 - `EnemyDropConfig`: perfil común y excepciones por EnemyType. Incluye probabilidades de comida y de diente adicional; actualmente todas las especies usan el fallback común. No hay reglas de dificultad/Luck implementadas.
 - `PickupType`: IDs numéricos explícitos y estables para los cuatro pickups provisionales de dientes. No usar ordinal ni nombres provisionales como identidad persistente. Aún no es un catálogo general de objetos.
-- `DebugConsole`: comandos `stage`, `restart`, `killall` y `spawn`; disponibilidad actual solo Desktop. Sintaxis e IDs en [PROTOTYPE.md](PROTOTYPE.md#consola-de-debug).
+- `DebugConsole`: comandos `stage`, `restart`, `killall`, `spawn` y consulta de stats; disponibilidad actual solo Desktop. Sintaxis e IDs en [PROTOTYPE.md](PROTOTYPE.md#consola-de-debug).
 
-No se ha introducido ECS ni sistema genérico de stats, drops de calidad o efectos. Las constantes de movimiento/cadencia todavía compartidas con el legacy no se han trasladado indiscriminadamente.
+No se ha introducido ECS ni sistema genérico de drops de calidad o efectos. Las constantes de movimiento/cadencia todavía compartidas con el legacy no se han trasladado indiscriminadamente.
 
 ## Criterios de evolución
 

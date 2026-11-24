@@ -48,6 +48,8 @@ El usuario ha validado manualmente los incrementos de combate, interacción de b
 
 Editar [`PrototypeBalance.java`](../core/src/com/aramirezochoa/nyamnyam/screen/game/run/PrototypeBalance.java) y recompilar para ajustar recursos, combate, presión/contactos, vuelos y tiempos. Las tolerancias técnicas de colisión están comentadas aparte. No hay panel visual ni recarga de configuración en caliente.
 
+`RunState` conserva modificadores tipados de Power, Cadence y Salivation como fracciones sumadas respecto a la base (`base × (1 + suma)`). Las bases siguen en sus fuentes existentes: `ATTACK_POWER`, `Constant.MAIN_AVATAR_FIRE_TIME_LAPSE` (Cadence se expresa como ataques/s) y `SALIVATION_REGENERATION_PER_SECOND`. La consulta Desktop `stats` muestra base, modificador y resultado; aún no hay pickups de mejora. Los modificadores persisten al recargar sala/F11 y `restart` los limpia.
+
 [`EnemyDropConfig.java`](../core/src/com/aramirezochoa/nyamnyam/screen/game/run/EnemyDropConfig.java) concentra los perfiles por EnemyType. Actualmente la tabla de excepciones está vacía: todas las especies usan el perfil común. No se han implementado modificadores de dificultad o Luck.
 
 | Parámetro | Valor actual de prueba |
@@ -87,6 +89,7 @@ La consola existente se abre con la tecla grave (`) y está habilitada solo en D
 | `spawn list` | Lista los IDs numéricos disponibles |
 | `spawn 1` / `spawn 2` | Lanza un pickup normal entero / medio cerca de Nyam |
 | `spawn 3` / `spawn 4` | Lanza una caries entera / media cerca de Nyam |
+| `stats` | Muestra base, modificador y resultado de Power, Cadence y Salivation (JSON) |
 | `clear` | Limpia la salida de consola |
 
 `killall` y `spawn` requieren JSON. F11 alterna JSON/TMX cuando existe la room JSON; conserva los recursos de RunState al volver y recarga el contenido. Los IDs se declaran explícitamente en PickupType, no se derivan del orden del enum ni de los nombres; no reutilizar IDs retirados.

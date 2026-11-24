@@ -20,6 +20,7 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.ProjectileT
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.EntityState;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.avatar.main.MainAvatarStateFactory;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.avatar.main.SpawnEntityState;
+import com.aramirezochoa.nyamnyam.screen.game.run.RunStats;
 
 /**
  * Created by boheme on 13/01/15.
@@ -298,7 +299,15 @@ public abstract class MainAvatar extends Avatar {
 
     public void resetFire() {
         fireEnabled = false;
-        fireTimer = Constant.MAIN_AVATAR_FIRE_TIME_LAPSE / ((getParent().getGameStatus().isFireLapseBoost() || isSpecialBusted()) ? Constant.MAIN_AVATAR_BOOST_FIRE_RATE : 1);
+        float boostRate = (getParent().getGameStatus().isFireLapseBoost() || isSpecialBusted())
+                ? Constant.MAIN_AVATAR_BOOST_FIRE_RATE : 1f;
+        float baseInterval = Constant.MAIN_AVATAR_FIRE_TIME_LAPSE / boostRate;
+        if (getParent().getRunStats() == null) {
+            fireTimer = baseInterval;
+        } else {
+            float cadence = getParent().getRunStats().getValue(RunStats.Stat.CADENCE, 1f / baseInterval);
+            fireTimer = cadence <= 0f ? Float.MAX_VALUE : 1f / cadence;
+        }
     }
 
     @Override
