@@ -38,7 +38,7 @@ public final class RunPhysicsSystem {
             for (int j = i + 1; j < bodies.size; j++) {
                 CollisionBody second = bodies.get(j);
                 if (!second.isCollisionActive() || first == second || !canCollide(first, second)) continue;
-                resolveContact(first, second, resolvePlayerContacts);
+                resolveContact(first, second, resolvePlayerContacts, deltaTime);
             }
         }
     }
@@ -144,39 +144,44 @@ public final class RunPhysicsSystem {
                 && first.getCollisionBounds().overlaps(second.getCollisionBounds());
     }
 
-    private void resolveContact(CollisionBody first, CollisionBody second, boolean resolvePlayerContacts) {
+    private void resolveContact(CollisionBody first, CollisionBody second, boolean resolvePlayerContacts, float deltaTime) {
         CollisionLayer a = first.getCollisionLayer();
         CollisionLayer b = second.getCollisionLayer();
         if (a == CollisionLayer.FREE && b == CollisionLayer.FREE) {
             separateFreeBodies(first, second);
         } else if (resolvePlayerContacts && a == CollisionLayer.PLAYER && b == CollisionLayer.FREE) {
-            pushFreeBody(first, second);
+            pushFreeBody(first, second, deltaTime);
         } else if (resolvePlayerContacts && a == CollisionLayer.FREE && b == CollisionLayer.PLAYER) {
-            pushFreeBody(second, first);
+            pushFreeBody(second, first, deltaTime);
         } else if (resolvePlayerContacts && a == CollisionLayer.PLAYER && b == CollisionLayer.ANCHORED) {
             blockPlayer(first, second);
         } else if (resolvePlayerContacts && a == CollisionLayer.ANCHORED && b == CollisionLayer.PLAYER) {
             blockPlayer(second, first);
         } else if (a == CollisionLayer.FREE && b == CollisionLayer.BOMB) {
-            pushFreeBody(second, first);
+            pushFreeBody(second, first, deltaTime);
         } else if (a == CollisionLayer.BOMB && b == CollisionLayer.FREE) {
-            pushFreeBody(first, second);
+            pushFreeBody(first, second, deltaTime);
         }
     }
 
-    private void pushFreeBody(CollisionBody player, CollisionBody freeBody) {
-        Rectangle playerBox = player.getCollisionBounds();
+    /** Contact parts free bodies at a bounded speed, without correcting the source's position. */
+    private void pushFreeBody(CollisionBody source, CollisionBody freeBody, float deltaTime) {
+        Rectangle sourceBox = source.getCollisionBounds();
         Rectangle freeBox = freeBody.getCollisionBounds();
-        float direction = centerX(playerBox) < centerX(freeBox) ? 1 : -1;
+        float offset = centerX(freeBox) - centerX(sourceBox);
+        float sourceSpeed = source.getCollisionVelocity().x;
+        float direction = Math.abs(offset) > COLLISION_EPSILON ? Math.signum(offset)
+                : sourceSpeed != 0 ? Math.signum(sourceSpeed) : 1f;
         float overlap = direction > 0
-                ? playerBox.x + playerBox.width - freeBox.x
-                : freeBox.x + freeBox.width - playerBox.x;
-        float displacement = Math.max(COLLISION_EPSILON, overlap + COLLISION_EPSILON);
-        if (canOccupy(freeBody, direction * displacement, 0)) {
-            freeBody.moveByCollision(direction * displacement, 0);
-        } else {
-            float reverse = -direction * displacement;
-            if (canOccupy(player, reverse, 0)) player.moveByCollision(reverse, 0);
+                ? sourceBox.x + sourceBox.width - freeBox.x
+                : freeBox.x + freeBox.width - sourceBox.x;
+        float distance = Math.min(overlap + COLLISION_EPSILON, FREE_CONTACT_SEPARATION_SPEED * deltaTime);
+        // Substeps let the item approach a wall without jumping through it. The source always passes.
+        int steps = Math.max(1, (int) Math.ceil(distance / ROOM_PHYSICS_MAX_MOVEMENT_STEP));
+        float dx = direction * distance / steps;
+        for (int i = 0; i < steps; i++) {
+            if (!canOccupy(freeBody, dx, 0)) break;
+            freeBody.moveByCollision(dx, 0);
         }
     }
 

@@ -44,6 +44,8 @@ public final class PrototypeBalance {
     // Free room entities: px/s²; physics is applied centrally by RunPhysicsSystem.
     public static final float ROOM_FREE_ENTITY_GRAVITY = 650f;
     public static final float ROOM_PHYSICS_MAX_MOVEMENT_STEP = 4f;
+    // Player contact parts free items at this speed (px/s), without blocking the player.
+    public static final float FREE_CONTACT_SEPARATION_SPEED = 180f;
     // Visual drop launch: px/s; entities are created at landing.
     public static final float DROP_HORIZONTAL_SPEED = 240f;
     public static final float DROP_SECOND_UPWARD_SPEED_MULTIPLIER = 0.85f;
