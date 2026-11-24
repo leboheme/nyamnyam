@@ -1,6 +1,6 @@
 # Nyam Nyam — Game Design
 
-> Fuente de verdad del diseño del remake. Reconciliado el 23/11/2026 con el boceto P1–P9, revisión técnica, y las aclaraciones posteriores de esta sesión. No describe necesariamente lo ya implementado.
+> Fuente de verdad del diseño del remake. Reconciliado el 24/11/2026 con el boceto P1–P9, revisión técnica y pruebas del prototipo. No describe necesariamente lo ya implementado.
 
 ## Cómo leer este documento
 
@@ -245,7 +245,7 @@ Posibilidades futuras relacionadas: [IDEAS.md](IDEAS.md).
 
 Presentación de recompensas acordada para el prototipo: al rematar, el cuerpo del enemigo sale en parábola, gira y puede rebotar en los límites laterales de la sala, atravesando su geometría interior. Es un efecto visual breve que se desvanece, sin IA, colisiones de combate ni espera para resolver al enemigo.
 
-Los drops sorteados salen simultáneamente, cada uno con su propia parábola y giro, más exagerados que el cuerpo. Rebotan en los límites exteriores, atraviesan la geometría interior al subir y aterrizan sobre la primera superficie cruzada al caer. Son recogibles durante el vuelo tras una breve demora para que lleguen a verse. Si no hay recompensa, solo sale el cuerpo: no se transforma más tarde en comida.
+Los drops sorteados salen simultáneamente, cada uno con su propia parábola y giro, más exagerados que el cuerpo. Rebotan en los límites exteriores, atraviesan la geometría interior al subir y aterrizan sobre la primera superficie cruzada al caer. Durante el vuelo son una presentación visual: no se recogen ni chocan con entidades. Al aterrizar se convierten en comida o pickups físicos y pueden recogerse. Si no hay recompensa, solo sale el cuerpo: no se transforma más tarde en comida.
 
 Los perfiles de drops pueden variar por tipo de enemigo, con un perfil común de respaldo. El efecto de la familia recogida es independiente del enemigo de procedencia. Dificultad, Luck y otros criterios futuros no tienen reglas implementadas todavía; disponer de perfiles no autoriza a inventarlas. Los pickups usan IDs numéricos explícitos y estables, independientes de sus nombres provisionales.
 
@@ -258,6 +258,10 @@ Se retiran los boosts de oruga/huevo como mascotas asociadas a Tfly/Gluty; sus s
 ### P9.B · Tipos de objeto, pools y calidad
 
 Tipos: pasivas permanentes, pasivas temporales y activas recargables, preparadas manualmente.
+
+Los objetos sueltos (`FREE`) caen y chocan entre sí. El protagonista los recoge cuando pueden producir efecto; si no, puede atravesarlos desplazándolos gradualmente, sin usarlos como plataformas ni quedar bloqueado. Los enemigos ignoran los objetos sueltos. Esta interacción ya se prueba en el runtime JSON con comida y pickups.
+
+Los objetos anclados (`ANCHORED`) conservan su posición relativa a un soporte, como un pedestal o un cofre. No se empujan por separado: si el soporte se mueve, se mueven con él. Un objeto anclado que no se pueda recoger bloquea al protagonista. Esta categoría tiene soporte de colisión, pero todavía no hay contenido JSON de pedestales o cofres. Los futuros refrescos/bombas interactuarán con protagonista, enemigos y objetos `FREE`; su comportamiento jugable aún no está implementado en JSON.
 
 Calidad/tier numérico ascendente, inicialmente 0–2 (el kit básico usa sobre todo 0–1); escalable sin nombres de categoría rígidos.
 
@@ -305,11 +309,11 @@ Efectos redundantes y mejoras positivas sin desventajas son aceptables. Las muta
 
 | Dominio | Mutación | Efecto propuesto |
 | --- | --- | --- |
-| Burbuja | Gigante | Aumenta tamaño de burbujas. |
+| Burbuja | Gigante | Aumenta el tamaño de los disparos nuevos y de las burbujas que generan; no redimensiona las anteriores. |
 | Burbuja | Rebotadora | Rebota contra paredes. |
 | Burbuja | Impulsora | Empuje/knockback al contacto; Tfly lo posee de serie. |
 | Burbuja (iteración 2) | Doble | Genera dos burbujas por disparo; consumo por ataque a probar. |
-| Captura | Prolongada | Aumenta la duración del aturdimiento. |
+| Captura | Prolongada | Amplía el límite de vida al capturar; conserva la edad de la burbuja y no alarga las vacías. |
 | Captura | Rápida | Las burbujas con enemigo capturado se desplazan más deprisa. |
 | Remate | Explosivo | El remate produce una explosión pequeña. |
 | Remate | Nutritivo | Recupera salivación ÚNICAMENTE con remate por contacto cuerpo a cuerpo. |

@@ -1,10 +1,10 @@
 # Nyam Nyam — Prototipo
 
-Fuente de verdad del **alcance inmediato, orden de implementación y criterios de prueba**. Las reglas pertenecen a [GAME_DESIGN.md](GAME_DESIGN.md); las ideas futuras, a [IDEAS.md](IDEAS.md). Las secciones de alcance describen lo autorizado; el estado implementado y validado se identifica expresamente más abajo (actualizado el 23/11/2026).
+Fuente de verdad del **alcance inmediato, orden de implementación y criterios de prueba**. Las reglas pertenecen a [GAME_DESIGN.md](GAME_DESIGN.md); las ideas futuras, a [IDEAS.md](IDEAS.md). Las secciones de alcance describen lo autorizado; el estado implementado y validado se identifica expresamente más abajo (actualizado el 24/11/2026).
 
 ## Objetivo actual
 
-Validar el ritmo del combate y la gestión de recursos en una sola sala, antes de generar áreas o ampliar el catálogo.
+Validar en una sola sala el ritmo del combate, la gestión de recursos y la primera build de stats y mutaciones, antes de generar áreas o ampliar el catálogo.
 
 ## Prototipo 1 — alcance autorizado de diseño
 
@@ -40,7 +40,8 @@ El usuario ha validado manualmente los incrementos de combate, interacción de b
 - **Burbujas:** entidad propia, vacía o con cautivo; empuje/arrastre limitado, presión e impacto, rebote con salto mantenido al caer, agrupación sin fusión y cadenas por contacto bloqueadas por paredes. Reglas exactas en P7.A.
 - **Limpieza:** solo enemigos libres/cautivos bloquean resolver el combate. La sala sigue jugable, sin mensaje, WIN, progreso automático ni conversión de aire en verduras. La apertura por tipo de sala sigue pendiente.
 - **Saliva:** pago único por ataque emitido, regeneración continua y texto provisional. No hay devoluciones por fallo ni recarga especial por limpiar.
-- **Recompensas:** perfiles por enemigo con fallback común; fruta/verdura y posibilidad adicional de diente al rematar. Cuerpo visual separado, drops con parábola/giro/rebote exterior, recogida por contacto. Comida y dientes no añaden score ni vidas extra al recogerse; el score de remate previo aún usa GameStatus.
+- **Recompensas:** perfiles por enemigo con fallback común; fruta/verdura y posibilidad adicional de diente al rematar. Cuerpo visual separado, drops con parábola/giro/rebote exterior que se materializan al aterrizar y entonces se recogen por contacto. Comida y dientes no añaden score ni vidas extra al recogerse; el score de remate previo aún usa GameStatus.
+- **Física de items JSON:** comida y pickups `FREE` caen continuamente y se separan entre sí; los ubicados en el JSON también caen desde su posición inicial. Al tocar al protagonista, un item aplicable se recoge; uno sin efecto permanece y se desplaza a velocidad limitada mientras el protagonista lo atraviesa. Enemigos ignoran estos items. `ANCHORED` y `BOMB` existen como capas lógicas, pero aún no hay contenido jugable JSON de pedestales/cofres o refrescos.
 - **Supervivencia:** normales/caries por mitades, tres contenedores iniciales, prioridad de caries, daño con invulnerabilidad posterior y derrota con presentación antes de Game over. Sin inmunidad de entrada, consumo de vidas persistentes ni respawn JSON. Reglas exactas en P7.C.
 - **HUD provisional:** cuadrados de salud arriba izquierda y saliva debajo, en el viewport de UI existente. Normal blanco, caries beige verdoso y contenedor vacío oscuro, todos con borde blanco. En JSON se ocultan los contadores legacy de nivel/vidas/score y el mensaje de esperar vidas; TMX conserva su presentación.
 
@@ -50,13 +51,13 @@ Editar [`PrototypeBalance.java`](../core/src/com/aramirezochoa/nyamnyam/screen/g
 
 `RunState` conserva modificadores tipados de Power, Cadence y Salivation como fracciones sumadas respecto a la base (`base × (1 + suma)`). Las bases siguen en sus fuentes existentes: `ATTACK_POWER`, `Constant.MAIN_AVATAR_FIRE_TIME_LAPSE` (Cadence se expresa como ataques/s) y `SALIVATION_REGENERATION_PER_SECOND`. La consulta Desktop `stats` muestra base, modificador y resultado. Los modificadores persisten al recargar sala/F11 y `restart` los limpia.
 
-La implementación de pickups está en revisión: `spawn 5/6/7` crea mejoras provisionales de Power/Cadence/Salivation. Se aplican una vez al recoger, se acumulan sobre la base y no curan ni recargan la reserva actual. Son solo de debug, no forman parte de drops de enemigo; la validación manual queda pendiente.
+`spawn 5/6/7` crea mejoras provisionales de Power/Cadence/Salivation. Se aplican una vez al recoger, se acumulan sobre la base y no curan ni recargan la reserva actual. Son solo de debug, no forman parte de drops de enemigo. El usuario ha validado de forma exploratoria la primera build en Desktop; las pruebas largas y en HTML/móvil siguen pendientes.
 
 Burbuja Gigante fue validada manualmente por el usuario: `spawn 8` la lanza. Es binaria en `RunState`: solo afecta a disparos de Nyam creados después de recogerla y a las burbujas que esos disparos generan, vacías o cautivas. Una segunda copia no aporta efecto y permanece en la sala. El factor provisional es `GIANT_BUBBLE_SCALE` en `PrototypeBalance` (actualmente 1,5: 32 → 48 px). Si el disparo no cabe al emitirlo, estalla en el punto de emisión; en pasillos más estrechos que su tamaño no puede avanzar. La mutación persiste con `stage 7`/F11 y se limpia con `restart`.
 
-Captura Prolongada está pendiente de prueba manual: `spawn 9` la lanza. Una burbuja vacía puede capturar al tocar a un enemigo al que le queda como máximo un impacto con el Power actual. La edad de la burbuja continúa; el límite se fija al capturar y la mutación añade cinco segundos al límite base, sin alargar burbujas que sigan vacías. Una captura anterior conserva el límite elegido al iniciarse. La segunda copia no aporta efecto y permanece en la sala. También persiste con `stage 7`/F11 y se limpia con `restart`.
+Captura Prolongada fue validada de forma exploratoria por el usuario: `spawn 9` la lanza. Una burbuja vacía puede capturar al tocar a un enemigo al que le queda como máximo un impacto con el Power actual. La edad de la burbuja continúa; el límite se fija al capturar y la mutación añade cinco segundos al límite base, sin alargar burbujas que sigan vacías. Una captura anterior conserva el límite elegido al iniciarse. La segunda copia no aporta efecto y permanece en la sala. También persiste con `stage 7`/F11 y se limpia con `restart`.
 
-Primera build del prototipo 2 implementada: tres modificadores numéricos (Power, Cadence y Salivation) y dos mutaciones binarias (Gigante y Captura Prolongada), todos obtenibles solo por `spawn` en Desktop. Siguen fuera de esta build las otras cuatro stats principales del diseño, los demás efectos del banco P9.C, el catálogo de mutaciones, drops de mejoras, pools, tiendas, inventario, arte definitivo y la navegación roguelike. La sesión completa de juego y la comprobación HTML/móvil aún dependen de prueba manual.
+Primera build del prototipo 2 implementada: tres modificadores numéricos (Power, Cadence y Salivation) y dos mutaciones binarias (Gigante y Captura Prolongada), todos obtenibles solo por `spawn` en Desktop. Siguen fuera de esta build las otras cuatro stats principales del diseño, los demás efectos del banco P9.C, el catálogo de mutaciones, drops de mejoras, pools, tiendas, inventario, arte definitivo y la navegación roguelike. La sesión completa de juego y la comprobación HTML/móvil aún dependen de prueba manual; en HTML/móvil solo puede probarse el juego base porque no existe acceso a estos pickups debug.
 
 [`EnemyDropConfig.java`](../core/src/com/aramirezochoa/nyamnyam/screen/game/run/EnemyDropConfig.java) concentra los perfiles por EnemyType. Actualmente la tabla de excepciones está vacía: todas las especies usan el perfil común. No se han implementado modificadores de dificultad o Luck.
 
@@ -77,7 +78,7 @@ Primera build del prototipo 2 implementada: tres modificadores numéricos (Power
 | Salud inicial / capacidad | 3 contenedores normales llenos / 8 espacios totales |
 | Daño básico / protección posterior | 0,5 diente / 1 s de invulnerabilidad |
 | Espera antes de Game over | 1,2 s, con animación DEAD sin respawn |
-| Demora de recogida de drops lanzados | 0,15 s; después se pueden recoger en vuelo |
+| Drops lanzados | Vuelo solo visual; comida y pickups físicos aparecen al aterrizar |
 | Cuerpo derrotado | 1,2 s de vuelo, fade en los últimos 0,25 s |
 
 Los ajustes de presión, velocidades, gravedad, restitución y rotación viven en el mismo archivo, con unidades y comentarios. No duplicarlos en otras fuentes de balance. La cadencia/movimiento heredados que aún se comparten con TMX siguen fuera de esta configuración.
@@ -117,11 +118,12 @@ La consola existente se abre con la tecla grave (`) y está habilitada solo en D
 - Gastar saliva, regenerar y recoger fruta/verdura; no superar capacidad ni cobrar por frame sostenido.
 - Recibir medio diente de daño; rellenar normales y añadir medias/enteras caries. A capacidad o vida llena, los pickups sin efecto permanecen. El exceso parcial se descarta al recoger.
 - Perder la última mitad: controles desactivados, animación de muerte y espera antes de Game over; sin respawn. `stage 7` no cura ni revive; `restart` sí restaura los recursos.
-- Comprobar vuelos, recogida en aire/suelo, pausa, reinicio, redimensionado y controles táctiles. Repetir la comparación TMX con F11 y una sesión HTML/móvil representativa.
+- Comprobar que cuerpos y drops atraviesan la geometría interior durante el vuelo, que los drops no se recogen ni bloquean antes de aterrizar y que al tocar suelo aparecen comida/pickups físicos recogibles. Probar pausa, reinicio, redimensionado y controles táctiles. Repetir la comparación TMX con F11 y una sesión HTML/móvil representativa.
+- Física de items: dejar caer la manzana situada en el JSON y varios pickups de `spawn`; comprobar gravedad, apoyo en plataformas, separación entre `FREE` y que un pickup sin efecto se desplaza sin bloquear el paso del protagonista. Los enemigos no deben moverlos. No esperar pedestales/cofres ni refrescos jugables en esta sala.
 - Stats: `restart` y ejecutar `stats` para anotar bases/modificadores. Probar `spawn 5`, recoger y observar +50 % Power (el enemigo básico pasa de tres a dos impactos); hacer `restart` antes de aislar `spawn 6` (+50 %, intervalo de 0,5 s) y `spawn 7` (+100 %, 1,5/s sin rellenar la reserva al recoger). Recoger una segunda copia de cada mejora y confirmar la suma. `stage 7`/F11 conservan la build; `restart` la borra. Confirmar que los pickups no alteran dientes/score y que `killall` no los suelta automáticamente.
 - Mutaciones: tras `restart`, capturar sin mejora y observar expiración alrededor del segundo 10. Recoger `spawn 9` y capturar de nuevo: expiración alrededor del segundo 15 desde que nació la burbuja. Una vacía sigue expirando en 10 s. Debilitar un enemigo hasta dejarlo a un golpe, acercarle una burbuja vacía y comprobar captura por contacto sin reiniciar su edad. Probar una captura previa a recoger la mutación, una vacía previa que capture después, doble recogida, composición con `spawn 8` y persistencia con `stage 7`/F11; `restart` limpia ambas.
 
-Las verificaciones realizadas por el agente han sido `git diff --check`, compilación Java 17 y generación del runtime web; cuando hubo cambios de assets/i18n se ejecutó también el build completo. No se ejecutó la aplicación ni se crearon/modificaron tests. La validación de juego la hizo el usuario. Revisar nuevamente el código y los checks después de futuros cambios.
+En estos incrementos se ejecutaron `git diff --check`, compilación Java 17 y build completo cuando cambiaron assets/i18n. No se ejecutó la aplicación ni se crearon/modificaron tests. La validación de juego fue manual por el usuario y no sustituye una sesión larga ni una prueba representativa HTML/móvil.
 
 ### Decisiones que siguen abiertas
 
@@ -135,7 +137,7 @@ Generación de mapas, puertas entre salas, mundos y transiciones, bosses nuevos,
 
 No amplía el trabajo inmediato:
 
-- **Prototipo 2:** sistema genérico de stats y unas pocas mutaciones. El banco de efectos y el catálogo se mantienen solo en P9.C–D del maestro; no requieren una implementación distinta por fila.
+- **Prototipo 2:** primera build de tres stats y dos mutaciones implementada y probada de forma exploratoria en Desktop. El resto del banco de efectos y del catálogo permanece solo en P9.C–D del maestro, sin implementación ni orden autorizado por esta sección.
 - **Prototipo 3:** activas recargables, colmillo e implante y recompensas. Sus reglas están en P7.C y P9.E.
 - Incorporar Gluty y Tfly sobre el sistema compartido después de validar la base; no se fija aquí su orden exacto.
 
