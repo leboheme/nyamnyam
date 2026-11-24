@@ -2,7 +2,7 @@
 
 Fuente de verdad de la **dirección arquitectónica orientativa y la autoría de contenido**, no de las reglas de producto ni del alcance inmediato. Consultar [GAME_DESIGN.md](GAME_DESIGN.md), [PROTOTYPE.md](PROTOTYPE.md) e [IDEAS.md](IDEAS.md) para esos ámbitos.
 
-Destino: web jugable en móvil, con desktop como entorno de desarrollo. Mantener el flujo TMX legacy como comparación mientras el flujo de rooms JSON evoluciona. La sección de runtime implementado refleja el prototipo validado el 23/11/2026; el diagrama objetivo sigue siendo orientativo. Verificar el código antes de modificarlo.
+Destino: web jugable en móvil, con desktop como entorno de desarrollo. Mantener el flujo TMX legacy como comparación mientras el flujo de rooms JSON evoluciona. La sección de runtime implementado refleja el prototipo validado el 23/11/2026; la implementación de pickups Power/Cadence/Salivation está en revisión manual. El diagrama objetivo sigue siendo orientativo. Verificar el código antes de modificarlo.
 
 La referencia de escala y las convenciones de producción de arte viven en [ART_GUIDE.md](ART_GUIDE.md). Sus tamaños de canvas no cambian automáticamente las dimensiones lógicas ni las colisiones.
 
@@ -67,8 +67,8 @@ El flujo JSON usa RunRuntime; GameWrapper conserva el flujo TMX para comparació
 | `BubbleContactSystem` / `BubbleTerrain` | Contacto del jugador, presión, agrupación, propagación iterativa y bloqueo por terreno |
 | `BubbleAttractionService` | Velocidad hacia focos de la room; foco/destino por entidad |
 | `RoomCompletionService` | Marca combate resuelto cuando no quedan enemigos libres ni cautivos. No emite WIN, UI, recompensas ni apertura de puertas |
-| `RunDropService` | Evaluación de drops al rematar, recogida de comida/dientes, cuerpo visual y propiedad/limpieza de pickups provisionales |
-| `DropFlight` | Movimiento balístico compartido por DroppedMealState y ToothPickup: giro, rebote exterior y aterrizaje al caer |
+| `RunDropService` | Evaluación de drops al rematar, comida, cuerpo visual y propiedad/limpieza de pickups JSON de dientes/stats |
+| `DropFlight` | Movimiento balístico compartido por DroppedMealState, ToothPickup y StatPickup: giro, rebote exterior y aterrizaje al caer |
 | `RunSurvivalService` | Daño de salud JSON, protección tras impacto y presentación de muerte antes de LOSE, sin respawn/vidas persistentes |
 | `GameUserInterface` / `ToothShape` | Representación provisional en viewport UI; mismo cuadrado de salud para HUD y pickups |
 
@@ -80,7 +80,7 @@ Expirar devuelve esa misma instancia al mundo mediante el servicio de combate. E
 
 Los proyectiles persistentes registran IDs de impactos para no dañar repetidamente al mismo enemigo por solapamiento. Las cadenas descubren vecinos antes de resolver y no conservan referencias a entidades liberadas entre updates.
 
-El cuerpo derrotado es una copia independiente de TextureRegion y posición, nunca un Enemy activo: puede girar/volar/desvanecerse sin retrasar la resolución ni retener el pool. Frutas y verduras siguen usando factories/pools existentes. ToothPickup es un placeholder poligonal propiedad del servicio, sin textura ni entidad pooled; se retira al recoger o limpiar. Los renderers añadidos se liberan al disponer el runtime/HUD.
+El cuerpo derrotado es una copia independiente de TextureRegion y posición, nunca un Enemy activo: puede girar/volar/desvanecerse sin retrasar la resolución ni retener el pool. Frutas y verduras siguen usando factories/pools existentes. ToothPickup es un placeholder poligonal propiedad del servicio, sin textura ni entidad pooled; se retira al recoger o limpiar. StatPickup comparte su vuelo/ciclo RunPickup y aplica su modificador tipado al recoger; sus marcadores geométricos distinguen cada stat sin assets nuevos. Los renderers añadidos se liberan al disponer el runtime/HUD.
 
 ### Recursos, carga y derrota
 
@@ -96,8 +96,9 @@ GameStatus sigue siendo la señal de estado para los listeners y conserva puntua
 
 - `PrototypeBalance`: constantes del prototipo JSON agrupadas por recurso, combate, supervivencia, burbujas y vuelos, con unidades/comentarios. Incluye tolerancias numéricas separadas de los controles de balance. Editar y recompilar; sin loader ni configuración en caliente.
 - `RunStats`: solo modificadores tipados de Power, Cadence y Salivation; conserva las bases en sus fuentes actuales. Calcula `base × (1 + suma de modificadores)` sin componer sobre resultados anteriores. Runtime de combate, cadencia y regeneración consultan el valor efectivo; proyectiles ya emitidos no cambian. La consola Desktop ofrece `stats` como consulta de solo lectura.
+- `RunPickup`: ciclo compartido mínimo (vuelo, colisión, recogida y render) para `ToothPickup` y `StatPickup`. Cada subtipo aplica su resultado específico; no convierte toda recogida en salud.
 - `EnemyDropConfig`: perfil común y excepciones por EnemyType. Incluye probabilidades de comida y de diente adicional; actualmente todas las especies usan el fallback común. No hay reglas de dificultad/Luck implementadas.
-- `PickupType`: IDs numéricos explícitos y estables para los cuatro pickups provisionales de dientes. No usar ordinal ni nombres provisionales como identidad persistente. Aún no es un catálogo general de objetos.
+- `PickupType`: IDs numéricos explícitos y estables: 1–4 dientes provisionales y 5–7 mejoras de stats de debug. No usar ordinal ni nombres provisionales como identidad persistente. Aún no es un catálogo general de objetos.
 - `DebugConsole`: comandos `stage`, `restart`, `killall`, `spawn` y consulta de stats; disponibilidad actual solo Desktop. Sintaxis e IDs en [PROTOTYPE.md](PROTOTYPE.md#consola-de-debug).
 
 No se ha introducido ECS ni sistema genérico de drops de calidad o efectos. Las constantes de movimiento/cadencia todavía compartidas con el legacy no se han trasladado indiscriminadamente.

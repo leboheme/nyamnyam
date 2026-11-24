@@ -18,11 +18,11 @@ import com.badlogic.gdx.math.RandomXS128;
 import com.badlogic.gdx.utils.Array;
 import static com.aramirezochoa.nyamnyam.screen.game.run.PrototypeBalance.*;
 
-/** JSON defeat rewards and common-food pickup. No legacy food score or extra lives. */
+/** JSON defeat rewards and run-owned pickup lifecycle. No legacy food score or extra lives. */
 public class RunDropService {
     private final RunRuntime runtime;
-    private final Array<ToothPickup> teeth = new Array<ToothPickup>();
-    private final ShapeRenderer toothRenderer = new ShapeRenderer();
+    private final Array<RunPickup> pickups = new Array<RunPickup>();
+    private final ShapeRenderer pickupRenderer = new ShapeRenderer();
     private final RandomXS128 random = new RandomXS128();
     private final Array<DefeatedBodyEffect> bodies = new Array<DefeatedBodyEffect>();
     private final Array<MealType> fruits = new Array<MealType>();
@@ -46,7 +46,7 @@ public class RunDropService {
             boolean half = random.nextFloat() < profile.toothHalfChance;
             PickupType type = caries ? (half ? PickupType.TOOTH_CARIES_HALF : PickupType.TOOTH_CARIES)
                     : (half ? PickupType.TOOTH_NORMAL_HALF : PickupType.TOOTH_NORMAL);
-            teeth.add(new ToothPickup(type, enemy.position.x + (enemy.dimension.x - TOOTH_PICKUP_SIZE) / 2,
+            pickups.add(new ToothPickup(type, enemy.position.x + (enemy.dimension.x - TOOTH_PICKUP_SIZE) / 2,
                     enemy.position.y, direction, runtime.getCollisionWorld()));
         }
         float roll = random.nextFloat();
@@ -74,16 +74,14 @@ public class RunDropService {
 
     public void update(float deltaTime) {
         for (int i = bodies.size - 1; i >= 0; i--) if (bodies.get(i).update(deltaTime)) bodies.removeIndex(i);
-        for (ToothPickup pickup : teeth) pickup.update(deltaTime);
+        for (RunPickup pickup : pickups) pickup.update(deltaTime);
         MainAvatar player = runtime.getMainAvatar();
         if (player == null || !player.canPerformAction() || runtime.getToothHealth().isDefeated()) return;
-        for (int i = teeth.size - 1; i >= 0; i--) {
-            ToothPickup pickup = teeth.get(i);
-            if (!pickup.canCollect() || !pickup.box.overlaps(player.box)) continue;
-            boolean collected = pickup.type.caries ? runtime.getToothHealth().addCaries(pickup.type.halves)
-                    : runtime.getToothHealth().restoreNormal(pickup.type.halves);
-            if (collected) {
-                teeth.removeIndex(i);
+        for (int i = pickups.size - 1; i >= 0; i--) {
+            RunPickup pickup = pickups.get(i);
+            if (!pickup.canCollect() || !pickup.getBox().overlaps(player.box)) continue;
+            if (pickup.apply(runtime)) {
+                pickups.removeIndex(i);
                 runtime.getMediaManager().playSound(MediaManager.SOUND_NYAM_MEAL);
             }
         }
@@ -111,23 +109,26 @@ public class RunDropService {
         MainAvatar player = runtime.getMainAvatar();
         if (type == null || player == null || runtime.getToothHealth().isDefeated()) return -1;
         CollisionWorld world = runtime.getCollisionWorld();
+        float size = type.isStatUpgrade() ? STAT_PICKUP_SIZE : TOOTH_PICKUP_SIZE;
         float direction = player.getLookingAt() == DirectionType.LEFT ? -1 : 1;
-        float x = MathUtils.clamp(player.position.x + player.dimension.x / 2 - TOOTH_PICKUP_SIZE / 2,
-                world.getTileSize(), world.getWidth() - world.getTileSize() - TOOTH_PICKUP_SIZE);
+        float x = MathUtils.clamp(player.position.x + player.dimension.x / 2 - size / 2,
+                world.getTileSize(), world.getWidth() - world.getTileSize() - size);
         float y = MathUtils.clamp(player.position.y, world.getTileSize(),
-                world.getHeight() - world.getTileSize() - TOOTH_PICKUP_SIZE);
-        teeth.add(new ToothPickup(type, x, y, direction, world));
+                world.getHeight() - world.getTileSize() - size);
+        pickups.add(type.isStatUpgrade()
+                ? new StatPickup(type, x, y, direction, world)
+                : new ToothPickup(type, x, y, direction, world));
         return id;
     }
 
-    public void renderTeeth(Matrix4 projection) {
-        if (teeth.size == 0) return;
-        toothRenderer.setProjectionMatrix(projection);
-        toothRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        for (ToothPickup pickup : teeth) pickup.render(toothRenderer);
-        toothRenderer.end();
+    public void renderPickups(Matrix4 projection) {
+        if (pickups.size == 0) return;
+        pickupRenderer.setProjectionMatrix(projection);
+        pickupRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        for (RunPickup pickup : pickups) pickup.render(pickupRenderer);
+        pickupRenderer.end();
     }
 
-    public void clear() { bodies.clear(); teeth.clear(); }
-    public void dispose() { clear(); toothRenderer.dispose(); }
+    public void clear() { bodies.clear(); pickups.clear(); }
+    public void dispose() { clear(); pickupRenderer.dispose(); }
 }

@@ -8,7 +8,7 @@ import com.badlogic.gdx.math.Vector2;
 import static com.aramirezochoa.nyamnyam.screen.game.run.PrototypeBalance.*;
 
 /** Polygon placeholder owned by RunDropService; no textures or pooled entity references. */
-public class ToothPickup {
+public class ToothPickup implements RunPickup {
     public final PickupType type;
     public final Rectangle box = new Rectangle();
     private final Vector2 position, velocity;
@@ -23,14 +23,23 @@ public class ToothPickup {
         box.set(x, y, TOOTH_PICKUP_SIZE, TOOTH_PICKUP_SIZE);
     }
 
-    public boolean canCollect() { return pickupDelay <= 0; }
+    @Override public Rectangle getBox() { return box; }
+    @Override public boolean canCollect() { return pickupDelay <= 0; }
 
+    @Override
     public void update(float deltaTime) {
         pickupDelay -= deltaTime;
         flight.update(deltaTime);
         box.setPosition(position.x, position.y);
     }
 
+    @Override
+    public boolean apply(RunRuntime runtime) {
+        return type.caries ? runtime.getToothHealth().addCaries(type.halves)
+                : runtime.getToothHealth().restoreNormal(type.halves);
+    }
+
+    @Override
     public void render(ShapeRenderer shapes) {
         ToothShape.draw(shapes, position.x, position.y, TOOTH_PICKUP_SIZE, type.halves, type.caries, flight.getRotation());
     }

@@ -48,13 +48,16 @@ El usuario ha validado manualmente los incrementos de combate, interacción de b
 
 Editar [`PrototypeBalance.java`](../core/src/com/aramirezochoa/nyamnyam/screen/game/run/PrototypeBalance.java) y recompilar para ajustar recursos, combate, presión/contactos, vuelos y tiempos. Las tolerancias técnicas de colisión están comentadas aparte. No hay panel visual ni recarga de configuración en caliente.
 
-`RunState` conserva modificadores tipados de Power, Cadence y Salivation como fracciones sumadas respecto a la base (`base × (1 + suma)`). Las bases siguen en sus fuentes existentes: `ATTACK_POWER`, `Constant.MAIN_AVATAR_FIRE_TIME_LAPSE` (Cadence se expresa como ataques/s) y `SALIVATION_REGENERATION_PER_SECOND`. La consulta Desktop `stats` muestra base, modificador y resultado; aún no hay pickups de mejora. Los modificadores persisten al recargar sala/F11 y `restart` los limpia.
+`RunState` conserva modificadores tipados de Power, Cadence y Salivation como fracciones sumadas respecto a la base (`base × (1 + suma)`). Las bases siguen en sus fuentes existentes: `ATTACK_POWER`, `Constant.MAIN_AVATAR_FIRE_TIME_LAPSE` (Cadence se expresa como ataques/s) y `SALIVATION_REGENERATION_PER_SECOND`. La consulta Desktop `stats` muestra base, modificador y resultado. Los modificadores persisten al recargar sala/F11 y `restart` los limpia.
+
+La implementación de pickups está en revisión: `spawn 5/6/7` crea mejoras provisionales de Power/Cadence/Salivation. Se aplican una vez al recoger, se acumulan sobre la base y no curan ni recargan la reserva actual. Son solo de debug, no forman parte de drops de enemigo; la validación manual queda pendiente.
 
 [`EnemyDropConfig.java`](../core/src/com/aramirezochoa/nyamnyam/screen/game/run/EnemyDropConfig.java) concentra los perfiles por EnemyType. Actualmente la tabla de excepciones está vacía: todas las especies usan el perfil común. No se han implementado modificadores de dificultad o Luck.
 
 | Parámetro | Valor actual de prueba |
 | --- | --- |
 | Resistencia enemiga / Power de ataque | 3 / 1: tres impactos para capturar |
+| Pickup debug Power / Cadence / Salivation | +50 % / +50 % / +100 % sobre base; provisionales y sumables |
 | Feedback de impacto | Rojo durante 0,12 s, sin interrumpir movimiento |
 | Vida de burbuja vacía/cautiva | 5 + 3 + 2 s de fases visuales; 10 s en total |
 | Saliva inicial/máxima, coste y regeneración | 6; 1 por ataque; 0,75/s incluso atacando |
@@ -89,6 +92,9 @@ La consola existente se abre con la tecla grave (`) y está habilitada solo en D
 | `spawn list` | Lista los IDs numéricos disponibles |
 | `spawn 1` / `spawn 2` | Lanza un pickup normal entero / medio cerca de Nyam |
 | `spawn 3` / `spawn 4` | Lanza una caries entera / media cerca de Nyam |
+| `spawn 5` | Lanza mejora Power (+50 % de Power base) |
+| `spawn 6` | Lanza mejora Cadence (+50 % de ataques/s base) |
+| `spawn 7` | Lanza mejora Salivation (+100 % de regeneración base) |
 | `stats` | Muestra base, modificador y resultado de Power, Cadence y Salivation (JSON) |
 | `clear` | Limpia la salida de consola |
 
@@ -102,6 +108,7 @@ La consola existente se abre con la tecla grave (`) y está habilitada solo en D
 - Recibir medio diente de daño; rellenar normales y añadir medias/enteras caries. A capacidad o vida llena, los pickups sin efecto permanecen. El exceso parcial se descarta al recoger.
 - Perder la última mitad: controles desactivados, animación de muerte y espera antes de Game over; sin respawn. `stage 7` no cura ni revive; `restart` sí restaura los recursos.
 - Comprobar vuelos, recogida en aire/suelo, pausa, reinicio, redimensionado y controles táctiles. Repetir la comparación TMX con F11 y una sesión HTML/móvil representativa.
+- Stats: `restart` y ejecutar `stats` para anotar bases/modificadores. Probar `spawn 5`, recoger y observar +50 % Power (el enemigo básico pasa de tres a dos impactos); hacer `restart` antes de aislar `spawn 6` (+50 %, intervalo de 0,5 s) y `spawn 7` (+100 %, 1,5/s sin rellenar la reserva al recoger). Recoger una segunda copia de cada mejora y confirmar la suma. `stage 7`/F11 conservan la build; `restart` la borra. Confirmar que los pickups no alteran dientes/score y que `killall` no los suelta automáticamente.
 
 Las verificaciones realizadas por el agente han sido `git diff --check`, compilación Java 17 y generación del runtime web; cuando hubo cambios de assets/i18n se ejecutó también el build completo. No se ejecutó la aplicación ni se crearon/modificaron tests. La validación de juego la hizo el usuario. Revisar nuevamente el código y los checks después de futuros cambios.
 

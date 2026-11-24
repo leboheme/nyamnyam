@@ -115,7 +115,7 @@ public class RunRuntime implements GameplayContext {
         entityBatch.setProjectionMatrix(orthoCamera.combined);
         entityWorld.render(entityBatch);
         dropService.render(entityBatch);
-        dropService.renderTeeth(orthoCamera.combined);
+        dropService.renderPickups(orthoCamera.combined);
     }
 
     public void resize(int width, int height) {

@@ -4,7 +4,7 @@ import com.aramirezochoa.nyamnyam.screen.game.core.CollisionWorld;
 import com.badlogic.gdx.math.Vector2;
 import static com.aramirezochoa.nyamnyam.screen.game.run.PrototypeBalance.*;
 
-/** Shared launch/landing motion for food and tooth pickups; no entity ownership. */
+/** Shared launch/landing motion for food, tooth and stat pickups; no entity ownership. */
 public class DropFlight {
     private final Vector2 position, velocity;
     private final float width, height;

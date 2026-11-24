@@ -30,6 +30,14 @@ public final class PrototypeBalance {
     public static final float TOOTH_DROP_HALF_CHANCE = 0.5f;
     public static final float TOOTH_PICKUP_SIZE = 16f;
 
+    // Debug-only stat pickups: percentages stack additively against each stat's base.
+    // +50% Power makes a 3-resistance enemy take two hits; +50% Cadence makes the
+    // 0.75s interval 0.5s; +100% Salivation doubles its regeneration for sustained fire.
+    public static final float POWER_PICKUP_MODIFIER = 0.5f;
+    public static final float CADENCE_PICKUP_MODIFIER = 0.5f;
+    public static final float SALIVATION_PICKUP_MODIFIER = 1f;
+    public static final float STAT_PICKUP_SIZE = 16f;
+
     // Common food: variants in each family restore the same amount, capped at capacity.
     public static final float FRUIT_SALIVATION_RESTORE = 2f;
     public static final float VERDURE_SALIVATION_RESTORE = 1f;
