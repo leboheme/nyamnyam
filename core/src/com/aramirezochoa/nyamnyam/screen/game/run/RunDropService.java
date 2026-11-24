@@ -21,6 +21,7 @@ import static com.aramirezochoa.nyamnyam.screen.game.run.PrototypeBalance.*;
 /** JSON defeat rewards and run-owned pickup lifecycle. No legacy food score or extra lives. */
 public class RunDropService {
     private final RunRuntime runtime;
+    private final Array<DropLaunch> launches = new Array<DropLaunch>();
     private final Array<RunPickup> pickups = new Array<RunPickup>();
     private final ShapeRenderer pickupRenderer = new ShapeRenderer();
     private final RandomXS128 random = new RandomXS128();
@@ -46,37 +47,41 @@ public class RunDropService {
             boolean half = random.nextFloat() < profile.toothHalfChance;
             PickupType type = caries ? (half ? PickupType.TOOTH_CARIES_HALF : PickupType.TOOTH_CARIES)
                     : (half ? PickupType.TOOTH_NORMAL_HALF : PickupType.TOOTH_NORMAL);
-            pickups.add(new ToothPickup(type, enemy.position.x + (enemy.dimension.x - TOOTH_PICKUP_SIZE) / 2,
-                    enemy.position.y, direction, runtime.getCollisionWorld()));
+            launchPickup(type, enemy.position.x + (enemy.dimension.x - TOOTH_PICKUP_SIZE) / 2,
+                    enemy.position.y, direction);
         }
         float roll = random.nextFloat();
         int count = roll < profile.noDropChance ? 0 : roll < profile.noDropChance + profile.oneDropChance ? 1 : 2;
         for (int i = 0; i < count; i++) {
             Array<MealType> family = random.nextFloat() < profile.fruitChance ? fruits : vegetables;
             MealType type = family.get(random.nextInt(family.size));
-            Meal meal = type.isFruit() ? EntityFactory.fruit(enemy.position.x, enemy.position.y, type, runtime)
-                    : EntityFactory.verdure(enemy.position.x, enemy.position.y, type, runtime);
-            // Bubbles and food share a footprint; center larger enemy sprites without changing the spawn area.
-            meal.setPosition(enemy.position.x + (enemy.dimension.x - meal.dimension.x) / 2,
-                    enemy.position.y + (enemy.dimension.y - meal.dimension.y) / 2);
-            prepareFood(meal, true);
-            meal.velocity.set((i == 0 ? direction : -direction) * DROP_HORIZONTAL_SPEED,
-                    DROP_UPWARD_SPEED * (i == 0 ? 1 : DROP_SECOND_UPWARD_SPEED_MULTIPLIER));
-            runtime.addMeal(meal);
+            float size = type.getDimension().x;
+            launches.add(new DropLaunch(type, null, runtime.getTextureAtlas().findRegion(type.name()), size,
+                    enemy.position.x + (enemy.dimension.x - size) / 2,
+                    enemy.position.y + (enemy.dimension.y - size) / 2,
+                    (i == 0 ? direction : -direction) * DROP_HORIZONTAL_SPEED,
+                    DROP_UPWARD_SPEED * (i == 0 ? 1 : DROP_SECOND_UPWARD_SPEED_MULTIPLIER)));
         }
     }
 
-    public void prepareFood(Meal meal, boolean launched) {
+    public void prepareFood(Meal meal) {
         DroppedMealState state = EntityStateFactory.state(DroppedMealState.class);
-        state.configure(meal, runtime.getCollisionWorld(), launched);
         meal.setCurrentState(state);
     }
 
+    Array<RunPickup> getPickups() { return pickups; }
+
     public void update(float deltaTime) {
         for (int i = bodies.size - 1; i >= 0; i--) if (bodies.get(i).update(deltaTime)) bodies.removeIndex(i);
-        for (RunPickup pickup : pickups) pickup.update(deltaTime);
+        for (int i = launches.size - 1; i >= 0; i--) {
+            DropLaunch launch = launches.get(i);
+            if (launch.update(deltaTime, runtime.getCollisionWorld())) {
+                materialize(launch);
+                launches.removeIndex(i);
+            }
+        }
         MainAvatar player = runtime.getMainAvatar();
-        if (player == null || !player.canPerformAction() || runtime.getToothHealth().isDefeated()) return;
+        if (player == null || runtime.getToothHealth().isDefeated()) return;
         for (int i = pickups.size - 1; i >= 0; i--) {
             RunPickup pickup = pickups.get(i);
             if (!pickup.canCollect() || !pickup.getBox().overlaps(player.box)) continue;
@@ -88,7 +93,11 @@ public class RunDropService {
         for (Meal meal : runtime.getEntityWorld().getFood()) {
             if (!meal.isEnabled() || !(meal.getType().isFruit() || meal.getType().isVerdure())
                     || !meal.box.overlaps(player.box)) continue;
-            runtime.getSalivationReserve().restore(meal.getType().isFruit() ? FRUIT_SALIVATION_RESTORE : VERDURE_SALIVATION_RESTORE);
+            float restore = meal.getType().isFruit() ? FRUIT_SALIVATION_RESTORE : VERDURE_SALIVATION_RESTORE;
+            if (!runtime.getSalivationReserve().canRestore(restore)) {
+                continue;
+            }
+            runtime.getSalivationReserve().restore(restore);
             runtime.getMediaManager().playSound(MediaManager.SOUND_NYAM_MEAL);
             meal.setRenderRotation(0);
             meal.setEnabled(false);
@@ -97,9 +106,10 @@ public class RunDropService {
     }
 
     public void render(Batch batch) {
-        if (bodies.size == 0) return;
+        if (bodies.size == 0 && launches.size == 0) return;
         batch.begin();
         for (DefeatedBodyEffect body : bodies) body.render(batch);
+        for (DropLaunch launch : launches) launch.render(batch);
         batch.setColor(1, 1, 1, 1);
         batch.end();
     }
@@ -115,20 +125,39 @@ public class RunDropService {
                 world.getTileSize(), world.getWidth() - world.getTileSize() - size);
         float y = MathUtils.clamp(player.position.y, world.getTileSize(),
                 world.getHeight() - world.getTileSize() - size);
-        pickups.add(type.isStatUpgrade()
-                ? new StatPickup(type, x, y, direction, world)
-                : new ToothPickup(type, x, y, direction, world));
+        launchPickup(type, x, y, direction);
         return id;
     }
 
     public void renderPickups(Matrix4 projection) {
-        if (pickups.size == 0) return;
+        if (pickups.size == 0 && launches.size == 0) return;
         pickupRenderer.setProjectionMatrix(projection);
         pickupRenderer.begin(ShapeRenderer.ShapeType.Filled);
         for (RunPickup pickup : pickups) pickup.render(pickupRenderer);
+        for (DropLaunch launch : launches) launch.render(pickupRenderer);
         pickupRenderer.end();
     }
 
-    public void clear() { bodies.clear(); pickups.clear(); }
+    private void launchPickup(PickupType type, float x, float y, float direction) {
+        float size = type.isStatUpgrade() ? STAT_PICKUP_SIZE : TOOTH_PICKUP_SIZE;
+        launches.add(new DropLaunch(null, type, null, size, x, y,
+                direction * DROP_HORIZONTAL_SPEED, DROP_UPWARD_SPEED));
+    }
+
+    private void materialize(DropLaunch launch) {
+        if (launch.pickupType != null) {
+            pickups.add(launch.pickupType.isStatUpgrade()
+                    ? new StatPickup(launch.pickupType, launch.x, launch.y)
+                    : new ToothPickup(launch.pickupType, launch.x, launch.y));
+        } else {
+            Meal meal = launch.mealType.isFruit()
+                    ? EntityFactory.fruit(launch.x, launch.y, launch.mealType, runtime)
+                    : EntityFactory.verdure(launch.x, launch.y, launch.mealType, runtime);
+            prepareFood(meal);
+            runtime.addMeal(meal);
+        }
+    }
+
+    public void clear() { launches.clear(); bodies.clear(); pickups.clear(); }
     public void dispose() { clear(); pickupRenderer.dispose(); }
 }

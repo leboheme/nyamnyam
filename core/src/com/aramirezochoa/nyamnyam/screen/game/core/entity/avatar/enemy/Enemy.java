@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.aramirezochoa.nyamnyam.Constant;
 import com.aramirezochoa.nyamnyam.media.MediaManager;
 import com.aramirezochoa.nyamnyam.screen.game.core.GameplayContext;
+import com.aramirezochoa.nyamnyam.screen.game.core.CollisionLayer;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.EntityFactory;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.EntityType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.Avatar;
@@ -25,6 +26,7 @@ public abstract class Enemy extends Avatar {
     @Override
     public void init(EntityType type, float x, float y, DirectionType lookingAt, GameplayContext gameWrapper) {
         super.init(type, x, y, lookingAt, gameWrapper);
+        setCollisionLayer(CollisionLayer.ENEMY);
         angry = false;
         scared = false;
         initialResistance = resistance = 0;

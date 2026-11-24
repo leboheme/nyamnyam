@@ -6,6 +6,7 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.main.MainAvatar
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.Meal;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.bubble.Bubble;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.Projectile;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.SnapshotArray;
 
@@ -54,6 +55,17 @@ public class EntityWorld {
 
     public SnapshotArray<Avatar> getPets() {
         return pets;
+    }
+
+    public void collectCollisionBodies(Array<CollisionBody> output) {
+        output.clear();
+        if (mainAvatar != null) output.add(mainAvatar);
+        for (Enemy enemy : enemies) output.add(enemy);
+        for (Meal meal : food) output.add(meal);
+        for (Projectile projectile : projectiles) output.add(projectile);
+        for (Avatar pet : pets) output.add(pet);
+        for (Bubble bubble : bubbles) output.add(bubble);
+        if (dark != null && !output.contains(dark, true)) output.add(dark);
     }
 
     public void addEnemy(Enemy enemy) {

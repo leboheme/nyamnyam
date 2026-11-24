@@ -13,6 +13,8 @@ import com.badlogic.gdx.utils.Pool;
 import com.aramirezochoa.nyamnyam.Constant;
 import com.aramirezochoa.nyamnyam.screen.game.core.GameWrapper;
 import com.aramirezochoa.nyamnyam.screen.game.core.GameplayContext;
+import com.aramirezochoa.nyamnyam.screen.game.core.CollisionBody;
+import com.aramirezochoa.nyamnyam.screen.game.core.CollisionLayer;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.Avatar;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.types.DirectionType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.EntityState;
@@ -28,10 +30,11 @@ import java.util.Map;
 /**
  * Created by boheme on 13/01/15.
  */
-public abstract class Entity implements Pool.Poolable {
+public abstract class Entity implements Pool.Poolable, CollisionBody {
 
     protected GameplayContext parent;
     private long id;
+    private CollisionLayer collisionLayer = CollisionLayer.NONE;
     protected Pool pool;
     protected EntityType type;
     protected DirectionType lookingAt;
@@ -60,6 +63,7 @@ public abstract class Entity implements Pool.Poolable {
         renderRotation = 0;
         this.id = gameWrapper.nextEntityId();
         this.type = type;
+        collisionLayer = CollisionLayer.NONE;
         this.lookingAt = lookingAt;
         this.dimension.x = type.getDimension().x;
         this.dimension.y = type.getDimension().y;
@@ -186,6 +190,7 @@ public abstract class Entity implements Pool.Poolable {
     }
 
     public void setRenderRotation(float degrees) { renderRotation = degrees; }
+    public float getRenderRotation() { return renderRotation; }
 
     /** Independent region for short visual effects; never retains this pooled entity. */
     public TextureRegion copyCurrentFrame() { return new TextureRegion(currentFrame); }
@@ -254,6 +259,19 @@ public abstract class Entity implements Pool.Poolable {
     }
 
     public long getId() { return id; }
+
+    @Override public CollisionLayer getCollisionLayer() { return collisionLayer; }
+    public void setCollisionLayer(CollisionLayer collisionLayer) {
+        this.collisionLayer = collisionLayer == null ? CollisionLayer.NONE : collisionLayer;
+    }
+    @Override public Rectangle getCollisionBounds() { return box; }
+    @Override public Vector2 getCollisionVelocity() { return velocity; }
+    @Override public float getCollisionRotation() { return renderRotation; }
+    @Override public void setCollisionRotation(float degrees) { setRenderRotation(degrees); }
+    @Override public boolean isCollisionActive() { return isEnabled() && !dead; }
+    @Override public void moveByCollision(float x, float y) {
+        setPosition(position.x + x, position.y + y);
+    }
 
     public void setPosition(float x, float y) {
         position.set(x, y);

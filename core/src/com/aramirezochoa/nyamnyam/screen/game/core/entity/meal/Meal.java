@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.aramirezochoa.nyamnyam.Constant;
 import com.aramirezochoa.nyamnyam.screen.game.core.GameWrapper;
 import com.aramirezochoa.nyamnyam.screen.game.core.GameplayContext;
+import com.aramirezochoa.nyamnyam.screen.game.core.CollisionLayer;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.Entity;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.EntityType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.types.DirectionType;
@@ -23,7 +24,13 @@ public abstract class Meal extends Entity {
     @Override
     public void init(EntityType type, float x, float y, DirectionType lookingAt, GameplayContext gameWrapper) {
         super.init(type, x, y, lookingAt, gameWrapper);
+        setCollisionLayer(CollisionLayer.FREE);
         acceleration.y = -Constant.GRAVITY.y;
+    }
+
+    @Override
+    protected float getBoxOffset() {
+        return parent.getDropService() == null ? super.getBoxOffset() : 0f;
     }
 
     @Override

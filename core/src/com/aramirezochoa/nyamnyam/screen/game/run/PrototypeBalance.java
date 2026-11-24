@@ -41,15 +41,15 @@ public final class PrototypeBalance {
     // Common food: variants in each family restore the same amount, capped at capacity.
     public static final float FRUIT_SALIVATION_RESTORE = 2f;
     public static final float VERDURE_SALIVATION_RESTORE = 1f;
-    // Drop launch: px/s, px/s²; pickup delay only prevents instant collection at spawn.
+    // Free room entities: px/s²; physics is applied centrally by RunPhysicsSystem.
+    public static final float ROOM_FREE_ENTITY_GRAVITY = 650f;
+    public static final float ROOM_PHYSICS_MAX_MOVEMENT_STEP = 4f;
+    // Visual drop launch: px/s; entities are created at landing.
     public static final float DROP_HORIZONTAL_SPEED = 240f;
     public static final float DROP_SECOND_UPWARD_SPEED_MULTIPLIER = 0.85f;
     public static final float DROP_UPWARD_SPEED = 360f;
-    public static final float DROP_GRAVITY = 650f;
     public static final float DROP_ROOM_RESTITUTION = 0.85f;
-    public static final float DROP_PICKUP_DELAY_SECONDS = 0.15f;
-    // Spin uses degrees/s. Movement substeps keep landing accurate at high launch speeds.
-    public static final float DROP_MAX_MOVEMENT_STEP = 4f;
+    // Spin uses degrees/s.
     public static final float DROP_SPIN_DEGREES_PER_SECOND = 720f;
     // Defeated body is visual only; it never delays drops or room completion.
     public static final float DEFEAT_BODY_SECONDS = 1.2f;

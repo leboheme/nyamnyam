@@ -20,6 +20,10 @@ public class SalivationReserve {
         return true;
     }
 
+    public boolean canRestore(float amount) {
+        return amount > 0f && current < SALIVATION_CAPACITY;
+    }
+
     public void update(float deltaTime, RunStats stats) {
         float regeneration = stats == null ? SALIVATION_REGENERATION_PER_SECOND : stats.getSalivation();
         current = Math.min(SALIVATION_CAPACITY, current + regeneration * deltaTime);

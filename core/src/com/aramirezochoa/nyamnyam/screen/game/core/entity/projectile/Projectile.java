@@ -1,6 +1,7 @@
 package com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile;
 
 import com.aramirezochoa.nyamnyam.screen.game.core.GameplayContext;
+import com.aramirezochoa.nyamnyam.screen.game.core.CollisionLayer;
 import com.aramirezochoa.nyamnyam.screen.game.run.RunRuntime;
 import com.aramirezochoa.nyamnyam.screen.game.run.RunCombatService;
 import com.badlogic.gdx.utils.LongSet;
@@ -36,6 +37,7 @@ public class Projectile extends Entity {
         this.pitcher = pitcher;
         this.germination = -1;
         super.init(type, x, y, lookingAt, gameWrapper);
+        setCollisionLayer(type == ProjectileType.BOMB ? CollisionLayer.BOMB : CollisionLayer.NONE);
     }
 
     public void init(EntityType type, float x, float y, DirectionType lookingAt, GameplayContext gameWrapper, boolean friendly, boolean transformToCandy, int germination) {
@@ -44,6 +46,7 @@ public class Projectile extends Entity {
         this.friendly = friendly;
         this.transformToCandy = transformToCandy;
         super.init(type, x, y, lookingAt, gameWrapper);
+        setCollisionLayer(type == ProjectileType.BOMB ? CollisionLayer.BOMB : CollisionLayer.NONE);
         this.germination = germination;
     }
 

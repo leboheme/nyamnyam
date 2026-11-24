@@ -5,7 +5,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.aramirezochoa.nyamnyam.screen.game.core.CollisionWorld;
 import com.aramirezochoa.nyamnyam.screen.game.gui.ToothShape;
 
 import static com.aramirezochoa.nyamnyam.screen.game.run.PrototypeBalance.*;
@@ -19,27 +18,25 @@ public final class StatPickup implements RunPickup {
     private final PickupType type;
     private final Rectangle box = new Rectangle();
     private final Vector2 position, velocity;
-    private final DropFlight flight;
-    private float pickupDelay = DROP_PICKUP_DELAY_SECONDS;
+    private float rotation;
 
-    public StatPickup(PickupType type, float x, float y, float direction, CollisionWorld world) {
+    public StatPickup(PickupType type, float x, float y) {
         if (type == null || !type.isStatUpgrade()) throw new IllegalArgumentException("Stat pickup type is required");
         this.type = type;
         position = new Vector2(x, y);
-        velocity = new Vector2(direction * DROP_HORIZONTAL_SPEED, DROP_UPWARD_SPEED);
-        flight = new DropFlight(position, velocity, STAT_PICKUP_SIZE, STAT_PICKUP_SIZE, world, true);
+        velocity = new Vector2();
         box.set(x, y, STAT_PICKUP_SIZE, STAT_PICKUP_SIZE);
     }
 
     @Override public Rectangle getBox() { return box; }
-    @Override public boolean canCollect() { return pickupDelay <= 0; }
-
-    @Override
-    public void update(float deltaTime) {
-        pickupDelay -= deltaTime;
-        flight.update(deltaTime);
-        box.setPosition(position.x, position.y);
+    @Override public Vector2 getVelocity() { return velocity; }
+    @Override public void setPosition(float x, float y) {
+        position.set(x, y);
+        box.setPosition(x, y);
     }
+    @Override public float getCollisionRotation() { return rotation; }
+    @Override public void setCollisionRotation(float degrees) { rotation = degrees; }
+    @Override public boolean canCollect() { return true; }
 
     @Override
     public boolean apply(RunRuntime runtime) {
@@ -49,10 +46,13 @@ public final class StatPickup implements RunPickup {
 
     @Override
     public void render(ShapeRenderer shapes) {
+        draw(shapes, type, position.x, position.y, rotation);
+    }
+
+    public static void draw(ShapeRenderer shapes, PickupType type, float x, float y, float rotation) {
         float size = STAT_PICKUP_SIZE;
-        float centerX = position.x + size / 2, centerY = position.y + size / 2;
-        float rotation = flight.getRotation();
-        ToothShape.draw(shapes, position.x, position.y, size, 0, false, rotation);
+        float centerX = x + size / 2, centerY = y + size / 2;
+        ToothShape.draw(shapes, x, y, size, 0, false, rotation);
         switch (type.stat) {
             case POWER:
                 shapes.setColor(POWER_COLOR);

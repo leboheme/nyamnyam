@@ -45,6 +45,7 @@ public class RunRuntime implements GameplayContext {
     private final Array<Constant.Coordinates> leftGuide = new Array<Constant.Coordinates>();
     private final Array<Constant.Coordinates> rightGuide = new Array<Constant.Coordinates>();
     private final CollisionWorld collisionWorld;
+    private final RunPhysicsSystem physicsSystem;
     private final BubbleAttractionService bubbleAttractionService;
     private final BubbleContactSystem bubbleContactSystem;
     private final BubbleTerrain bubbleTerrain;
@@ -60,6 +61,7 @@ public class RunRuntime implements GameplayContext {
         textureAtlas = mediaManager.get("data/game/game.atlas");
         roomRenderer = new RoomRenderer(mediaManager.get("data/stages/tiles.png"));
         collisionWorld = new RoomCollisionWorld(runState.getCurrentRoom());
+        physicsSystem = new RunPhysicsSystem(collisionWorld);
         roomCompletionService = new RoomCompletionService(runState.getCurrentRoom(), entityWorld);
         bubbleTerrain = new BubbleTerrain(collisionWorld);
         bubbleContactSystem = new BubbleContactSystem(bubbleTerrain);
@@ -76,6 +78,7 @@ public class RunRuntime implements GameplayContext {
         if (runState.getToothHealth().isDefeated()) {
             entityWorld.getMainAvatar().update(deltaTime);
             dropService.update(deltaTime);
+            physicsSystem.update(entityWorld, dropService.getPickups(), deltaTime, false);
             survivalService.updateDefeat(deltaTime);
             return;
         }
@@ -93,6 +96,7 @@ public class RunRuntime implements GameplayContext {
         entityWorld.update(deltaTime);
         if (runState.getToothHealth().isDefeated()) return;
         dropService.update(deltaTime);
+        physicsSystem.update(entityWorld, dropService.getPickups(), deltaTime, true);
         bubbleContactSystem.update(entityWorld, deltaTime, jumpRequested, intendedX, intendedY);
         roomCompletionService.update();
     }
@@ -179,7 +183,7 @@ public class RunRuntime implements GameplayContext {
             } else {
                 meal = EntityFactory.verdure(x, y, type, this);
             }
-            if (type.isFruit() || type.isVerdure()) dropService.prepareFood(meal, false);
+            if (type.isFruit() || type.isVerdure()) dropService.prepareFood(meal);
             entityWorld.addMeal(meal);
         }
     }

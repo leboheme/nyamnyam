@@ -1,6 +1,5 @@
 package com.aramirezochoa.nyamnyam.screen.game.run;
 
-import com.aramirezochoa.nyamnyam.screen.game.core.CollisionWorld;
 import com.aramirezochoa.nyamnyam.screen.game.gui.ToothShape;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
@@ -12,26 +11,24 @@ public class ToothPickup implements RunPickup {
     public final PickupType type;
     public final Rectangle box = new Rectangle();
     private final Vector2 position, velocity;
-    private final DropFlight flight;
-    private float pickupDelay = DROP_PICKUP_DELAY_SECONDS;
+    private float rotation;
 
-    public ToothPickup(PickupType type, float x, float y, float direction, CollisionWorld world) {
+    public ToothPickup(PickupType type, float x, float y) {
         this.type = type;
         position = new Vector2(x, y);
-        velocity = new Vector2(direction * DROP_HORIZONTAL_SPEED, DROP_UPWARD_SPEED);
-        flight = new DropFlight(position, velocity, TOOTH_PICKUP_SIZE, TOOTH_PICKUP_SIZE, world, true);
+        velocity = new Vector2();
         box.set(x, y, TOOTH_PICKUP_SIZE, TOOTH_PICKUP_SIZE);
     }
 
     @Override public Rectangle getBox() { return box; }
-    @Override public boolean canCollect() { return pickupDelay <= 0; }
-
-    @Override
-    public void update(float deltaTime) {
-        pickupDelay -= deltaTime;
-        flight.update(deltaTime);
-        box.setPosition(position.x, position.y);
+    @Override public Vector2 getVelocity() { return velocity; }
+    @Override public void setPosition(float x, float y) {
+        position.set(x, y);
+        box.setPosition(x, y);
     }
+    @Override public float getCollisionRotation() { return rotation; }
+    @Override public void setCollisionRotation(float degrees) { rotation = degrees; }
+    @Override public boolean canCollect() { return true; }
 
     @Override
     public boolean apply(RunRuntime runtime) {
@@ -41,6 +38,6 @@ public class ToothPickup implements RunPickup {
 
     @Override
     public void render(ShapeRenderer shapes) {
-        ToothShape.draw(shapes, position.x, position.y, TOOTH_PICKUP_SIZE, type.halves, type.caries, flight.getRotation());
+        ToothShape.draw(shapes, position.x, position.y, TOOTH_PICKUP_SIZE, type.halves, type.caries, rotation);
     }
 }

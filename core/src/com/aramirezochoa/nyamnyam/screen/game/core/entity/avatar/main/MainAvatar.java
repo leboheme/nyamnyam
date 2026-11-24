@@ -8,6 +8,7 @@ import com.aramirezochoa.nyamnyam.Constant;
 import com.aramirezochoa.nyamnyam.DataManager;
 import com.aramirezochoa.nyamnyam.media.MediaManager;
 import com.aramirezochoa.nyamnyam.screen.game.core.GameWrapper;
+import com.aramirezochoa.nyamnyam.screen.game.core.CollisionLayer;
 import com.aramirezochoa.nyamnyam.screen.game.core.GameplayContext;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.Entity;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.EntityFactory;
@@ -45,6 +46,7 @@ public abstract class MainAvatar extends Avatar {
     @Override
     public void init(EntityType type, float x, float y, DirectionType lookingAt, GameplayContext gameWrapper) {
         super.init(type, x, y, lookingAt, gameWrapper);
+        setCollisionLayer(CollisionLayer.PLAYER);
         fireTimer = 0;
         fireEnabled = true;
         jumpIfPossible = false;
@@ -124,10 +126,16 @@ public abstract class MainAvatar extends Avatar {
     protected void checkCollisions() {
         if (canPerformAction()) {
             for (Meal meal : getParent().getEntityWorld().getFood()) {
-                if (meal.box.overlaps(box)) checkEdible(meal);
+                if (meal.box.overlaps(box)
+                        && (getParent().getDropService() == null
+                        || CollisionLayer.canCollide(getCollisionLayer(), meal.getCollisionLayer()))) {
+                    checkEdible(meal);
+                }
             }
             for (int i = 0; i < getParent().getEntityWorld().getEnemies().size; i++) {
                 if (getParent().getEntityWorld().getEnemies().get(i).isEnabled()
+                        && (getParent().getDropService() == null
+                        || CollisionLayer.canCollide(getCollisionLayer(), getParent().getEntityWorld().getEnemies().get(i).getCollisionLayer()))
                         && box.overlaps(getParent().getEntityWorld().getEnemies().get(i).box)) {
                     if (garlicBoost && getParent().getEntityWorld().getEnemies().get(i).isEdible()) {
                         eat(getParent().getEntityWorld().getEnemies().get(i));
