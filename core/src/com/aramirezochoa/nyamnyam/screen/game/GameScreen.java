@@ -124,6 +124,7 @@ public class GameScreen extends AbstractScreen {
 
     private void restartRun() {
         runState.getStats().reset();
+        runState.clearMutations();
         runState.getSalivationReserve().reset();
         runState.getToothHealth().reset();
         init(gameStatus);

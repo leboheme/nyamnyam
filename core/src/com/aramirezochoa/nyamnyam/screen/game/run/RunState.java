@@ -2,6 +2,7 @@ package com.aramirezochoa.nyamnyam.screen.game.run;
 
 import com.aramirezochoa.nyamnyam.screen.game.room.RoomInstance;
 import com.badlogic.gdx.utils.Array;
+import java.util.EnumSet;
 
 /** Mutable state shared across rooms during one game run. */
 public class RunState {
@@ -10,10 +11,15 @@ public class RunState {
     private int currentFloorIndex;
     private final ToothHealth toothHealth = new ToothHealth();
     private final RunStats stats = new RunStats();
+    private final EnumSet<RunMutation> mutations = EnumSet.noneOf(RunMutation.class);
 
     public ToothHealth getToothHealth() { return toothHealth; }
 
     public RunStats getStats() { return stats; }
+
+    public boolean hasMutation(RunMutation mutation) { return mutations.contains(mutation); }
+    public boolean addMutation(RunMutation mutation) { return mutations.add(mutation); }
+    public void clearMutations() { mutations.clear(); }
 
     private final SalivationReserve salivationReserve = new SalivationReserve();
 

@@ -16,7 +16,7 @@ public final class SpawnCommand implements DebugCommand {
             StringBuilder result = new StringBuilder();
             for (PickupType type : PickupType.values()) {
                 if (result.length() > 0) result.append("\n");
-                result.append(type.id).append(" - ").append(type.name());
+                result.append(type.id).append(" - ").append(type.getDisplayName());
             }
             return result.toString();
         }

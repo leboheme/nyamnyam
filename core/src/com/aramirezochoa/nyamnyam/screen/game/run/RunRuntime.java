@@ -16,6 +16,8 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.types.Direction
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.Meal;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.MealType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.Projectile;
+import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.ProjectileType;
+import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.EntityStateFactory;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.meal.common.RaiseType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.avatar.main.MainAvatarStateFactory;
 import com.aramirezochoa.nyamnyam.screen.game.room.RoomEnemySpawn;
@@ -194,6 +196,10 @@ public class RunRuntime implements GameplayContext {
     @Override public EntityWorld getEntityWorld() { return entityWorld; }
     @Override public CollisionWorld getCollisionWorld() { return collisionWorld; }
     public ToothHealth getToothHealth() { return runState.getToothHealth(); }
+    public float getBubbleScale() {
+        return runState.hasMutation(RunMutation.GIANT_BUBBLE) ? PrototypeBalance.GIANT_BUBBLE_SCALE : 1f;
+    }
+    public boolean addMutation(RunMutation mutation) { return runState.addMutation(mutation); }
     @Override public RunSurvivalService getSurvivalService() { return survivalService; }
     @Override public RunDropService getDropService() { return dropService; }
     @Override public RunCombatService getCombatService() { return combatService; }
@@ -206,6 +212,13 @@ public class RunRuntime implements GameplayContext {
     @Override public void addMeal(Meal meal) { entityWorld.addMeal(meal); }
     @Override public void addProjectile(Projectile projectile) {
         combatService.prepareAttack(projectile);
+        if (projectile.getType() == ProjectileType.BEAM
+                && !bubbleTerrain.canOccupy(projectile.position.x, projectile.position.y,
+                        projectile.dimension.x, projectile.dimension.y)) {
+            // A shot with no room for its full footprint bursts where it was fired.
+            projectile.setEnabled(false);
+            projectile.setCurrentState(EntityStateFactory.explode(projectile, false));
+        }
         entityWorld.addProjectile(projectile);
     }
     @Override public void addPet(Avatar avatar) { entityWorld.addPet(avatar); }

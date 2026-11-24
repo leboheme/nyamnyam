@@ -37,6 +37,8 @@ public final class PrototypeBalance {
     public static final float CADENCE_PICKUP_MODIFIER = 0.5f;
     public static final float SALIVATION_PICKUP_MODIFIER = 1f;
     public static final float STAT_PICKUP_SIZE = 16f;
+    // Giant Bubble is binary: new Nyam shots and their bubbles use 48 instead of 32 px.
+    public static final float GIANT_BUBBLE_SCALE = 1.5f;
 
     // Common food: variants in each family restore the same amount, capped at capacity.
     public static final float FRUIT_SALIVATION_RESTORE = 2f;

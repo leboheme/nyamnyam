@@ -77,7 +77,7 @@ final class DropLaunch {
 
     void render(ShapeRenderer shapes) {
         if (pickupType == null) return;
-        if (pickupType.isStatUpgrade()) StatPickup.draw(shapes, pickupType, x, y, rotation);
+        if (pickupType.isUpgrade()) UpgradePickup.draw(shapes, pickupType, x, y, rotation);
         else ToothShape.draw(shapes, x, y, size, pickupType.halves, pickupType.caries, rotation);
     }
 }

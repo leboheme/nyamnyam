@@ -2,7 +2,6 @@ package com.aramirezochoa.nyamnyam.screen.game.run;
 
 import com.aramirezochoa.nyamnyam.Constant;
 import com.aramirezochoa.nyamnyam.media.MediaManager;
-import com.aramirezochoa.nyamnyam.screen.game.core.GameplayContext;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.EntityFactory;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.enemy.Enemy;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.types.DirectionType;
@@ -15,9 +14,9 @@ import static com.aramirezochoa.nyamnyam.screen.game.run.PrototypeBalance.*;
 
 /** Prototype JSON combat rules. Locomotion and bubble contact physics remain independent. */
 public class RunCombatService {
-    private final GameplayContext context;
+    private final RunRuntime context;
 
-    public RunCombatService(GameplayContext context) {
+    public RunCombatService(RunRuntime context) {
         this.context = context;
     }
 
@@ -38,7 +37,15 @@ public class RunCombatService {
         enemy.showHitFeedback();
         context.getMediaManager().playSound(MediaManager.SOUND_HIT_PROJECTILE);
         if (enemy.getResistance() == 0) {
-            Bubble bubble = EntityFactory.bubble(enemy.position.x, enemy.position.y, attack.getLookingAt(), context);
+            float size = Constant.CANDY_DIMENSION.x * attack.getBubbleScale();
+            float x = enemy.position.x + (enemy.dimension.x - size) / 2;
+            float y = enemy.position.y + (enemy.dimension.y - size) / 2;
+            if (!context.getBubbleTerrain().canOccupy(x, y, size, size)) {
+                // The projectile's valid footprint is the closest safe location at impact.
+                x = attack.position.x;
+                y = attack.position.y;
+            }
+            Bubble bubble = EntityFactory.bubble(x, y, attack.getLookingAt(), attack.getBubbleScale(), context);
             if (bubble.capture(enemy)) {
                 context.getEntityWorld().addBubble(bubble);
             } else {

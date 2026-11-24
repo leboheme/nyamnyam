@@ -9,19 +9,20 @@ import com.aramirezochoa.nyamnyam.screen.game.gui.ToothShape;
 
 import static com.aramirezochoa.nyamnyam.screen.game.run.PrototypeBalance.*;
 
-/** Debug-only stat upgrade with a distinct geometric placeholder and shared drop flight. */
-public final class StatPickup implements RunPickup {
+/** Debug-only stat or mutation pickup with a distinct geometric placeholder. */
+public final class UpgradePickup implements RunPickup {
     private static final Color POWER_COLOR = Color.valueOf("ff795e");
     private static final Color CADENCE_COLOR = Color.valueOf("f4d35e");
     private static final Color SALIVATION_COLOR = Color.valueOf("64d8e5");
+    private static final Color GIANT_BUBBLE_COLOR = Color.valueOf("be8cff");
 
     private final PickupType type;
     private final Rectangle box = new Rectangle();
     private final Vector2 position, velocity;
     private float rotation;
 
-    public StatPickup(PickupType type, float x, float y) {
-        if (type == null || !type.isStatUpgrade()) throw new IllegalArgumentException("Stat pickup type is required");
+    public UpgradePickup(PickupType type, float x, float y) {
+        if (type == null || !type.isUpgrade()) throw new IllegalArgumentException("Upgrade pickup type is required");
         this.type = type;
         position = new Vector2(x, y);
         velocity = new Vector2();
@@ -40,6 +41,7 @@ public final class StatPickup implements RunPickup {
 
     @Override
     public boolean apply(RunRuntime runtime) {
+        if (type.mutation != null) return runtime.addMutation(type.mutation);
         runtime.getRunStats().addModifier(type.stat, type.modifier);
         return true;
     }
@@ -53,6 +55,13 @@ public final class StatPickup implements RunPickup {
         float size = STAT_PICKUP_SIZE;
         float centerX = x + size / 2, centerY = y + size / 2;
         ToothShape.draw(shapes, x, y, size, 0, false, rotation);
+        if (type.mutation == RunMutation.GIANT_BUBBLE) {
+            shapes.setColor(GIANT_BUBBLE_COLOR);
+            shapes.circle(centerX, centerY, 5f);
+            shapes.setColor(Color.WHITE);
+            shapes.circle(centerX, centerY, 2f);
+            return;
+        }
         switch (type.stat) {
             case POWER:
                 shapes.setColor(POWER_COLOR);

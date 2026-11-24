@@ -119,7 +119,7 @@ public class RunDropService {
         MainAvatar player = runtime.getMainAvatar();
         if (type == null || player == null || runtime.getToothHealth().isDefeated()) return -1;
         CollisionWorld world = runtime.getCollisionWorld();
-        float size = type.isStatUpgrade() ? STAT_PICKUP_SIZE : TOOTH_PICKUP_SIZE;
+        float size = type.isUpgrade() ? STAT_PICKUP_SIZE : TOOTH_PICKUP_SIZE;
         float direction = player.getLookingAt() == DirectionType.LEFT ? -1 : 1;
         float x = MathUtils.clamp(player.position.x + player.dimension.x / 2 - size / 2,
                 world.getTileSize(), world.getWidth() - world.getTileSize() - size);
@@ -139,15 +139,15 @@ public class RunDropService {
     }
 
     private void launchPickup(PickupType type, float x, float y, float direction) {
-        float size = type.isStatUpgrade() ? STAT_PICKUP_SIZE : TOOTH_PICKUP_SIZE;
+        float size = type.isUpgrade() ? STAT_PICKUP_SIZE : TOOTH_PICKUP_SIZE;
         launches.add(new DropLaunch(null, type, null, size, x, y,
                 direction * DROP_HORIZONTAL_SPEED, DROP_UPWARD_SPEED));
     }
 
     private void materialize(DropLaunch launch) {
         if (launch.pickupType != null) {
-            pickups.add(launch.pickupType.isStatUpgrade()
-                    ? new StatPickup(launch.pickupType, launch.x, launch.y)
+            pickups.add(launch.pickupType.isUpgrade()
+                    ? new UpgradePickup(launch.pickupType, launch.x, launch.y)
                     : new ToothPickup(launch.pickupType, launch.x, launch.y));
         } else {
             Meal meal = launch.mealType.isFruit()

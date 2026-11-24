@@ -27,13 +27,21 @@ public class Bubble extends Entity {
     private float pressure;
     private boolean burstRequested;
     private final Vector2 impulse = new Vector2();
+    private float sizeScale = 1f;
 
-    public void init(float x, float y, DirectionType lookingAt, GameplayContext context) {
+    public void init(float x, float y, DirectionType lookingAt, float sizeScale, GameplayContext context) {
+        this.sizeScale = sizeScale;
         impulse.setZero();
         pressure = 0;
         burstRequested = false;
         super.init(BubbleType.BUBBLE, x, y, lookingAt, context);
+        dimension.scl(sizeScale);
+        initBoxes();
+        updateBoxes();
     }
+
+    @Override protected float getBoxOffset() { return Constant.ENTITY_BOX_OFFSET * sizeScale; }
+    @Override protected float getRenderScale() { return sizeScale; }
 
     @Override
     protected EntityState getInitialState() {

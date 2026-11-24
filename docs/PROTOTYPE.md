@@ -52,12 +52,15 @@ Editar [`PrototypeBalance.java`](../core/src/com/aramirezochoa/nyamnyam/screen/g
 
 La implementación de pickups está en revisión: `spawn 5/6/7` crea mejoras provisionales de Power/Cadence/Salivation. Se aplican una vez al recoger, se acumulan sobre la base y no curan ni recargan la reserva actual. Son solo de debug, no forman parte de drops de enemigo; la validación manual queda pendiente.
 
+La primera mutación está pendiente de prueba manual: `spawn 8` lanza Burbuja Gigante. Es binaria en `RunState`: solo afecta a disparos de Nyam creados después de recogerla y a las burbujas que esos disparos generan, vacías o cautivas. Una segunda copia no aporta efecto y permanece en la sala. El factor provisional es `GIANT_BUBBLE_SCALE` en `PrototypeBalance` (actualmente 1,5: 32 → 48 px). Si el disparo no cabe al emitirlo, estalla en el punto de emisión; en pasillos más estrechos que su tamaño no puede avanzar. La mutación persiste con `stage 7`/F11 y se limpia con `restart`.
+
 [`EnemyDropConfig.java`](../core/src/com/aramirezochoa/nyamnyam/screen/game/run/EnemyDropConfig.java) concentra los perfiles por EnemyType. Actualmente la tabla de excepciones está vacía: todas las especies usan el perfil común. No se han implementado modificadores de dificultad o Luck.
 
 | Parámetro | Valor actual de prueba |
 | --- | --- |
 | Resistencia enemiga / Power de ataque | 3 / 1: tres impactos para capturar |
 | Pickup debug Power / Cadence / Salivation | +50 % / +50 % / +100 % sobre base; provisionales y sumables |
+| Mutación debug Burbuja Gigante | ×1,5 tamaño de disparo y burbuja, una sola vez |
 | Feedback de impacto | Rojo durante 0,12 s, sin interrumpir movimiento |
 | Vida de burbuja vacía/cautiva | 5 + 3 + 2 s de fases visuales; 10 s en total |
 | Saliva inicial/máxima, coste y regeneración | 6; 1 por ataque; 0,75/s incluso atacando |
@@ -95,6 +98,7 @@ La consola existente se abre con la tecla grave (`) y está habilitada solo en D
 | `spawn 5` | Lanza mejora Power (+50 % de Power base) |
 | `spawn 6` | Lanza mejora Cadence (+50 % de ataques/s base) |
 | `spawn 7` | Lanza mejora Salivation (+100 % de regeneración base) |
+| `spawn 8` | Lanza Burbuja Gigante (×1,5 en disparos y burbujas nuevos) |
 | `stats` | Muestra base, modificador y resultado de Power, Cadence y Salivation (JSON) |
 | `clear` | Limpia la salida de consola |
 

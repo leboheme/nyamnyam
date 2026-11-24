@@ -59,7 +59,7 @@ El flujo JSON usa RunRuntime; GameWrapper conserva el flujo TMX para comparació
 
 | Frontera | Responsabilidad actual |
 | --- | --- |
-| `RunState` | Floors/sala actual, recursos persistentes entre salas y modificadores de Power/Cadence/Salivation de la build |
+| `RunState` | Floors/sala actual, recursos persistentes entre salas, modificadores de Power/Cadence/Salivation y mutaciones binarias de la build |
 | `RoomInstance` | Material, colisión/layout y combatCleared; sin salud/saliva ni reglas de puertas implícitas |
 | `EntityWorld` | Colecciones y actualización/render/limpieza de enemigos, comida, proyectiles, mascotas y Bubble |
 | `GameplayContext` | Servicios de gameplay accesibles a entidades. Los nuevos servicios opcionales son null en TMX |
@@ -68,7 +68,7 @@ El flujo JSON usa RunRuntime; GameWrapper conserva el flujo TMX para comparació
 | `BubbleAttractionService` | Velocidad hacia focos de la room; foco/destino por entidad |
 | `RoomCompletionService` | Marca combate resuelto cuando no quedan enemigos libres ni cautivos. No emite WIN, UI, recompensas ni apertura de puertas |
 | `RunDropService` | Evaluación de drops al rematar, comida, cuerpo visual y propiedad/limpieza de pickups JSON de dientes/stats |
-| `DropFlight` | Movimiento balístico compartido por DroppedMealState, ToothPickup y StatPickup: giro, rebote exterior y aterrizaje al caer |
+| `DropLaunch` | Vuelo visual de recompensas hasta aterrizar; entonces se crean los pickups o la comida física |
 | `RunSurvivalService` | Daño de salud JSON, protección tras impacto y presentación de muerte antes de LOSE, sin respawn/vidas persistentes |
 | `GameUserInterface` / `ToothShape` | Representación provisional en viewport UI; mismo cuadrado de salud para HUD y pickups |
 
@@ -80,7 +80,7 @@ Expirar devuelve esa misma instancia al mundo mediante el servicio de combate. E
 
 Los proyectiles persistentes registran IDs de impactos para no dañar repetidamente al mismo enemigo por solapamiento. Las cadenas descubren vecinos antes de resolver y no conservan referencias a entidades liberadas entre updates.
 
-El cuerpo derrotado es una copia independiente de TextureRegion y posición, nunca un Enemy activo: puede girar/volar/desvanecerse sin retrasar la resolución ni retener el pool. Frutas y verduras siguen usando factories/pools existentes. ToothPickup es un placeholder poligonal propiedad del servicio, sin textura ni entidad pooled; se retira al recoger o limpiar. StatPickup comparte su vuelo/ciclo RunPickup y aplica su modificador tipado al recoger; sus marcadores geométricos distinguen cada stat sin assets nuevos. Los renderers añadidos se liberan al disponer el runtime/HUD.
+El cuerpo derrotado es una copia independiente de TextureRegion y posición, nunca un Enemy activo: puede girar/volar/desvanecerse sin retrasar la resolución ni retener el pool. Frutas y verduras siguen usando factories/pools existentes. ToothPickup es un placeholder poligonal propiedad del servicio, sin textura ni entidad pooled; se retira al recoger o limpiar. UpgradePickup comparte el ciclo RunPickup de colisión, recogida y render, y aplica su stat o mutación tipada al recoger; sus marcadores geométricos distinguen cada mejora sin assets nuevos. Los renderers añadidos se liberan al disponer el runtime/HUD.
 
 ### Recursos, carga y derrota
 
@@ -96,9 +96,10 @@ GameStatus sigue siendo la señal de estado para los listeners y conserva puntua
 
 - `PrototypeBalance`: constantes del prototipo JSON agrupadas por recurso, combate, supervivencia, burbujas y vuelos, con unidades/comentarios. Incluye tolerancias numéricas separadas de los controles de balance. Editar y recompilar; sin loader ni configuración en caliente.
 - `RunStats`: solo modificadores tipados de Power, Cadence y Salivation; conserva las bases en sus fuentes actuales. Calcula `base × (1 + suma de modificadores)` sin componer sobre resultados anteriores. Runtime de combate, cadencia y regeneración consultan el valor efectivo; proyectiles ya emitidos no cambian. La consola Desktop ofrece `stats` como consulta de solo lectura.
-- `RunPickup`: ciclo compartido mínimo (vuelo, colisión, recogida y render) para `ToothPickup` y `StatPickup`. Cada subtipo aplica su resultado específico; no convierte toda recogida en salud.
+- `RunMutation`: efectos discretos de la build. Burbuja Gigante se registra una vez en `RunState`; cada disparo nuevo conserva su escala hasta convertirse en burbuja vacía o capturar un enemigo. El tamaño de render, caja de impacto y huella ante el terreno comparten esa escala.
+- `RunPickup`: ciclo compartido mínimo (colisión, recogida y render) para `ToothPickup` y `UpgradePickup`. Cada subtipo aplica su resultado específico; no convierte toda recogida en salud. `DropLaunch` mantiene el vuelo visual y materializa el pickup al aterrizar.
 - `EnemyDropConfig`: perfil común y excepciones por EnemyType. Incluye probabilidades de comida y de diente adicional; actualmente todas las especies usan el fallback común. No hay reglas de dificultad/Luck implementadas.
-- `PickupType`: IDs numéricos explícitos y estables: 1–4 dientes provisionales y 5–7 mejoras de stats de debug. No usar ordinal ni nombres provisionales como identidad persistente. Aún no es un catálogo general de objetos.
+- `PickupType`: IDs numéricos explícitos y estables: 1–4 dientes provisionales, 5–7 mejoras de stats y 8 Burbuja Gigante de debug. No usar ordinal ni nombres provisionales como identidad persistente. Aún no es un catálogo general de objetos.
 - `DebugConsole`: comandos `stage`, `restart`, `killall`, `spawn` y consulta de stats; disponibilidad actual solo Desktop. Sintaxis e IDs en [PROTOTYPE.md](PROTOTYPE.md#consola-de-debug).
 
 No se ha introducido ECS ni sistema genérico de drops de calidad o efectos. Las constantes de movimiento/cadencia todavía compartidas con el legacy no se han trasladado indiscriminadamente.

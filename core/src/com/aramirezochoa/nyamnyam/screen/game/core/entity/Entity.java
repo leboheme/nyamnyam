@@ -197,16 +197,20 @@ public abstract class Entity implements Pool.Poolable, CollisionBody {
 
     protected abstract boolean isLoopAnimation();
 
+    /** Most entities use atlas pixels directly; sized variants can scale their own frame. */
+    protected float getRenderScale() { return 1f; }
+
     public void render(Batch batch) {
         boolean flip = DirectionType.LEFT.equals(lookingAt);
         currentFrame.flip(flip, false);
         batch.begin();
         batch.setColor(getColor());
-        float drawX = position.x - (currentFrame.getRegionWidth() - dimension.x) / 2;
+        float width = currentFrame.getRegionWidth() * getRenderScale();
+        float height = currentFrame.getRegionHeight() * getRenderScale();
+        float drawX = position.x - (width - dimension.x) / 2;
         if (renderRotation == 0) {
-            batch.draw(currentFrame, drawX, position.y);
+            batch.draw(currentFrame, drawX, position.y, width, height);
         } else {
-            float width = currentFrame.getRegionWidth(), height = currentFrame.getRegionHeight();
             batch.draw(currentFrame, drawX, position.y, width / 2, height / 2,
                     width, height, 1, 1, renderRotation);
         }
