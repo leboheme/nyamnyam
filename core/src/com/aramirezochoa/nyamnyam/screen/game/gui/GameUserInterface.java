@@ -53,6 +53,12 @@ public class GameUserInterface implements GameScreen.GameScreenComponent, GameSt
     private ToothHealth toothHealth;
     private final ShapeRenderer healthRenderer = new ShapeRenderer();
     private Label legacyInsertCoinLabel;
+    private boolean pauseButtonVisible = true;
+
+    public void setPauseButtonVisible(boolean visible) {
+        pauseButtonVisible = visible;
+        inGameTable.setVisible(visible);
+    }
 
     public void setToothHealth(ToothHealth toothHealth) {
         this.toothHealth = toothHealth;
@@ -306,7 +312,7 @@ public class GameUserInterface implements GameScreen.GameScreenComponent, GameSt
         switch (state) {
             case IN_GAME:
                 hideConfirmExit();
-                inGameTable.setVisible(true);
+                inGameTable.setVisible(pauseButtonVisible);
                 hide(pauseTable);
                 hide(winTable);
                 hide(loseTable);

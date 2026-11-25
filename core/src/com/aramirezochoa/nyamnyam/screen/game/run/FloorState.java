@@ -25,6 +25,8 @@ public class FloorState {
                 ? null : rooms.get(currentRoomIndex);
     }
 
+    public int getCurrentRoomIndex() { return currentRoomIndex; }
+
     public RoomInstance getCurrentRoom() {
         PlacedRoom placement = getCurrentPlacement();
         return placement == null ? null : placement.getRoom();

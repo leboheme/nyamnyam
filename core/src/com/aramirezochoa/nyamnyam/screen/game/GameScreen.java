@@ -10,6 +10,7 @@ import com.aramirezochoa.nyamnyam.screen.ScreenManager;
 import com.aramirezochoa.nyamnyam.screen.ScreenType;
 import com.aramirezochoa.nyamnyam.screen.game.core.GameWrapper;
 import com.aramirezochoa.nyamnyam.screen.game.debug.DebugConsole;
+import com.aramirezochoa.nyamnyam.screen.game.debug.AreaMapDebugRenderer;
 import com.aramirezochoa.nyamnyam.screen.game.debug.AreaCommand;
 import com.aramirezochoa.nyamnyam.screen.game.debug.StageCommand;
 import com.aramirezochoa.nyamnyam.screen.game.debug.KillAllCommand;
@@ -48,6 +49,7 @@ public class GameScreen extends AbstractScreen {
     private GameUserInterface gameUserInterface;
     private GamePad gamePad;
     private DebugConsole debugConsole;
+    private AreaMapDebugRenderer areaMapDebugRenderer;
     private ExtendViewport hudViewport;
     private RunState runState;
     private GameStatus gameStatus;
@@ -90,8 +92,9 @@ public class GameScreen extends AbstractScreen {
         }, hudViewport);
         gamePad.layoutControls();
         debugConsole = new DebugConsole(getMediaManager(), hudViewport);
+        areaMapDebugRenderer = new AreaMapDebugRenderer(getMediaManager(), hudViewport);
         debugConsole.registerCommand(new StageCommand(this::loadStage));
-        debugConsole.registerCommand(new AreaCommand(this::loadArea));
+        debugConsole.registerCommand(new AreaCommand(this::loadArea, this::areaStatus));
         debugConsole.registerCommand(new RestartCommand(this::restartRun));
         debugConsole.registerCommand(new SpawnCommand(id -> runRuntime == null
                 ? -1 : runRuntime.getDropService().spawnPickup(id)));
@@ -113,6 +116,7 @@ public class GameScreen extends AbstractScreen {
 
     private void init(GameStatus gameStatus) {
         navigationSeed = null;
+        gameUserInterface.setPauseButtonVisible(true);
         if (loadedLevel != gameStatus.getLevel()) {
             useLegacyFlow = false;
             loadedLevel = gameStatus.getLevel();
@@ -160,8 +164,16 @@ public class GameScreen extends AbstractScreen {
         navigationSeed = seed;
         hasJsonRoom = true;
         useLegacyFlow = false;
+        gameUserInterface.setPauseButtonVisible(false);
         runRuntime = new RunRuntime(getMediaManager(), runState, gameStatus, spawn.x, spawn.y, null);
         gameStatus.setGameState(GameState.IN_GAME);
+    }
+
+    private String areaStatus() {
+        if (navigationSeed == null) return "No generated area loaded";
+        FloorState floor = runState.getCurrentFloor();
+        return "Area seed " + floor.getSeed() + ", room "
+                + (floor.getCurrentRoomIndex() + 1) + "/" + floor.getRooms().size;
     }
 
     private void changeRoomIfRequested() {
@@ -231,6 +243,7 @@ public class GameScreen extends AbstractScreen {
         if (!gameStatus.isPaused()) {
             gamePad.render(delta);
         }
+        if (navigationSeed != null) areaMapDebugRenderer.render(runState.getCurrentFloor());
         debugConsole.render();
 
         if (DataManager.INSTANCE.getGameStatus().getLevel() > Constant.GAME_LEVELS) {
@@ -298,6 +311,7 @@ public class GameScreen extends AbstractScreen {
         gameUserInterface.dispose();
         gamePad.dispose();
         debugConsole.dispose();
+        areaMapDebugRenderer.dispose();
     }
 
     public interface GameScreenComponent {
