@@ -67,6 +67,7 @@ final class AreaGenerator {
                 int index = addRoom(floor, template, choice.x, choice.y);
                 floor.connect(choice.parentIndex, choice.parentSlot, index, choice.childSlot);
             }
+            if (placedAll) connectAdjacentRooms(floor);
             if (placedAll && hasBranchAndDeadEnd(floor)) return floor;
         }
         throw new IllegalStateException("Could not generate a connected modular area for seed " + seed
@@ -116,6 +117,32 @@ final class AreaGenerator {
             if (occupied.contains(key(x + module.getX(), y + module.getY()))) return false;
         }
         return true;
+    }
+
+    /** Complete every free pair of facing connectors after placement, including loops. */
+    private void connectAdjacentRooms(FloorState floor) {
+        for (int firstIndex = 0; firstIndex < floor.getRooms().size; firstIndex++) {
+            PlacedRoom first = floor.getRooms().get(firstIndex);
+            for (RoomConnector exit : first.getRoom().getConnectors()) {
+                if (first.getLink(exit.getSlot()) != null) continue;
+                char side = exit.getSlot().charAt(0);
+                int neighborX = first.getModuleX() + exit.getModuleX() + stepX(side);
+                int neighborY = first.getModuleY() + exit.getModuleY() + stepY(side);
+                for (int secondIndex = firstIndex + 1; secondIndex < floor.getRooms().size; secondIndex++) {
+                    if (first.getLink(exit.getSlot()) != null) break;
+                    PlacedRoom second = floor.getRooms().get(secondIndex);
+                    for (RoomConnector entrance : second.getRoom().getConnectors()) {
+                        if (second.getLink(entrance.getSlot()) == null
+                                && entrance.getSlot().charAt(0) == opposite(side)
+                                && second.getModuleX() + entrance.getModuleX() == neighborX
+                                && second.getModuleY() + entrance.getModuleY() == neighborY) {
+                            floor.connect(firstIndex, exit.getSlot(), secondIndex, entrance.getSlot());
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private boolean hasBranchAndDeadEnd(FloorState floor) {
