@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compile a material-only room TMX into the runtime room JSON format."""
+"""Compile an authored room TMX into the runtime room JSON format."""
 
 import argparse
 import base64
@@ -96,6 +96,138 @@ def read_properties(element):
         for prop in properties.findall("property"):
             result[prop.get("name")] = prop.get("value", prop.text or "")
     return result
+
+
+def read_footprint(map_root, source_path):
+    value = read_properties(map_root).get("footprint")
+    if value is None:
+        if map_root.find("objectgroup[@name='connectors']") is not None:
+            raise ValueError("Connectors require a footprint in " + str(source_path))
+        return None  # Pre-modular rooms, including room 7.
+    cells = set()
+    for item in value.split(";"):
+        match = re.fullmatch(r"\s*(\d+)\s*,\s*(\d+)\s*", item)
+        if not match:
+            raise ValueError("Invalid footprint cell: " + item)
+        cell = (int(match.group(1)), int(match.group(2)))
+        if cell in cells:
+            raise ValueError("Duplicate footprint cell: " + item)
+        cells.add(cell)
+    if not cells or min(x for x, _ in cells) != 0 or min(y for _, y in cells) != 0:
+        raise ValueError("Footprint must be nonempty and start at local x=0,y=0")
+    visited = {next(iter(cells))}
+    pending = list(visited)
+    while pending:
+        x, y = pending.pop()
+        for neighbor in ((x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)):
+            if neighbor in cells and neighbor not in visited:
+                visited.add(neighbor)
+                pending.append(neighbor)
+    if visited != cells:
+        raise ValueError("Footprint is disconnected in " + str(source_path))
+    return [{"x": x, "y": y} for x, y in sorted(cells)]
+
+
+def connector_slots(footprint):
+    cells = {(cell["x"], cell["y"]) for cell in footprint}
+    slots = {}
+    for side, dx, dy in (("W", -1, 0), ("E", 1, 0), ("S", 0, -1), ("N", 0, 1)):
+        edges = [(x, y) for x, y in cells if (x + dx, y + dy) not in cells]
+        edges.sort(key=lambda cell: (cell[1], cell[0]) if side in ("W", "E") else (cell[0], cell[1]))
+        if len(edges) > 2:
+            raise ValueError("More than two exterior slots on side " + side)
+        for index, (x, y) in enumerate(edges):
+            slots[side + str(index)] = (x, y)
+    return slots
+
+
+def read_connectors(map_root, footprint, width, height, tile_size, rows, source_path):
+    groups = map_root.findall("objectgroup[@name='connectors']")
+    if len(groups) > 1:
+        raise ValueError("Room TMX may contain only one connectors layer")
+    if not groups:
+        return []
+    slots = connector_slots(footprint)
+    passes, arrivals = {}, {}
+    for obj in groups[0].findall("object"):
+        name = obj.get("name", "")
+        if name.endswith("_arrival") and obj.find("point") is not None:
+            slot = name[:-8]
+            if slot in arrivals:
+                raise ValueError("Duplicate arrival for " + slot)
+            arrivals[slot] = (float(obj.get("x", "0")), float(obj.get("y", "0")))
+        elif obj.find("polyline") is not None:
+            if name in passes:
+                raise ValueError("Duplicate connector " + name)
+            points = obj.find("polyline").get("points", "").split()
+            if len(points) != 2:
+                raise ValueError("Connector must be a two-point line: " + name)
+            xy = [tuple(float(v) for v in point.split(",")) for point in points]
+            x0, y0 = float(obj.get("x", "0")) + xy[0][0], float(obj.get("y", "0")) + xy[0][1]
+            x1, y1 = float(obj.get("x", "0")) + xy[1][0], float(obj.get("y", "0")) + xy[1][1]
+            passes[name] = (x0, y0, x1, y1)
+        else:
+            raise ValueError("Connector objects must be pass lines or arrival points: " + name)
+    if set(passes) != set(arrivals):
+        raise ValueError("Every connector needs exactly one matching arrival point")
+    result = []
+    used_intervals = []
+    for name, (x0, y0, x1, y1) in passes.items():
+        if name not in slots:
+            raise ValueError("Invalid or internal connector slot: " + name)
+        side = name[0]
+        length = 3 * tile_size if side in ("W", "E") else 2 * tile_size
+        if side in ("W", "E"):
+            valid = x0 == x1 and abs(y1 - y0) == length
+        else:
+            valid = y0 == y1 and abs(x1 - x0) == length
+        values = (x0, y0, x1, y1)
+        if not valid or any(abs(v / tile_size - round(v / tile_size)) > 0.001 for v in values):
+            raise ValueError("Connector must be a grid-aligned 3/2-tile segment: " + name)
+        if not all(0 <= x <= width * tile_size for x in (x0, x1)) or not all(0 <= y <= height * tile_size for y in (y0, y1)):
+            raise ValueError("Connector outside room: " + name)
+        # The outer tile ring is implicit and closed until navigation opens a slot.
+        boundary = {"W": x0 == 0, "E": x0 == width * tile_size,
+                    "N": y0 == 0, "S": y0 == height * tile_size}
+        if not boundary[side]:
+            raise ValueError("Connector must be on the physical room perimeter: " + name)
+        start = min(y0, y1) if side in ("W", "E") else min(x0, x1)
+        end = start + length
+        if any(other_side == side and start < other_end and other_start < end
+               for other_side, other_start, other_end in used_intervals):
+            raise ValueError("Overlapping physical connectors on side " + side)
+        used_intervals.append((side, start, end))
+        column = round(min(x0, x1) / tile_size)
+        row = round(min(y0, y1) / tile_size)
+        if side in ("W", "E"):
+            inside_x = 0 if side == "W" else width - 1
+            inside_cells = [(inside_x, ry) for ry in range(row, row + 3)]
+        else:
+            inside_y = 0 if side == "N" else height - 1
+            inside_cells = [(cx, inside_y) for cx in range(column, column + 2)]
+        for cx, cy in inside_cells:
+            if rows[cy][cx] != ".":
+                raise ValueError("Connector passage is blocked by authored material: " + name)
+        arrival_x, arrival_y = arrivals[name]
+        if not (0 < arrival_x < width * tile_size and 0 < arrival_y < height * tile_size):
+            raise ValueError("Arrival outside room interior: " + name)
+        if side == "W" and not arrival_x > x0 or side == "E" and not arrival_x < x0 \
+                or side == "N" and not arrival_y > y0 or side == "S" and not arrival_y < y0:
+            raise ValueError("Arrival must be on the room side of the connector: " + name)
+        if rows[int(arrival_y / tile_size)][int(arrival_x / tile_size)] != ".":
+            raise ValueError("Arrival overlaps solid material: " + name)
+        module_x, module_y = slots[name]
+        result.append({"slot": name, "moduleX": module_x, "moduleY": module_y,
+                       "x": min(x0, x1), "y": height * tile_size - max(y0, y1),
+                       "length": length, "arrivalX": arrival_x,
+                       "arrivalY": height * tile_size - arrival_y})
+    for side in "WESN":
+        same_side = sorted((item for item in result if item["slot"].startswith(side)),
+                           key=lambda item: item["slot"])
+        positions = [item["y"] if side in "WE" else item["x"] for item in same_side]
+        if positions != sorted(positions):
+            raise ValueError("Physical connector order differs from slot order on side " + side)
+    return sorted(result, key=lambda item: item["slot"])
 
 
 def read_attractors(map_root, width, height, tile_width, tile_height, source_path):
@@ -200,6 +332,7 @@ def compile_room(room_id, force=False):
     tile_width, tile_height = int(root.get("tilewidth")), int(root.get("tileheight"))
     if tile_width != tile_height:
         raise ValueError("Room tiles must be square")
+    footprint = read_footprint(root, source)
 
     layers = [layer for layer in root.findall("layer") if layer.get("name") == "room"]
     if len(layers) != 1:
@@ -221,6 +354,7 @@ def compile_room(room_id, force=False):
                 raise ValueError("Unsupported material at ({}, {}): {}".format(x, y, material or "<missing>"))
             encoded_row.append(code)
         rows.append("".join(encoded_row))
+    connectors = read_connectors(root, footprint, width, height, tile_width, rows, source) if footprint is not None else None
 
     result = {
         "format": "nyam-room",
@@ -233,6 +367,9 @@ def compile_room(room_id, force=False):
         "layoutDefinitions": read_content_layouts(root, width, height, tile_width, tile_height, source),
         "attractors": read_attractors(root, width, height, tile_width, tile_height, source),
     }
+    if footprint is not None:
+        result["footprint"] = footprint
+        result["connectors"] = connectors
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     target = OUTPUT_DIR / (room_id + ".json")
@@ -247,8 +384,8 @@ def main():
     parser.add_argument("room", help="Room ID, for example 7")
     parser.add_argument("--force", action="store_true", help="Replace an existing room JSON")
     args = parser.parse_args()
-    if not args.room.isdigit():
-        parser.error("Room ID must be numeric")
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", args.room):
+        parser.error("Room ID must contain only letters, digits, _ or -")
     compile_room(args.room, args.force)
 
 

@@ -1,13 +1,18 @@
 package com.aramirezochoa.nyamnyam.screen.game.room;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.utils.Json;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.MealType;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Json;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
-/** Loads a compiled room config and creates a mutable runtime instance. */
+/**
+ * Loads a compiled room config and creates a mutable runtime instance.
+ */
 public class RoomLoader {
 
     private final Json json;
@@ -58,7 +63,7 @@ public class RoomLoader {
         }
 
         RoomLayout layout = loadFirstLayout(config, internalPath);
-        com.badlogic.gdx.utils.Array<RoomAttractor> attractors = new com.badlogic.gdx.utils.Array<RoomAttractor>();
+        Array<RoomAttractor> attractors = new Array<RoomAttractor>();
         if (config.attractors != null) {
             for (RoomAttractorConfig attractor : config.attractors) {
                 if (attractor == null || attractor.x < 0 || attractor.x > config.width
@@ -69,7 +74,101 @@ public class RoomLoader {
                         (attractor.y + 1) * config.tileSize, 4 * config.tileSize, 4 * config.tileSize));
             }
         }
-        return new RoomInstance(config.width, config.height, config.tileSize, materials, layout, attractors);
+        Array<RoomModule> footprint = loadFootprint(config, internalPath);
+        Array<RoomConnector> connectors = loadConnectors(config, footprint, internalPath);
+        return new RoomInstance(config.width, config.height, config.tileSize, materials, layout, attractors,
+                footprint, connectors);
+    }
+
+    private Array<RoomModule> loadFootprint(RoomConfig config, String path) {
+        Array<RoomModule> result = new Array<RoomModule>();
+        if (config.footprint == null) {
+            if (config.connectors != null) {
+                throw new IllegalArgumentException("Connectors require a footprint: " + path);
+            }
+            result.add(new RoomModule(0, 0)); // Existing rooms predate modular authoring.
+            return result;
+        }
+        Set<String> cells = new HashSet<String>();
+        int minX = Integer.MAX_VALUE;
+        int minY = Integer.MAX_VALUE;
+        for (RoomModuleConfig module : config.footprint) {
+            if (module == null || module.x < 0 || module.y < 0
+                    || !cells.add(module.x + "," + module.y)) {
+                throw new IllegalArgumentException("Invalid or duplicate footprint cell: " + path);
+            }
+            minX = Math.min(minX, module.x);
+            minY = Math.min(minY, module.y);
+            result.add(new RoomModule(module.x, module.y));
+        }
+        if (minX != 0 || minY != 0) {
+            throw new IllegalArgumentException("Footprint must start at 0,0: " + path);
+        }
+        Set<String> reached = new HashSet<String>();
+        reached.add(result.first().getX() + "," + result.first().getY());
+        boolean changed;
+        do {
+            changed = false;
+            for (RoomModule module : result) {
+                String key = module.getX() + "," + module.getY();
+                if (!reached.contains(key) && (reached.contains((module.getX() - 1) + "," + module.getY())
+                        || reached.contains((module.getX() + 1) + "," + module.getY())
+                        || reached.contains(module.getX() + "," + (module.getY() - 1))
+                        || reached.contains(module.getX() + "," + (module.getY() + 1)))) {
+                    reached.add(key);
+                    changed = true;
+                }
+            }
+        } while (changed);
+        if (reached.size() != cells.size()) {
+            throw new IllegalArgumentException("Disconnected footprint: " + path);
+        }
+        return result;
+    }
+
+    private Array<RoomConnector> loadConnectors(RoomConfig config, Array<RoomModule> footprint, String path) {
+        Array<RoomConnector> result = new Array<RoomConnector>();
+        if (config.connectors == null) return result;
+        Set<String> slots = new HashSet<String>();
+        Set<String> cells = new HashSet<String>();
+        for (RoomModule module : footprint) cells.add(module.getX() + "," + module.getY());
+        for (RoomConnectorConfig connector : config.connectors) {
+            if (connector == null || connector.slot == null || !connector.slot.matches("[WESN][01]")
+                    || !slots.add(connector.slot)) {
+                throw new IllegalArgumentException("Invalid or duplicate connector slot: " + path);
+            }
+            char side = connector.slot.charAt(0);
+            int x = connector.moduleX, y = connector.moduleY;
+            int dx = side == 'W' ? -1 : side == 'E' ? 1 : 0;
+            int dy = side == 'S' ? -1 : side == 'N' ? 1 : 0;
+            if (!cells.contains(x + "," + y) || cells.contains((x + dx) + "," + (y + dy))) {
+                throw new IllegalArgumentException("Connector is not on an exterior module edge: " + path);
+            }
+            int index = 0;
+            for (RoomModule module : footprint) {
+                int mx = module.getX(), my = module.getY();
+                if (!cells.contains((mx + dx) + "," + (my + dy))
+                        && (side == 'W' || side == 'E' ? my < y : mx < x)) index++;
+            }
+            if (index != connector.slot.charAt(1) - '0') {
+                throw new IllegalArgumentException("Connector slot index does not match footprint: " + path);
+            }
+            float limitX = config.width * config.tileSize;
+            float limitY = config.height * config.tileSize;
+            float expectedLength = (side == 'W' || side == 'E' ? 3 : 2) * config.tileSize;
+            if (!Float.isFinite(connector.x) || !Float.isFinite(connector.y)
+                    || !Float.isFinite(connector.length) || connector.length != expectedLength
+                    || connector.x < 0 || connector.y < 0 || connector.x > limitX || connector.y > limitY
+                    || (side == 'W' || side == 'E' ? connector.y + connector.length > limitY
+                    : connector.x + connector.length > limitX)
+                    || !Float.isFinite(connector.arrivalX) || !Float.isFinite(connector.arrivalY)
+                    || connector.arrivalX <= 0 || connector.arrivalX >= limitX
+                    || connector.arrivalY <= 0 || connector.arrivalY >= limitY) {
+                throw new IllegalArgumentException("Invalid physical connector coordinates: " + path);
+            }
+            result.add(new RoomConnector(connector));
+        }
+        return result;
     }
 
     private RoomLayout loadFirstLayout(RoomConfig config, String internalPath) {

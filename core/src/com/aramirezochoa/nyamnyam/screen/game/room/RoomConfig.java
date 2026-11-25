@@ -13,6 +13,8 @@ public class RoomConfig {
     public String[] cells;
     public RoomLayoutDefinition[] layoutDefinitions;
     public RoomAttractorConfig[] attractors;
+    public RoomModuleConfig[] footprint;
+    public RoomConnectorConfig[] connectors;
 
     public RoomConfig() {
     }

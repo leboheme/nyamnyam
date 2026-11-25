@@ -15,14 +15,19 @@ public class RoomInstance {
     private final RoomLayout layout;
     private boolean combatCleared;
     private final Array<RoomAttractor> attractors;
+    private final Array<RoomModule> footprint;
+    private final Array<RoomConnector> connectors;
     private final EnumMap<RoomMaterial, RoomAppearance> appearances = new EnumMap<RoomMaterial, RoomAppearance>(RoomMaterial.class);
 
-    RoomInstance(int width, int height, int tileSize, RoomMaterial[][] sourceMaterials, RoomLayout layout, Array<RoomAttractor> attractors) {
+    RoomInstance(int width, int height, int tileSize, RoomMaterial[][] sourceMaterials, RoomLayout layout,
+                 Array<RoomAttractor> attractors, Array<RoomModule> footprint, Array<RoomConnector> connectors) {
         this.width = width;
         this.height = height;
         this.tileSize = tileSize;
         this.layout = layout;
         this.attractors = attractors;
+        this.footprint = footprint;
+        this.connectors = connectors;
         materials = new RoomMaterial[height][width];
         collisionTypes = new TileType[height][width];
         for (int y = 0; y < height; y++) {
@@ -53,6 +58,10 @@ public class RoomInstance {
     }
 
     public Array<RoomAttractor> getAttractors() { return attractors; }
+
+    public Array<RoomModule> getFootprint() { return footprint; }
+
+    public Array<RoomConnector> getConnectors() { return connectors; }
 
     public RoomMaterial getMaterialAt(int x, int y) {
         checkCoordinates(x, y);
