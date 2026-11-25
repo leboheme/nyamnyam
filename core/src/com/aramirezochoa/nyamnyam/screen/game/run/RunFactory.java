@@ -5,7 +5,7 @@ import com.aramirezochoa.nyamnyam.screen.game.room.RoomInstance;
 import com.aramirezochoa.nyamnyam.screen.game.room.RoomLoader;
 import com.aramirezochoa.nyamnyam.screen.game.room.RoomMaterial;
 
-/** Creates the first fixed JSON-backed run: one floor containing one room. */
+/** Creates either the existing single-room JSON run or a seeded navigation area. */
 public class RunFactory {
 
     private final RoomLoader roomLoader;
@@ -26,5 +26,12 @@ public class RunFactory {
         floor.addRoom(room);
         runState.addFloor(floor);
         return true;
+    }
+
+    /** Builds data for a navigation area without changing the active single-room game flow. */
+    public void populateGenerated(RunState runState, long seed) {
+        FloorState floor = new AreaGenerator(roomLoader).generate(seed);
+        runState.setCurrentRoom(null);
+        runState.addFloor(floor);
     }
 }
