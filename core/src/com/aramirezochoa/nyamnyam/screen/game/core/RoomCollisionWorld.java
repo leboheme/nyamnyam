@@ -4,6 +4,7 @@ import com.aramirezochoa.nyamnyam.screen.game.room.RoomInstance;
 
 /** Collision-grid adapter for a room, with a one-tile implicit wall margin. */
 public class RoomCollisionWorld implements CollisionWorld {
+    private static final float EDGE_EPSILON = 0.01f;
 
     private final RoomInstance room;
 
@@ -30,4 +31,21 @@ public class RoomCollisionWorld implements CollisionWorld {
     }
 
     @Override public boolean isEnclosed() { return true; }
+
+    @Override
+    public boolean containsBounds(float x, float y, float width, float height) {
+        int tile = getTileSize();
+        if (x < tile || y < tile || x + width > getWidth() - tile
+                || y + height > getHeight() - tile) return false;
+        int firstX = (int) Math.floor((x + EDGE_EPSILON) / tile) - 1;
+        int lastX = (int) Math.floor((x + width - EDGE_EPSILON) / tile) - 1;
+        int firstY = room.getHeight() - (int) Math.floor((y + height - EDGE_EPSILON) / tile);
+        int lastY = room.getHeight() - (int) Math.floor((y + EDGE_EPSILON) / tile);
+        for (int row = firstY; row <= lastY; row++) {
+            for (int col = firstX; col <= lastX; col++) {
+                if (!room.isPlayableAt(col, row)) return false;
+            }
+        }
+        return true;
+    }
 }

@@ -8,4 +8,7 @@ public interface CollisionWorld {
     boolean hasTile(int x, int y);
     TileType getTileType(int x, int y);
     boolean isEnclosed();
+
+    /** Containment is separate from terrain tiles; legacy TMX keeps its existing edge rules. */
+    default boolean containsBounds(float x, float y, float width, float height) { return true; }
 }

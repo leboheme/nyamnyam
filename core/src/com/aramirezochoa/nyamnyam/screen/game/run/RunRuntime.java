@@ -54,12 +54,28 @@ public class RunRuntime implements GameplayContext {
     private final RunCombatService combatService;
     private final RunDropService dropService;
     private final RunSurvivalService survivalService;
+    private final RoomNavigation navigation;
+    private final NavigationDebugRenderer navigationDebugRenderer;
+    private final float spawnX;
+    private final float spawnY;
+    private float lastIntendedX;
     private long nextEntityId;
 
     public RunRuntime(MediaManager mediaManager, RunState runState, GameStatus gameStatus) {
+        this(mediaManager, runState, gameStatus,
+                Constant.MAIN_AVATAR_SPAWN_POSITION.x, Constant.MAIN_AVATAR_SPAWN_POSITION.y, null);
+    }
+
+    public RunRuntime(MediaManager mediaManager, RunState runState, GameStatus gameStatus,
+                      float spawnX, float spawnY, String entrySlot) {
         this.runState = runState;
         this.gameStatus = gameStatus;
         this.mediaManager = mediaManager;
+        this.spawnX = spawnX;
+        this.spawnY = spawnY;
+        PlacedRoom placement = runState.getCurrentFloor().getCurrentPlacement();
+        navigation = placement.getTemplatePath() == null ? null : new RoomNavigation(placement, entrySlot);
+        navigationDebugRenderer = navigation == null ? null : new NavigationDebugRenderer();
         textureAtlas = mediaManager.get("data/game/game.atlas");
         roomRenderer = new RoomRenderer(mediaManager.get("data/stages/tiles.png"));
         collisionWorld = new RoomCollisionWorld(runState.getCurrentRoom());
@@ -95,6 +111,7 @@ public class RunRuntime implements GameplayContext {
         boolean jumpRequested = player != null && player.consumeJumpRequest();
         float intendedX = player == null ? 0 : player.velocity.x;
         float intendedY = player == null ? 0 : player.velocity.y;
+        lastIntendedX = intendedX;
         entityWorld.update(deltaTime);
         if (runState.getToothHealth().isDefeated()) return;
         combatService.captureOnBubbleContact();
@@ -119,6 +136,9 @@ public class RunRuntime implements GameplayContext {
         camera.apply();
         OrthographicCamera orthoCamera = camera.getCamera();
         roomRenderer.render(room, orthoCamera.combined);
+        if (navigationDebugRenderer != null) {
+            navigationDebugRenderer.render(runState.getCurrentFloor().getCurrentPlacement(), orthoCamera.combined);
+        }
         entityBatch.setProjectionMatrix(orthoCamera.combined);
         entityWorld.render(entityBatch);
         dropService.render(entityBatch);
@@ -137,12 +157,13 @@ public class RunRuntime implements GameplayContext {
         dropService.dispose();
         entityWorld.clear();
         roomRenderer.dispose();
+        if (navigationDebugRenderer != null) navigationDebugRenderer.dispose();
         entityBatch.dispose();
     }
 
     private void loadMainAvatar() {
         MainAvatar avatar = EntityFactory.mainAvatar(DataManager.INSTANCE.getCurrentCharacter(),
-                Constant.MAIN_AVATAR_SPAWN_POSITION.x, Constant.MAIN_AVATAR_SPAWN_POSITION.y,
+                spawnX, spawnY,
                 DirectionType.RIGHT, this);
         entityWorld.setMainAvatar(avatar);
         // JSON room entry starts playable and vulnerable, without the legacy spawn delay/blink.
@@ -240,5 +261,10 @@ public class RunRuntime implements GameplayContext {
 
     public MainAvatar getMainAvatar() {
         return entityWorld.getMainAvatar();
+    }
+
+    public RoomLink findNavigationTransition() {
+        return navigation == null || runState.getToothHealth().isDefeated()
+                ? null : navigation.findTransition(getMainAvatar(), lastIntendedX);
     }
 }

@@ -127,6 +127,7 @@ public final class RunPhysicsSystem {
         int tile = collisionWorld.getTileSize();
         if (x < tile || y < tile || x + bounds.width > collisionWorld.getWidth() - tile
                 || y + bounds.height > collisionWorld.getHeight() - tile) return false;
+        if (!collisionWorld.containsBounds(x, y, bounds.width, bounds.height)) return false;
         int firstColumn = (int) Math.floor((x + COLLISION_EPSILON) / tile);
         int lastColumn = (int) Math.floor((x + bounds.width - COLLISION_EPSILON) / tile);
         int firstRow = (int) Math.floor((y + COLLISION_EPSILON) / tile);

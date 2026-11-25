@@ -10,6 +10,7 @@ import com.aramirezochoa.nyamnyam.screen.ScreenManager;
 import com.aramirezochoa.nyamnyam.screen.ScreenType;
 import com.aramirezochoa.nyamnyam.screen.game.core.GameWrapper;
 import com.aramirezochoa.nyamnyam.screen.game.debug.DebugConsole;
+import com.aramirezochoa.nyamnyam.screen.game.debug.AreaCommand;
 import com.aramirezochoa.nyamnyam.screen.game.debug.StageCommand;
 import com.aramirezochoa.nyamnyam.screen.game.debug.KillAllCommand;
 import com.aramirezochoa.nyamnyam.screen.game.debug.SpawnCommand;
@@ -18,6 +19,12 @@ import com.aramirezochoa.nyamnyam.screen.game.debug.StatsCommand;
 import com.aramirezochoa.nyamnyam.screen.game.gui.GameUserInterface;
 import com.aramirezochoa.nyamnyam.screen.game.input.GamePad;
 import com.aramirezochoa.nyamnyam.screen.game.room.RoomLoader;
+import com.aramirezochoa.nyamnyam.screen.game.room.RoomConnector;
+import com.aramirezochoa.nyamnyam.screen.game.room.RoomInstance;
+import com.aramirezochoa.nyamnyam.screen.game.run.FloorState;
+import com.aramirezochoa.nyamnyam.screen.game.run.PlacedRoom;
+import com.aramirezochoa.nyamnyam.screen.game.run.RoomEntryResolver;
+import com.aramirezochoa.nyamnyam.screen.game.run.RoomLink;
 import com.aramirezochoa.nyamnyam.screen.game.run.RunRuntime;
 import com.aramirezochoa.nyamnyam.screen.game.run.RunFactory;
 import com.aramirezochoa.nyamnyam.screen.game.run.RunState;
@@ -29,6 +36,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 
 /**
@@ -47,6 +55,7 @@ public class GameScreen extends AbstractScreen {
     private RunRuntime runRuntime;
     private boolean hasJsonRoom;
     private boolean useLegacyFlow;
+    private Long navigationSeed;
     private int loadedLevel = -1;
 
     public GameScreen() {
@@ -82,6 +91,7 @@ public class GameScreen extends AbstractScreen {
         gamePad.layoutControls();
         debugConsole = new DebugConsole(getMediaManager(), hudViewport);
         debugConsole.registerCommand(new StageCommand(this::loadStage));
+        debugConsole.registerCommand(new AreaCommand(this::loadArea));
         debugConsole.registerCommand(new RestartCommand(this::restartRun));
         debugConsole.registerCommand(new SpawnCommand(id -> runRuntime == null
                 ? -1 : runRuntime.getDropService().spawnPickup(id)));
@@ -102,6 +112,7 @@ public class GameScreen extends AbstractScreen {
     }
 
     private void init(GameStatus gameStatus) {
+        navigationSeed = null;
         if (loadedLevel != gameStatus.getLevel()) {
             useLegacyFlow = false;
             loadedLevel = gameStatus.getLevel();
@@ -123,11 +134,56 @@ public class GameScreen extends AbstractScreen {
     }
 
     private void restartRun() {
+        if (navigationSeed != null) {
+            loadArea(navigationSeed);
+            return;
+        }
         runState.getStats().reset();
         runState.clearMutations();
         runState.getSalivationReserve().reset();
         runState.getToothHealth().reset();
         init(gameStatus);
+    }
+
+    private void loadArea(long seed) {
+        FloorState floor = runFactory.createGeneratedFloor(seed);
+        Vector2 spawn = RoomEntryResolver.initial(floor.getCurrentRoom(),
+                Constant.AVATAR_DIMENSION.x, Constant.AVATAR_DIMENSION.y);
+        runState.getStats().reset();
+        runState.clearMutations();
+        runState.getSalivationReserve().reset();
+        runState.getToothHealth().reset();
+        if (runRuntime != null) runRuntime.dispose();
+        gameWrapper.unloadLegacyStage();
+        runState.setCurrentRoom(null);
+        runState.addFloor(floor);
+        navigationSeed = seed;
+        hasJsonRoom = true;
+        useLegacyFlow = false;
+        runRuntime = new RunRuntime(getMediaManager(), runState, gameStatus, spawn.x, spawn.y, null);
+        gameStatus.setGameState(GameState.IN_GAME);
+    }
+
+    private void changeRoomIfRequested() {
+        RoomLink link = runRuntime.findNavigationTransition();
+        if (link == null) return;
+        FloorState floor = runState.getCurrentFloor();
+        PlacedRoom destination = floor.getRooms().get(link.getRoomIndex());
+        RoomInstance room = destination.getRoom();
+        RoomConnector entrance = null;
+        for (RoomConnector connector : room.getConnectors()) {
+            if (connector.getSlot().equals(link.getSlot())) {
+                entrance = connector;
+                break;
+            }
+        }
+        if (entrance == null) throw new IllegalStateException("Missing linked connector " + link.getSlot());
+        Vector2 spawn = RoomEntryResolver.atConnector(room, entrance,
+                Constant.AVATAR_DIMENSION.x, Constant.AVATAR_DIMENSION.y);
+        runRuntime.dispose();
+        floor.setCurrentRoomIndex(link.getRoomIndex());
+        runRuntime = new RunRuntime(getMediaManager(), runState, gameStatus,
+                spawn.x, spawn.y, link.getSlot());
     }
 
     private void loadStage(int stageNumber) {
@@ -142,7 +198,7 @@ public class GameScreen extends AbstractScreen {
             delta = Constant.GAME_MAX_LAG;
         }
 
-        if (hasJsonRoom && Gdx.input.isKeyJustPressed(Input.Keys.F11)) {
+        if (hasJsonRoom && navigationSeed == null && Gdx.input.isKeyJustPressed(Input.Keys.F11)) {
             useLegacyFlow = !useLegacyFlow;
             init(gameStatus);
         }
@@ -151,6 +207,7 @@ public class GameScreen extends AbstractScreen {
         if (!gameStatus.isPaused()) {
             if (runRuntime != null) {
                 runRuntime.update(delta);
+                if (navigationSeed != null) changeRoomIfRequested();
                 gamePad.update(delta);
             } else {
                 gameWrapper.update(delta);

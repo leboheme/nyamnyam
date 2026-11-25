@@ -119,12 +119,16 @@ final class AreaGenerator {
     }
 
     private boolean hasBranchAndDeadEnd(FloorState floor) {
-        boolean branch = false, deadEnd = false;
+        boolean branch = false, deadEnd = false, horizontal = false, vertical = false;
         for (PlacedRoom room : floor.getRooms()) {
             branch |= room.getLinks().size() >= 3;
             deadEnd |= room.getLinks().size() == 1;
+            for (String slot : room.getLinks().keySet()) {
+                horizontal |= slot.startsWith("W") || slot.startsWith("E");
+                vertical |= slot.startsWith("N") || slot.startsWith("S");
+            }
         }
-        return branch && deadEnd;
+        return branch && deadEnd && horizontal && vertical;
     }
 
     private String key(int x, int y) { return x + "," + y; }

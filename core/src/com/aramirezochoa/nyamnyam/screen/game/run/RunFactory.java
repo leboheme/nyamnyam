@@ -30,8 +30,12 @@ public class RunFactory {
 
     /** Builds data for a navigation area without changing the active single-room game flow. */
     public void populateGenerated(RunState runState, long seed) {
-        FloorState floor = new AreaGenerator(roomLoader).generate(seed);
+        FloorState floor = createGeneratedFloor(seed);
         runState.setCurrentRoom(null);
         runState.addFloor(floor);
+    }
+
+    public FloorState createGeneratedFloor(long seed) {
+        return new AreaGenerator(roomLoader).generate(seed);
     }
 }

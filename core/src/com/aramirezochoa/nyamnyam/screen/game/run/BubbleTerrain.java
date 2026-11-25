@@ -17,6 +17,7 @@ public class BubbleTerrain {
         if (world.isEnclosed() && (x < tileSize - BUBBLE_TERRAIN_EDGE_EPSILON || y < tileSize - BUBBLE_TERRAIN_EDGE_EPSILON
                 || x + width > world.getWidth() - tileSize + BUBBLE_TERRAIN_EDGE_EPSILON
                 || y + height > world.getHeight() - tileSize + BUBBLE_TERRAIN_EDGE_EPSILON)) return false;
+        if (!world.containsBounds(x, y, width, height)) return false;
         int left = (int) Math.floor((x + BUBBLE_TERRAIN_EDGE_EPSILON) / tileSize);
         int right = (int) Math.floor((x + width - BUBBLE_TERRAIN_EDGE_EPSILON) / tileSize);
         int bottom = (int) Math.floor((y + BUBBLE_TERRAIN_EDGE_EPSILON) / tileSize);

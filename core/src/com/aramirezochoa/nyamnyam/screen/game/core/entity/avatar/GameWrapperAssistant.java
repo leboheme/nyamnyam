@@ -71,6 +71,7 @@ public class GameWrapperAssistant {
             entity.velocity.nor().scl(collisionSpeed * deltaTime);
         }
 
+        checkContainment(entity, collisionWorld);
         entity.position.add(entity.velocity);
         entity.velocity.scl(1 / deltaTime);
         entity.dampVelocity();
@@ -146,6 +147,53 @@ public class GameWrapperAssistant {
         entity.position.add(entity.velocity);
         entity.velocity.scl(1 / deltaTime);
         entity.dampVelocity();
+    }
+
+    private static void checkContainment(Entity entity, CollisionWorld world) {
+        if (!world.isEnclosed()) return;
+        float dx = entity.velocity.x;
+        float allowedX = containedMove(world, entity.position.x, entity.position.y,
+                entity.dimension.x, entity.dimension.y, dx, true);
+        if (allowedX != dx) {
+            entity.position.x += allowedX;
+            entity.velocity.x = 0;
+            entity.notifyWall();
+        }
+        float dy = entity.velocity.y;
+        float allowedY = containedMove(world, entity.position.x, entity.position.y,
+                entity.dimension.x, entity.dimension.y, dy, false);
+        if (allowedY != dy) {
+            entity.position.y += allowedY;
+            entity.velocity.y = 0;
+            if (dy < 0) entity.grounded = true;
+        }
+    }
+
+    private static float containedMove(CollisionWorld world, float x, float y, float width, float height,
+                                       float distance, boolean horizontal) {
+        if (distance == 0) return 0;
+        int steps = Math.max(1, (int) Math.ceil(Math.abs(distance) / (world.getTileSize() / 2f)));
+        float lastValid = 0;
+        for (int step = 1; step <= steps; step++) {
+            float fraction = step / (float) steps;
+            if (world.containsBounds(x + (horizontal ? distance * fraction : 0),
+                    y + (horizontal ? 0 : distance * fraction), width, height)) {
+                lastValid = fraction;
+                continue;
+            }
+            float firstInvalid = fraction;
+            for (int refinement = 0; refinement < 10; refinement++) {
+                float middle = (lastValid + firstInvalid) / 2f;
+                if (world.containsBounds(x + (horizontal ? distance * middle : 0),
+                        y + (horizontal ? 0 : distance * middle), width, height)) {
+                    lastValid = middle;
+                } else {
+                    firstInvalid = middle;
+                }
+            }
+            return distance * lastValid;
+        }
+        return distance;
     }
 
     private static void checkCollisionX(Entity entity, CollisionWorld collisionWorld, boolean collideAllTiles) {
