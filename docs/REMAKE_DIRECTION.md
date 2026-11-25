@@ -53,6 +53,16 @@ flowchart TD
 
 En el TMX de una room, la capa `room` define el material. El grupo `content` contiene un object layer por alternativa de layout; los objetos con nombre de enum (`BOOF`, `FRUIT_APPLE`, etc.) se convierten a spawns tipados. Los objetos se alinean a la cuadrícula y usan coordenadas de tiles desde la esquina inferior izquierda en el JSON. Las imágenes de tileset son solo previews de Tiled: `make compile-room ROOM=7 FORCE=1` genera el JSON de runtime sin referencias a esas imágenes.
 
+### Próxima autoría modular — contrato por cerrar
+
+El área usa una cuadrícula **lógica**: cada sala declara su huella como módulos locales conexos y conectores disponibles en aristas exteriores, identificados por módulo local y dirección cardinal. Cada conector referencia además una posición física de paso y llegada dentro de su TMX. Una sala 2×2 puede ofrecer dos conectores oeste; el generador puede enlazarlos a dos salas distintas. El enlace usa vecindad modular y direcciones opuestas; no exige que coordenadas en píxeles o dimensiones TMX coincidan entre salas. Solo la sala activa se carga y simula; la transición coloca al personaje en el acceso asociado de la otra sala.
+
+La huella no impone una medida en tiles por módulo. Tampoco existe un separador obligatorio de un tile entre módulos. La actual room de 18×23 tiles obtiene un mundo de 20×25 mediante un margen implícito de colisión de un tile; esto es **comportamiento actual**, no fórmula para rooms nuevas ni para su huella. `GameplayCamera` puede seguir al personaje en salas físicas mayores conservando el FitViewport de referencia. Hay que definir dónde se guardan huella, posición y apertura física de los conectores en TMX/JSON, la conversión entre coordenadas TMX y runtime, y cómo se cierran los conectores no elegidos sin romper la geometría. Los huecos y spawns se validarán con la hitbox y el salto reales.
+
+Estado del código al iniciar P10: `compile_stage.py` exporta material, layouts y focos, pero no huella ni conectores; acepta solo nombres numéricos. `RunFactory` crea una sala fija y `FloorState` solo contiene una lista e índice, sin posiciones ni grafo. `RunRuntime` construye sistemas para la sala corriente y usa un spawn fijo; `RoomCollisionWorld` presupone recinto cerrado. La prueba requiere sustituir esas suposiciones **en el flujo JSON** sin arrastrar reglas de navegación al TMX legacy. La identidad/posición/conexiones de las salas pertenecen al estado del área; su geometría y cambios locales se conservan durante la run, mientras entidades y sistemas vivos pertenecen únicamente a la sala activa. No crear simultáneamente un `RunRuntime` por sala.
+
+Antes de implementar, resolver el contrato mínimo de datos y coordenadas con una plantilla pequeña y otra en L. El algoritmo de generación, catálogo y reintentos por seed deben ser suficientes para la prueba descrita en PROTOTYPE.md, sin convertir una estrategia provisional en regla de diseño definitiva.
+
 ## Runtime JSON implementado
 
 El flujo JSON usa RunRuntime; GameWrapper conserva el flujo TMX para comparación. GameScreen selecciona el runtime y coordina UI/input, sin alojar las reglas nuevas de combate, recursos o resolución de sala.

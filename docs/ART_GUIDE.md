@@ -28,7 +28,7 @@ En una ventana de 360×640, el mundo ocupa aproximadamente 360×450 px, con 95 p
 
 Actualmente los frames se dibujan al tamaño de su textura, sin normalizarlos a la dimensión lógica. Exportar el doble de resolución aumenta su presencia en escena. La lógica puede desacoplarse del arte, pero **pasar a canvas 36×36 no autoriza aumentar la hitbox 32×32**. Comprobar alineación al suelo, centrado y márgenes transparentes al integrar; el render actual centra horizontalmente respecto a la dimensión lógica y parte de la posición inferior.
 
-Las salas mayores pueden ampliar el escenario con cámara móvil sin aumentar el tamaño de los personajes. La referencia futura de cámara «1×2 celdas» de P6 sigue sin equivalencia definitiva en tiles; no sustituye este encuadre de prueba. Los menús legacy no son referencia artística definitiva.
+Las salas mayores pueden ampliar el escenario con cámara móvil sin aumentar el tamaño de los personajes. Los módulos 1×1 del mapa de P6 son unidades lógicas de navegación, sin equivalencia en tiles ni píxeles; no sustituyen este encuadre de prueba. Los huecos de acceso de 3 tiles de alto o 2 de ancho son geometría de nivel, no tamaños de sprite. Los menús legacy no son referencia artística definitiva.
 
 ## Qué mostraron las comparativas
 

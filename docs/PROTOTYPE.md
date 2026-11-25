@@ -1,10 +1,10 @@
 # Nyam Nyam — Prototipo
 
-Fuente de verdad del **alcance inmediato, orden de implementación y criterios de prueba**. Las reglas pertenecen a [GAME_DESIGN.md](GAME_DESIGN.md); las ideas futuras, a [IDEAS.md](IDEAS.md). Las secciones de alcance describen lo autorizado; el estado implementado y validado se identifica expresamente más abajo (actualizado el 24/11/2026).
+Fuente de verdad del **alcance inmediato, orden de implementación y criterios de prueba**. Las reglas pertenecen a [GAME_DESIGN.md](GAME_DESIGN.md); las ideas futuras, a [IDEAS.md](IDEAS.md). Las secciones de alcance describen lo autorizado; el estado implementado y validado se identifica expresamente más abajo (actualizado el 25/11/2026).
 
 ## Objetivo actual
 
-Validar en una sola sala el ritmo del combate, la gestión de recursos y la primera build de stats y mutaciones, antes de generar áreas o ampliar el catálogo.
+La primera sala ya ha permitido explorar combate, recursos y una build pequeña. El siguiente experimento es **un área modular navegable sin enemigos**: comprobar colocación, conectores, transiciones y regreso antes de añadir desafíos o ampliar el catálogo.
 
 ## Prototipo 1 — alcance autorizado de diseño
 
@@ -129,13 +129,29 @@ En estos incrementos se ejecutaron `git diff --check`, compilación Java 17 y bu
 
 Balance definitivo, escala de daño y perfiles por dificultad/contexto, arte/HUD definitivos y acceso según tipo de sala. Los criterios ya acordados de contacto, cadenas, pickups y derrota no siguen pendientes: se recogen en GAME_DESIGN.md. No se incorpora contenido futuro solo porque exista un punto de configuración.
 
-### Fuera del alcance actual
+### Fuera del alcance de los prototipos de combate y build
 
-Generación de mapas, puertas entre salas, mundos y transiciones, bosses nuevos, tiendas, economía, progresión entre runs, catálogo completo de objetos, activas, engullido/escupitajo y nuevos ataques de Gluty/Tfly. No migrar automáticamente reglas legacy de score, vidas extra, mascotas o spawns temporizados.
+Bosses nuevos, tiendas, economía, progresión entre runs, catálogo completo de objetos, activas, engullido/escupitajo y nuevos ataques de Gluty/Tfly. La generación de un área y las transiciones entre salas se prueban por separado a continuación. No migrar automáticamente reglas legacy de score, vidas extra, mascotas o spawns temporizados.
+
+## Siguiente experimento — área navegable sin combate
+
+Usar el flujo Tiled → JSON como base de autoría. Preparar unas pocas plantillas sencillas, sin arte nuevo, que permitan probar huellas 1×1, 1×2, 2×1, 2×2 y L. Su tamaño físico en tiles es libre: la huella modular solo describe ocupación en el mapa. Definir y validar conectores disponibles de la plantilla antes de generar el área. Las reglas de ocupación, emparejamiento y dimensiones de acceso están en [P6.C](GAME_DESIGN.md#p6c--mapa-modular-y-salas-artesanales).
+
+Generar con semilla un área conectada que incluya una rama y un callejón sin salida; no hardcodear un grafo único. Abrir permanentemente las conexiones elegidas: en esta prueba no hay enemigos, bloqueo por combate ni resolución de sala como condición para navegar. Al cruzar en N/S/E/O, cargar solo la sala de destino, aparecer en un punto seguro y poder volver por el mismo enlace. La sala visitada conserva su identidad y los cambios relevantes dentro de la run. Mostrar una vista de depuración del mapa modular con huellas, pertenencia a salas, conexiones y sala actual; no es el HUD final.
+
+### Criterios de prueba de navegación
+
+- Ningún módulo pertenece a dos salas; las huellas de varios módulos se tratan como una sala única. Una L puede coexistir con otra sala en su hueco.
+- No se crean conexiones hacia huecos, entre módulos de la misma sala ni por simple vecindad sin conectores compatibles. Los conectores disponibles que no se activen quedan cerrados físicamente.
+- Atravesar accesos laterales y verticales, regresar y recorrer una rama hasta su extremo conserva enlaces, orientación y posición de cada sala en el mapa. El movimiento básico de Nyam basta para llegar y pasar por los accesos.
+- Los puntos de llegada no incrustan al personaje en material ni disparan un retorno inmediato. La cámara sigue la sala activa sin cambiar la escala visual de referencia.
+- Una misma semilla reproduce el mismo mapa. Una semilla imposible con el catálogo actual produce un fallo o reintento acotado y visible, sin colgar el juego. Probar varias seeds y múltiples transiciones.
+
+**Fuera de esta prueba:** enemigos, loot, cierre/apertura por combate, bosses, salas especiales, tiendas, secretos funcionales, economía, plataformas generadas tile a tile, arte final y nuevos personajes. Conservar intacto el prototipo JSON de combate y el flujo TMX legacy para comparar. La sesión larga y la comprobación HTML/móvil del combate siguen pendientes.
 
 ## Secuencia posterior acordada
 
-No amplía el trabajo inmediato:
+No amplía por sí sola el trabajo de navegación:
 
 - **Prototipo 2:** primera build de tres stats y dos mutaciones implementada y probada de forma exploratoria en Desktop. El resto del banco de efectos y del catálogo permanece solo en P9.C–D del maestro, sin implementación ni orden autorizado por esta sección.
 - **Prototipo 3:** activas recargables, colmillo e implante y recompensas. Sus reglas están en P7.C y P9.E.

@@ -13,6 +13,9 @@ Fuente de verdad de posibilidades futuras **sin compromiso de implementación**.
 - Otros guías, versiones especiales e impostores para eventos o rutas alternativas.
 - Repartidor vengativo: cobra si gana; si pierde, puede inducir una ruta trampa con guía impostor.
 - Comida clandestina que conduce a un mundo de mafia de órganos.
+- Conectores verticales tematizados como tubos neumáticos gastronómicos, montacargas, trampillas o cintas transportadoras. La navegación base por huecos no depende de ellos.
+- Zonas de mantenimiento o backstage, salas secretas premium y rutas ocultas. Una secreta también puede reutilizar la ambientación normal del área.
+- Áreas opcionales de tejados, calles o cloacas y salas visualmente abiertas dentro del parque; no exigen tres conjuntos de arte para la primera área.
 
 ## Transformaciones gastronómicas
 

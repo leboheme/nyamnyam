@@ -1,6 +1,6 @@
 # Nyam Nyam — Game Design
 
-> Fuente de verdad del diseño del remake. Reconciliado el 24/11/2026 con el boceto P1–P9, revisión técnica y pruebas del prototipo. No describe necesariamente lo ya implementado.
+> Fuente de verdad del diseño del remake. Reconciliado el 25/11/2026 con el boceto P1–P9, las pruebas del prototipo y las decisiones P10 sobre el parque y la navegación. No describe necesariamente lo ya implementado.
 
 ## Cómo leer este documento
 
@@ -14,27 +14,31 @@ La escala visual, anatomía compartida y convenciones de producción de assets s
 
 ## Visión general
 
-Un glotón se apunta a un tour gastronómico por mundos imposibles. Explora, captura y remata criaturas, recoge comida para recargar la salivación y obtiene platos que transforman su build. Objetivo de ritmo: tours estándar de unos 15–20 minutos, ampliables mediante rutas extra.
+Un glotón visita un gigantesco parque gastronómico de experiencias peligrosas. Explora sus hábitats, captura y remata criaturas, recoge comida para recargar la salivación y obtiene platos que transforman su build. Objetivo de ritmo: tours estándar de unos 15–20 minutos, ampliables mediante rutas extra.
 
 ## P1 · Premisa global
 
-«Un glotón se apunta a un misterioso tour gastronómico por mundos imposibles, dispuesto a probarlo todo sin imaginar los disparatados peligros que le esperan».
+«Un glotón se apunta a un tour por un gigantesco parque gastronómico de experiencias peligrosas, dispuesto a probarlo todo sin imaginar lo que habita en sus recintos».
 
 Se elige un único personaje por run; la mini-intro del folleto funciona con cualquiera.
 
-La motivación es absurda y sencilla: probar comida extraordinaria, no salvar el mundo.
+La motivación es absurda y sencilla: probar comida extraordinaria, no salvar el mundo. El parque contiene hábitats auténticos, artificiales o importados de lugares extraordinarios. Puede haber conexiones reales con otros universos, pero no hace falta explicarlas ahora. Sus límites y bloqueos de seguridad justifican salas independientes incluso en ambientes que parecen abiertos.
 
-Agencia, autenticidad del tour y desenlaces quedan abiertos para historias futuras.
+Esta premisa del parque sustituye como marco principal al tour libre entre universos; conserva su libertad temática.
+
+Nombre y organización del parque, origen de las criaturas, motivación de los enemigos y desenlaces quedan abiertos. Una intro breve puede mostrar la oferta del parque y la glotonería del protagonista; su guion y duración no están decididos. «All you can eat… as long as you can eat» es un lema candidato, no texto final.
 
 ## P2 · Mundos y transiciones
 
-Mundos temáticos de libertad caricaturesca: calles arcade, cavernas, bosques, mundos tecnológicos, etc.
+Zonas temáticas de libertad caricaturesca: calles arcade, cavernas, bosques, mundos tecnológicos, etc. Una zona puede representar un lugar aparentemente externo sin dejar de ser un recinto del parque. La distinción entre mundo temático y área procedural se mantiene; no está fijado cuántas áreas forman un mundo ni cuántos mundos entran en una run.
 
-Guía turístico recurrente: criatura con gorro/banderilla/paraguas de la agencia. Espera profesionalmente a sus clientes.
+Guía turístico recurrente vinculado al parque: criatura con gorro, banderilla o paraguas. Espera profesionalmente a sus clientes; su historia sigue abierta.
 
-Entre mundos, el guía engulle al personaje; el siguiente destino puede comenzar con un aterrizaje cómicamente desagradable.
+**Candidato narrativo:** empezar por recintos cutres con empleados disfrazados de monstruos y progresar hacia fauna auténtica, peligro y ambientes cada vez más disparatados. No es una regla de generación ni fija la historia de los empleados.
 
-Entre áreas del mismo mundo, puede abrir puertas, persianas, ascensores u otros pasos; no se fija un tipo único.
+Como posibilidad para una transición entre zonas, el guía engulle al personaje y lo deja caer cómicamente en el siguiente destino. No se fija todavía una presentación única.
+
+Entre áreas puede abrir puertas, persianas, ascensores u otros pasos; no se fija un tipo único. Las tiendas, restaurantes, máquinas expendedoras, chefs y vendedores clandestinos encajan como servicios o actividades del complejo.
 
 Posibilidades futuras relacionadas: [IDEAS.md](IDEAS.md).
 
@@ -69,7 +73,7 @@ Engullir y escupir no son capacidades universales. La posible expansión está e
 
 ## P5 · Tiendas y eventos
 
-Primero, salas independientes que ofrecen objetos. Las situaciones cómicas permiten expandir narrativamente más adelante sin aumentar el alcance inicial.
+Primero, salas independientes que ofrecen objetos. Las situaciones cómicas permiten expandir narrativamente más adelante sin aumentar el alcance inicial. Los contenedores de recompensas pueden representarse como neveras portátiles, tuppers, microondas o bolsas térmicas del parque; esas apariencias no crean sistemas mecánicos distintos.
 
 | Escenario | Función inicial / posibilidades |
 | --- | --- |
@@ -87,7 +91,11 @@ Posibilidades futuras relacionadas: [IDEAS.md](IDEAS.md).
 
 Hipótesis NO comprometida: 3 mundos
 
-Run = tour; mundo = destino temático; área = grupo de salas generadas; sala = unidad de exploración/combate/evento.
+Run = tour; mundo = destino temático del parque; área = grupo conectado de salas generadas con ambientación y catálogo de contenido coherentes; sala = arena independiente de exploración, combate o evento. Cada sala tiene un único desafío y estado aunque ocupe varios módulos en el mapa. La cantidad de áreas por mundo y mundos por run sigue abierta.
+
+En el juego final, las salidas de una sala de combate se bloquean mientras su desafío está pendiente y se habilitan al resolverlo; tipos de sala especiales podrán tener otras reglas. Solo hay una sala activa a la vez. Al regresar durante la misma run se conservan sus cambios relevantes; el contenido exacto a persistir se decidirá al incorporarlo. La prueba inicial de navegación no incluye enemigos ni bloqueos.
+
+Un área puede favorecer recorridos horizontales o verticales sin prohibir ramificaciones en el otro eje. Se busca una geografía legible en el minimapa, con callejones sin salida y regresos comprensibles.
 
 Objetivo aspiracional de tour estándar: 15–20 min, aún no contrastado con contenido ni ritmo real.
 
@@ -105,17 +113,23 @@ Entre runs: candidatos a desbloqueo son personajes, objetos, destinos, eventos y
 
 Final principal y desenlaces alternativos se trabajarán al desarrollar historias/lore.
 
-### P6.C · Mapa: candidato para prototipar
+### P6.C · Mapa modular y salas artesanales
 
-Generador con camino hacia boss, ramas opcionales y eventuales reconexiones; sin cantidad de salas fijada.
+La referencia conceptual es la separación de *The Binding of Isaac* entre cuadrícula del área, huella de sala, posiciones de puertas, layouts artesanales y minimapa. No implica reproducir su algoritmo ni igualar su escala.
 
-Salas artesanales de plataformas 2D, dimensiones variadas y formas L/O. Cámara de referencia 1×2 celdas, siguiendo al protagonista en salas mayores.
+El generador coloca salas en una cuadrícula de **módulos lógicos 1×1** con vecinos N/S/E/O. Un módulo no equivale a una sala ni tiene dimensiones obligatorias en tiles o píxeles. Una sala artesanal tiene geometría y tamaño físico propios, con independencia de si ocupa un módulo o muchos. La ocupación lógica determina su posición y sus posibles vecinos en el mapa, no la escala de su TMX, cámara, sprites o hitboxes.
 
-Cuadrícula mínima y puertas configurables: los accesos activos de cada sala deben poder alcanzarse con el moveset base de todos los personajes.
+La huella es un conjunto conexo de módulos: admitir 1×1, 1×2, 2×1, 2×2 y L con sus variantes diseñadas. No girar automáticamente plataformas o TMX jugables. Una L deja un hueco lógico donde puede colocarse otra sala. Los límites entre módulos de la misma sala no crean paredes ni puertas. Solo se carga y simula una sala física a la vez, así que sus medidas en tiles no tienen que alinearse con las de sus vecinas.
 
-Modelo A favorecido para probar: puertas laterales a distintas alturas. Salas verticales pueden conectar plantas sin puertas de techo/suelo. Modelo B con conexiones verticales explícitas permanece como alternativa.
+Cada plantilla declara conectores disponibles mediante **módulo local + lado exterior N/S/E/O + posición física de acceso en la sala**. Como máximo hay un conector por lado de cada módulo; una sala 2×2 puede, por ejemplo, tener dos conectores oeste frente a dos salas 1×1 distintas. No hay conector exterior en una arista compartida por dos módulos de la misma sala. El generador decide cuáles activa: solo enlaza conectores compatibles en módulos vecinos, con lados opuestos; la mera vecindad no crea conexión. Los disponibles no elegidos quedan cerrados con geometría válida. Las conexiones activas son bidireccionales y estables durante la run.
 
-La experiencia de regresar del boss, el minimapa y la taxonomía de conectores se resolverán con prototipos, no sobre el papel.
+La posición física de una puerta pertenece a su plantilla y no tiene que coincidir en píxeles con la de la sala vecina. Al cruzarla se carga la otra sala y se coloca al personaje en un punto seguro asociado al conector de llegada. Accesos activables y rutas interiores deben poder recorrerse con el movimiento básico de los personajes, sin exigir mejoras. Se probarán conexiones laterales y verticales desde el primer prototipo de navegación.
+
+Como criterio inicial de geometría, los accesos laterales ofrecen 3 tiles de alto (48 px) y los verticales 2 tiles de ancho (32 px). Son huecos de nivel, no tamaños de sprite; su paso real se validará con las hitboxes y el salto base. Un acceso vertical puede ser un hueco para saltar o caer, sin exigir tubo, ascensor ni interacción.
+
+El minimapa debe mostrar huellas modulares, conexiones y sala actual de forma estable. Las salas de varios módulos aparecen como una sola sala. La orientación, selección de plantillas, tamaño del área, ramas, bucles, sala inicial/final y navegación tras un boss se concretarán mediante prototipos. Antes de implementar hay que precisar coordenadas de conectores, tratamiento de los no utilizados, llegada segura y prevención de transiciones inmediatas de vuelta.
+
+La preferencia anterior por probar solo puertas laterales queda sustituida por la prueba de accesos N/S/E/O. Siguen pendientes las presentaciones visuales definitivas de puertas, secretos y salas exteriores; una sala secreta puede compartir la ambientación de su área.
 
 ## P7 · Combate, recursos y supervivencia
 
@@ -240,7 +254,7 @@ Posibilidades futuras relacionadas: [IDEAS.md](IDEAS.md).
 | Refrescos agitados | Consumibles relativamente escasos; se colocan a los pies y explotan tras aviso. Herramienta ofensiva y para abrir caminos. |
 | Platos preparados | Pasivas de estadísticas y mutaciones; identidad gastronómica se asignará después de definir los efectos. |
 | Cócteles | Objetos de una pool especial de coctelería, no clase mecánica exclusiva. |
-| Tickets | Moneda universal del tour, provisional. |
+| Tickets | Vales oficiales del parque válidos en todas sus zonas; economía aún sin implementar. |
 | Aires | Elementos ambientales; los efectos especiales (tornado, pinchos, etc.) podrán reutilizarse como mutaciones o activas. |
 
 Presentación de recompensas acordada para el prototipo: al rematar, el cuerpo del enemigo sale en parábola, gira y puede rebotar en los límites laterales de la sala, atravesando su geometría interior. Es un efecto visual breve que se desvanece, sin IA, colisiones de combate ni espera para resolver al enemigo.
@@ -340,4 +354,4 @@ Recarga propuesta previamente: avance por tiempo y recarga completa al limpiar s
 
 **Pendiente:** balance definitivo de valores, duraciones, probabilidades y distribución de dientes; escala de daño y drops por dificultad/contexto; HUD y arte definitivos. El prototipo ya fija una regla de derrota, medias piezas y una representación temporal, sin convertir sus números en balance final.
 
-**P10 pendiente:** diseñar enemigos y bosses, incluidas las reacciones por especie al escapar. También quedan pendientes generación, navegación y duración efectiva de las runs.
+**Pendiente tras P10:** diseñar enemigos y bosses, incluidas las reacciones por especie al escapar. Generación y navegación tienen dirección acordada en P6.C, pero sus reglas concretas y la duración efectiva de las runs requieren prototipos.
