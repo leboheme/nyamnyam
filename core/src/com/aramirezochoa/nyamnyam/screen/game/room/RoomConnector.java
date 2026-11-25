@@ -7,9 +7,8 @@ public class RoomConnector {
     private final int moduleY;
     private final float x;
     private final float y;
-    private final float length;
-    private final float arrivalX;
-    private final float arrivalY;
+    private final float width;
+    private final float height;
 
     RoomConnector(RoomConnectorConfig config) {
         slot = config.slot;
@@ -17,9 +16,8 @@ public class RoomConnector {
         moduleY = config.moduleY;
         x = config.x;
         y = config.y;
-        length = config.length;
-        arrivalX = config.arrivalX;
-        arrivalY = config.arrivalY;
+        width = config.width;
+        height = config.height;
     }
 
     public String getSlot() { return slot; }
@@ -27,7 +25,6 @@ public class RoomConnector {
     public int getModuleY() { return moduleY; }
     public float getX() { return x; }
     public float getY() { return y; }
-    public float getLength() { return length; }
-    public float getArrivalX() { return arrivalX; }
-    public float getArrivalY() { return arrivalY; }
+    public float getWidth() { return width; }
+    public float getHeight() { return height; }
 }

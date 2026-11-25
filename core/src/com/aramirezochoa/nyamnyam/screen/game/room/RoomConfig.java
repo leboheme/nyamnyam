@@ -15,6 +15,7 @@ public class RoomConfig {
     public RoomAttractorConfig[] attractors;
     public RoomModuleConfig[] footprint;
     public RoomConnectorConfig[] connectors;
+    public String[] playableCells;
 
     public RoomConfig() {
     }

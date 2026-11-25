@@ -76,15 +76,57 @@ public class RoomLoader {
         }
         Array<RoomModule> footprint = loadFootprint(config, internalPath);
         Array<RoomConnector> connectors = loadConnectors(config, footprint, internalPath);
+        boolean[][] playableCells = loadPlayableCells(config, materials, footprint, internalPath);
         return new RoomInstance(config.width, config.height, config.tileSize, materials, layout, attractors,
-                footprint, connectors);
+                footprint, connectors, playableCells);
+    }
+
+    private boolean[][] loadPlayableCells(RoomConfig config, RoomMaterial[][] materials,
+                                          Array<RoomModule> footprint, String path) {
+        boolean[][] result = new boolean[config.height][config.width];
+        if (config.playableCells == null) {
+            if (config.footprint != null) {
+                throw new IllegalArgumentException("Modular room requires a playable area: " + path);
+            }
+            for (int y = 0; y < config.height; y++) {
+                for (int x = 0; x < config.width; x++) result[y][x] = true;
+            }
+            return result;
+        }
+        if (config.playableCells.length != config.height) {
+            throw new IllegalArgumentException("Invalid playable area rows: " + path);
+        }
+        Set<String> occupied = new HashSet<String>();
+        for (RoomModule module : footprint) occupied.add(module.getX() + "," + module.getY());
+        for (int y = 0; y < config.height; y++) {
+            String row = config.playableCells[y];
+            if (row == null || row.length() != config.width) {
+                throw new IllegalArgumentException("Invalid playable area row width: " + path);
+            }
+            for (int x = 0; x < config.width; x++) {
+                char code = row.charAt(x);
+                if (code != '0' && code != '1') {
+                    throw new IllegalArgumentException("Invalid playable area cell: " + path);
+                }
+                if (code == '0' && materials[y][x] != null) {
+                    throw new IllegalArgumentException("Excluded area contains material: " + path);
+                }
+                int moduleX = (x + 1) / RoomModule.WIDTH_TILES;
+                int moduleY = (config.height - y) / RoomModule.HEIGHT_TILES;
+                if (code == '1' && !occupied.contains(moduleX + "," + moduleY)) {
+                    throw new IllegalArgumentException("Playable area extends outside the footprint: " + path);
+                }
+                result[y][x] = code == '1';
+            }
+        }
+        return result;
     }
 
     private Array<RoomModule> loadFootprint(RoomConfig config, String path) {
         Array<RoomModule> result = new Array<RoomModule>();
         if (config.footprint == null) {
-            if (config.connectors != null) {
-                throw new IllegalArgumentException("Connectors require a footprint: " + path);
+            if (config.connectors != null || config.playableCells != null) {
+                throw new IllegalArgumentException("Connectors and playable area require a footprint: " + path);
             }
             result.add(new RoomModule(0, 0)); // Existing rooms predate modular authoring.
             return result;
@@ -92,6 +134,8 @@ public class RoomLoader {
         Set<String> cells = new HashSet<String>();
         int minX = Integer.MAX_VALUE;
         int minY = Integer.MAX_VALUE;
+        int maxX = 0;
+        int maxY = 0;
         for (RoomModuleConfig module : config.footprint) {
             if (module == null || module.x < 0 || module.y < 0
                     || !cells.add(module.x + "," + module.y)) {
@@ -99,10 +143,16 @@ public class RoomLoader {
             }
             minX = Math.min(minX, module.x);
             minY = Math.min(minY, module.y);
+            maxX = Math.max(maxX, module.x);
+            maxY = Math.max(maxY, module.y);
             result.add(new RoomModule(module.x, module.y));
         }
         if (minX != 0 || minY != 0) {
             throw new IllegalArgumentException("Footprint must start at 0,0: " + path);
+        }
+        if (config.width != (maxX + 1) * RoomModule.WIDTH_TILES - 2
+                || config.height != (maxY + 1) * RoomModule.HEIGHT_TILES - 2) {
+            throw new IllegalArgumentException("Room size does not match its footprint: " + path);
         }
         Set<String> reached = new HashSet<String>();
         reached.add(result.first().getX() + "," + result.first().getY());
@@ -155,15 +205,14 @@ public class RoomLoader {
             }
             float limitX = config.width * config.tileSize;
             float limitY = config.height * config.tileSize;
-            float expectedLength = (side == 'W' || side == 'E' ? 3 : 2) * config.tileSize;
+            float expectedWidth = (side == 'W' || side == 'E' ? 0 : 2) * config.tileSize;
+            float expectedHeight = 3 * config.tileSize;
             if (!Float.isFinite(connector.x) || !Float.isFinite(connector.y)
-                    || !Float.isFinite(connector.length) || connector.length != expectedLength
-                    || connector.x < 0 || connector.y < 0 || connector.x > limitX || connector.y > limitY
-                    || (side == 'W' || side == 'E' ? connector.y + connector.length > limitY
-                    : connector.x + connector.length > limitX)
-                    || !Float.isFinite(connector.arrivalX) || !Float.isFinite(connector.arrivalY)
-                    || connector.arrivalX <= 0 || connector.arrivalX >= limitX
-                    || connector.arrivalY <= 0 || connector.arrivalY >= limitY) {
+                    || !Float.isFinite(connector.width) || !Float.isFinite(connector.height)
+                    || connector.width != expectedWidth || connector.height != expectedHeight
+                    || connector.x < 0 || connector.y < 0
+                    || connector.x + connector.width > limitX
+                    || connector.y + connector.height > limitY) {
                 throw new IllegalArgumentException("Invalid physical connector coordinates: " + path);
             }
             result.add(new RoomConnector(connector));

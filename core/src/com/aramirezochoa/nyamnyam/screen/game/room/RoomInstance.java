@@ -11,6 +11,7 @@ public class RoomInstance {
     private final int height;
     private final int tileSize;
     private final RoomMaterial[][] materials;
+    private final boolean[][] playableCells;
     private final TileType[][] collisionTypes;
     private final RoomLayout layout;
     private boolean combatCleared;
@@ -20,7 +21,8 @@ public class RoomInstance {
     private final EnumMap<RoomMaterial, RoomAppearance> appearances = new EnumMap<RoomMaterial, RoomAppearance>(RoomMaterial.class);
 
     RoomInstance(int width, int height, int tileSize, RoomMaterial[][] sourceMaterials, RoomLayout layout,
-                 Array<RoomAttractor> attractors, Array<RoomModule> footprint, Array<RoomConnector> connectors) {
+                 Array<RoomAttractor> attractors, Array<RoomModule> footprint, Array<RoomConnector> connectors,
+                 boolean[][] playableCells) {
         this.width = width;
         this.height = height;
         this.tileSize = tileSize;
@@ -28,6 +30,7 @@ public class RoomInstance {
         this.attractors = attractors;
         this.footprint = footprint;
         this.connectors = connectors;
+        this.playableCells = playableCells;
         materials = new RoomMaterial[height][width];
         collisionTypes = new TileType[height][width];
         for (int y = 0; y < height; y++) {
@@ -63,6 +66,12 @@ public class RoomInstance {
 
     public Array<RoomConnector> getConnectors() { return connectors; }
 
+    /** Membership in the room area; terrain collision is queried separately. */
+    public boolean isPlayableAt(int x, int y) {
+        checkCoordinates(x, y);
+        return playableCells[y][x];
+    }
+
     public RoomMaterial getMaterialAt(int x, int y) {
         checkCoordinates(x, y);
         return materials[y][x];
@@ -88,6 +97,9 @@ public class RoomInstance {
     /** Use a null material to make the cell empty. */
     public void setMaterialAt(int x, int y, RoomMaterial material) {
         checkCoordinates(x, y);
+        if (!playableCells[y][x] && material != null) {
+            throw new IllegalArgumentException("Cannot place material outside the playable room area");
+        }
         materials[y][x] = material;
 
         refreshCollisionAt(x, y);

@@ -17,6 +17,8 @@ DESIGN_DIR = ROOT / "art_files" / "stages" / "rooms"
 OUTPUT_DIR = ROOT / "assets" / "data" / "rooms"
 GID_MASK = 0x1FFFFFFF
 MATERIAL_CODES = {"floor": "f"}
+MODULE_WIDTH = 20  # Logical world tiles; the outer tile margin is implicit.
+MODULE_HEIGHT = 25
 JAVA_SOURCE = ROOT / "core" / "src" / "com" / "aramirezochoa" / "nyamnyam" / "screen" / "game" / "core" / "entity"
 
 
@@ -101,8 +103,9 @@ def read_properties(element):
 def read_footprint(map_root, source_path):
     value = read_properties(map_root).get("footprint")
     if value is None:
-        if map_root.find("objectgroup[@name='connectors']") is not None:
-            raise ValueError("Connectors require a footprint in " + str(source_path))
+        if (map_root.find("objectgroup[@name='connectors']") is not None
+                or map_root.find("objectgroup[@name='exclusions']") is not None):
+            raise ValueError("Connectors and exclusions require a footprint in " + str(source_path))
         return None  # Pre-modular rooms, including room 7.
     cells = set()
     for item in value.split(";"):
@@ -125,6 +128,11 @@ def read_footprint(map_root, source_path):
                 pending.append(neighbor)
     if visited != cells:
         raise ValueError("Footprint is disconnected in " + str(source_path))
+    expected_width = MODULE_WIDTH * (max(x for x, _ in cells) + 1) - 2
+    expected_height = MODULE_HEIGHT * (max(y for _, y in cells) + 1) - 2
+    if (int(map_root.get("width")) != expected_width
+            or int(map_root.get("height")) != expected_height):
+        raise ValueError("Room size does not match its module footprint in " + str(source_path))
     return [{"x": x, "y": y} for x, y in sorted(cells)]
 
 
@@ -141,92 +149,125 @@ def connector_slots(footprint):
     return slots
 
 
-def read_connectors(map_root, footprint, width, height, tile_size, rows, source_path):
+def module_at(col, row, height):
+    return (col + 1) // MODULE_WIDTH, (height - row) // MODULE_HEIGHT
+
+
+def read_playable_cells(map_root, footprint, width, height, tile_size, rows):
+    occupied = {(cell["x"], cell["y"]) for cell in footprint}
+    mask = [[module_at(col, row, height) in occupied for col in range(width)] for row in range(height)]
+    groups = map_root.findall("objectgroup[@name='exclusions']")
+    if len(groups) > 1:
+        raise ValueError("Room TMX may contain only one exclusions layer")
+    for obj in groups[0].findall("object") if groups else []:
+        if (obj.find("point") is not None or obj.find("polyline") is not None
+                or obj.find("ellipse") is not None or obj.find("polygon") is not None
+                or obj.get("gid") is not None or float(obj.get("rotation", "0")) != 0):
+            raise ValueError("Module exclusion must be a rectangle")
+        x, y, w, h = (float(obj.get(key, "0")) for key in ("x", "y", "width", "height"))
+        values = (x, y, w, h)
+        if (w <= 0 or h <= 0 or x < 0 or y < 0
+                or x + w > width * tile_size or y + h > height * tile_size
+                or any(abs(v / tile_size - round(v / tile_size)) > 0.001 for v in values)):
+            raise ValueError("Module exclusion must fit and align to room tiles")
+        covered = [(col, row) for row in range(round(y / tile_size), round((y + h) / tile_size))
+                   for col in range(round(x / tile_size), round((x + w) / tile_size))]
+        modules = {module_at(col, row, height) for col, row in covered}
+        if len(modules) != 1 or not modules.issubset(occupied):
+            raise ValueError("Each exclusion must stay inside one occupied module")
+        for col, row in covered:
+            mask[row][col] = False
+    for row in range(height):
+        for col in range(width):
+            if not mask[row][col] and rows[row][col] != ".":
+                raise ValueError("Material lies outside the playable module area")
+    return ["".join("1" if cell else "0" for cell in row) for row in mask]
+
+
+def read_connectors(map_root, footprint, width, height, tile_size, rows, playable_cells):
     groups = map_root.findall("objectgroup[@name='connectors']")
     if len(groups) > 1:
         raise ValueError("Room TMX may contain only one connectors layer")
     if not groups:
         return []
     slots = connector_slots(footprint)
-    passes, arrivals = {}, {}
+    doors = {}
     for obj in groups[0].findall("object"):
         name = obj.get("name", "")
-        if name.endswith("_arrival") and obj.find("point") is not None:
-            slot = name[:-8]
-            if slot in arrivals:
-                raise ValueError("Duplicate arrival for " + slot)
-            arrivals[slot] = (float(obj.get("x", "0")), float(obj.get("y", "0")))
-        elif obj.find("polyline") is not None:
-            if name in passes:
-                raise ValueError("Duplicate connector " + name)
-            points = obj.find("polyline").get("points", "").split()
+        if name in doors:
+            raise ValueError("Duplicate connector " + name)
+        if (obj.get("type") != "door" or obj.find("point") is not None
+                or obj.find("ellipse") is not None or obj.find("polygon") is not None
+                or obj.get("gid") is not None or float(obj.get("rotation", "0")) != 0):
+            raise ValueError("Connector must be a door line or rectangle: " + name)
+        if name.startswith(("W", "E")):
+            line = obj.find("polyline")
+            points = line.get("points", "").split() if line is not None else []
             if len(points) != 2:
-                raise ValueError("Connector must be a two-point line: " + name)
-            xy = [tuple(float(v) for v in point.split(",")) for point in points]
-            x0, y0 = float(obj.get("x", "0")) + xy[0][0], float(obj.get("y", "0")) + xy[0][1]
-            x1, y1 = float(obj.get("x", "0")) + xy[1][0], float(obj.get("y", "0")) + xy[1][1]
-            passes[name] = (x0, y0, x1, y1)
+                raise ValueError("Lateral door must be a vertical 0x3-tile line: " + name)
+            try:
+                start_x, start_y = (float(value) for value in points[0].split(","))
+                end_x, end_y = (float(value) for value in points[1].split(","))
+            except ValueError:
+                raise ValueError("Invalid lateral door line: " + name)
+            if (start_x, start_y, end_x, end_y) != (0, 0, 0, 3 * tile_size):
+                raise ValueError("Lateral door must be a vertical 0x3-tile line: " + name)
+            doors[name] = (float(obj.get("x", "0")), float(obj.get("y", "0")), 0, 3 * tile_size)
         else:
-            raise ValueError("Connector objects must be pass lines or arrival points: " + name)
-    if set(passes) != set(arrivals):
-        raise ValueError("Every connector needs exactly one matching arrival point")
+            if obj.find("polyline") is not None:
+                raise ValueError("Front door must be a 2x3-tile rectangle: " + name)
+            doors[name] = tuple(float(obj.get(key, "0")) for key in ("x", "y", "width", "height"))
     result = []
     used_intervals = []
-    for name, (x0, y0, x1, y1) in passes.items():
+    occupied = {(cell["x"], cell["y"]) for cell in footprint}
+    def outside_module(col, row):
+        return col < 0 or row < 0 or col >= width or row >= height or module_at(col, row, height) not in occupied
+
+    for name, (x, y, door_w, door_h) in doors.items():
         if name not in slots:
             raise ValueError("Invalid or internal connector slot: " + name)
         side = name[0]
-        length = 3 * tile_size if side in ("W", "E") else 2 * tile_size
-        if side in ("W", "E"):
-            valid = x0 == x1 and abs(y1 - y0) == length
-        else:
-            valid = y0 == y1 and abs(x1 - x0) == length
-        values = (x0, y0, x1, y1)
-        if not valid or any(abs(v / tile_size - round(v / tile_size)) > 0.001 for v in values):
-            raise ValueError("Connector must be a grid-aligned 3/2-tile segment: " + name)
-        if not all(0 <= x <= width * tile_size for x in (x0, x1)) or not all(0 <= y <= height * tile_size for y in (y0, y1)):
+        values = (x, y, door_w, door_h)
+        if (door_w, door_h) != ((0, 3 * tile_size) if side in "WE" else (2 * tile_size, 3 * tile_size)) \
+                or any(abs(v / tile_size - round(v / tile_size)) > 0.001 for v in values):
+            raise ValueError("Door must be grid-aligned and 0x3 or 2x3 tiles: " + name)
+        if x < 0 or y < 0 or x + door_w > width * tile_size or y + door_h > height * tile_size:
             raise ValueError("Connector outside room: " + name)
-        # The outer tile ring is implicit and closed until navigation opens a slot.
-        boundary = {"W": x0 == 0, "E": x0 == width * tile_size,
-                    "N": y0 == 0, "S": y0 == height * tile_size}
-        if not boundary[side]:
-            raise ValueError("Connector must be on the physical room perimeter: " + name)
-        start = min(y0, y1) if side in ("W", "E") else min(x0, x1)
-        end = start + length
-        if any(other_side == side and start < other_end and other_start < end
-               for other_side, other_start, other_end in used_intervals):
-            raise ValueError("Overlapping physical connectors on side " + side)
-        used_intervals.append((side, start, end))
-        column = round(min(x0, x1) / tile_size)
-        row = round(min(y0, y1) / tile_size)
-        if side in ("W", "E"):
-            inside_x = 0 if side == "W" else width - 1
-            inside_cells = [(inside_x, ry) for ry in range(row, row + 3)]
+        col, row = round(x / tile_size), round(y / tile_size)
+        if side == "W":
+            boundary = x
+            inside = [(col, cy) for cy in range(row, row + 3)]
+            outside = [(col - 1, cy) for cy in range(row, row + 3)]
+        elif side == "E":
+            boundary = x
+            inside = [(col - 1, cy) for cy in range(row, row + 3)]
+            outside = [(col, cy) for cy in range(row, row + 3)]
+        elif side == "N":
+            boundary = y
+            inside = [(cx, cy) for cy in range(row, row + 3) for cx in range(col, col + 2)]
+            outside = [(cx, row - 1) for cx in range(col, col + 2)]
         else:
-            inside_y = 0 if side == "N" else height - 1
-            inside_cells = [(cx, inside_y) for cx in range(column, column + 2)]
-        for cx, cy in inside_cells:
-            if rows[cy][cx] != ".":
-                raise ValueError("Connector passage is blocked by authored material: " + name)
-        arrival_x, arrival_y = arrivals[name]
-        if not (0 < arrival_x < width * tile_size and 0 < arrival_y < height * tile_size):
-            raise ValueError("Arrival outside room interior: " + name)
-        if side == "W" and not arrival_x > x0 or side == "E" and not arrival_x < x0 \
-                or side == "N" and not arrival_y > y0 or side == "S" and not arrival_y < y0:
-            raise ValueError("Arrival must be on the room side of the connector: " + name)
-        if rows[int(arrival_y / tile_size)][int(arrival_x / tile_size)] != ".":
-            raise ValueError("Arrival overlaps solid material: " + name)
+            boundary = y + door_h
+            inside = [(cx, cy) for cy in range(row, row + 3) for cx in range(col, col + 2)]
+            outside = [(cx, row + 3) for cx in range(col, col + 2)]
+        module = slots[name]
+        if not inside or not all(0 <= cx < width and 0 <= cy < height
+                                 and module_at(cx, cy, height) == module
+                                 and playable_cells[cy][cx] == "1" and rows[cy][cx] == "."
+                                 for cx, cy in inside):
+            raise ValueError("Door passage is outside its module or blocked: " + name)
+        if not all(outside_module(cx, cy) for cx, cy in outside):
+            raise ValueError("Door does not face the physical room boundary: " + name)
+        start = y if side in "WE" else x
+        end = start + (door_h if side in "WE" else door_w)
+        if any(other_side == side and other_boundary == boundary and start < other_end and other_start < end
+               for other_side, other_boundary, other_start, other_end in used_intervals):
+            raise ValueError("Overlapping physical connectors on side " + side)
+        used_intervals.append((side, boundary, start, end))
         module_x, module_y = slots[name]
         result.append({"slot": name, "moduleX": module_x, "moduleY": module_y,
-                       "x": min(x0, x1), "y": height * tile_size - max(y0, y1),
-                       "length": length, "arrivalX": arrival_x,
-                       "arrivalY": height * tile_size - arrival_y})
-    for side in "WESN":
-        same_side = sorted((item for item in result if item["slot"].startswith(side)),
-                           key=lambda item: item["slot"])
-        positions = [item["y"] if side in "WE" else item["x"] for item in same_side]
-        if positions != sorted(positions):
-            raise ValueError("Physical connector order differs from slot order on side " + side)
+                       "x": x, "y": height * tile_size - (y + door_h),
+                       "width": door_w, "height": door_h})
     return sorted(result, key=lambda item: item["slot"])
 
 
@@ -354,7 +395,8 @@ def compile_room(room_id, force=False):
                 raise ValueError("Unsupported material at ({}, {}): {}".format(x, y, material or "<missing>"))
             encoded_row.append(code)
         rows.append("".join(encoded_row))
-    connectors = read_connectors(root, footprint, width, height, tile_width, rows, source) if footprint is not None else None
+    playable_cells = read_playable_cells(root, footprint, width, height, tile_width, rows) if footprint is not None else None
+    connectors = read_connectors(root, footprint, width, height, tile_width, rows, playable_cells) if footprint is not None else None
 
     result = {
         "format": "nyam-room",
@@ -370,6 +412,7 @@ def compile_room(room_id, force=False):
     if footprint is not None:
         result["footprint"] = footprint
         result["connectors"] = connectors
+        result["playableCells"] = playable_cells
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     target = OUTPUT_DIR / (room_id + ".json")
