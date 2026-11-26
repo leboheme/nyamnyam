@@ -8,6 +8,10 @@ The project is an older, mostly complete game codebase. Treat existing behavior 
 
 The player-facing design reference is [`docs/GAME_DESIGN.md`](docs/GAME_DESIGN.md).
 
+## Documentation Ownership
+
+Keep each fact in one source of truth and link to it from other documents instead of copying it. Use `docs/GAME_DESIGN.md` for design decisions, `docs/PROTOTYPE.md` for current scope and validation, and `docs/REMAKE_DIRECTION.md` for the implemented authoring/runtime contract. When a decision changes, update its owner and replace conflicting or duplicated descriptions elsewhere with a reference. Distinguish provisional implementation limits from general design rules.
+
 ## User Preferences
 
 - Work on one explicitly requested task at a time.

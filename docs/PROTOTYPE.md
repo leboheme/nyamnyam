@@ -135,7 +135,7 @@ Bosses nuevos, tiendas, economía, progresión entre runs, catálogo completo de
 
 ## Siguiente experimento — área navegable sin combate
 
-Usar el flujo Tiled → JSON como base de autoría. Preparar unas pocas plantillas sencillas, sin arte nuevo, que permitan probar huellas 1×1, 1×2, 2×1, 2×2 y L. Su tamaño físico en tiles es libre: la huella modular solo describe ocupación en el mapa. Definir y validar conectores disponibles de la plantilla antes de generar el área. Las reglas de ocupación, emparejamiento y dimensiones de acceso están en [P6.C](GAME_DESIGN.md#p6c--mapa-modular-y-salas-artesanales).
+Usar el flujo Tiled → JSON como base de autoría. Preparar unas pocas plantillas sencillas, sin arte nuevo, que permitan probar huellas 1×1, 1×2, 2×1, 2×2 y L. Definir y validar conectores disponibles antes de generar el área. Las reglas de diseño están en [P6.C](GAME_DESIGN.md#p6c--mapa-modular-y-salas-artesanales); las dimensiones, máscaras y formato de autoría actuales, en [REMAKE_DIRECTION.md](REMAKE_DIRECTION.md#autoría-modular--contrato-inicial-de-huellas-y-conectores).
 
 Generar con semilla un área conectada que incluya una rama y un callejón sin salida; no hardcodear un grafo único. Abrir permanentemente las conexiones elegidas: en esta prueba no hay enemigos, bloqueo por combate ni resolución de sala como condición para navegar. Al cruzar en N/S/E/O, cargar solo la sala de destino, aparecer en un punto seguro y poder volver por el mismo enlace. La sala visitada conserva su identidad y los cambios relevantes dentro de la run. Mostrar una vista de depuración del mapa modular con huellas, pertenencia a salas, conexiones y sala actual; no es el HUD final.
 
