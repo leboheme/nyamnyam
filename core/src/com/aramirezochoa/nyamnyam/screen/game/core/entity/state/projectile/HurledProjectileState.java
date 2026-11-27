@@ -3,6 +3,7 @@ package com.aramirezochoa.nyamnyam.screen.game.core.entity.state.projectile;
 import com.aramirezochoa.nyamnyam.Constant;
 import com.aramirezochoa.nyamnyam.screen.game.run.RunRuntime;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.Projectile;
+import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.ProjectileType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.Avatar;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.GameWrapperAssistant;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.types.DirectionType;
@@ -51,8 +52,19 @@ public class HurledProjectileState extends ProjectileState {
         }
         if (projectile.getParent() instanceof RunRuntime) {
             RunRuntime runtime = (RunRuntime) projectile.getParent();
-            if (!runtime.getBubbleTerrain().canTravel(projectile.position.x, projectile.position.y,
-                    projectile.dimension.x, projectile.dimension.y, projectile.velocity.x * deltaTime, 0)) {
+            float movementX = projectile.velocity.x * deltaTime;
+            float collisionX = projectile.position.x;
+            float collisionWidth = projectile.dimension.x;
+            if (projectile.getType() == ProjectileType.BEAM) {
+                // The beam starts over the shooter. Only its advancing edge encounters new terrain;
+                // tiles already behind that edge must not stop a shot traveling away from them.
+                collisionWidth = 1;
+                if (projectile.getLookingAt() == DirectionType.RIGHT) {
+                    collisionX += projectile.dimension.x - collisionWidth;
+                }
+            }
+            if (!runtime.getBubbleTerrain().canTravel(collisionX, projectile.position.y,
+                    collisionWidth, projectile.dimension.y, movementX, 0)) {
                 if (transformToCandy) {
                     delayTransform(projectile, true);
                     return false;
@@ -60,7 +72,7 @@ public class HurledProjectileState extends ProjectileState {
                 projectile.setEnabled(false);
                 return true;
             }
-            projectile.setPosition(projectile.position.x + projectile.velocity.x * deltaTime, projectile.position.y);
+            projectile.setPosition(projectile.position.x + movementX, projectile.position.y);
             projectile.dampVelocity();
         } else {
             GameWrapperAssistant.updateEntity(projectile, deltaTime, false);
