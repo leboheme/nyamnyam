@@ -7,6 +7,8 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.Avatar;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.GameWrapperAssistant;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.types.DirectionType;
 
+import static com.aramirezochoa.nyamnyam.screen.game.run.PrototypeBalance.BEAM_TO_BUBBLE_DELAY_SECONDS;
+
 /**
  * Created by boheme on 15/01/15.
  */
@@ -16,6 +18,8 @@ public class HurledProjectileState extends ProjectileState {
     private float initX, distance;
     private boolean transformToCandy;
     private boolean startPending;
+    private boolean transformPending, blockedAtEnd;
+    private float transformDelay;
 
     @Override
     public void init() {
@@ -24,6 +28,7 @@ public class HurledProjectileState extends ProjectileState {
         getProjectile().velocity.x = DirectionType.RIGHT.equals(getProjectile().getLookingAt()) ? getPitcher().getFireVelocity() : -getPitcher().getFireVelocity();
         distance = getPitcher().getFireDistance();
         startPending = true;
+        transformPending = false;
     }
 
     private Avatar getPitcher() {
@@ -33,6 +38,12 @@ public class HurledProjectileState extends ProjectileState {
     @Override
     public boolean update(float deltaTime) {
         Projectile projectile = getProjectile();
+        if (transformPending) {
+            transformDelay -= deltaTime;
+            if (transformDelay > 0) return false;
+            projectile.transform(blockedAtEnd);
+            return true;
+        }
         // Projectile.init can widen a JSON shot after the legacy state is initialized.
         if (startPending) {
             initX = projectile.position.x;
@@ -42,7 +53,10 @@ public class HurledProjectileState extends ProjectileState {
             RunRuntime runtime = (RunRuntime) projectile.getParent();
             if (!runtime.getBubbleTerrain().canTravel(projectile.position.x, projectile.position.y,
                     projectile.dimension.x, projectile.dimension.y, projectile.velocity.x * deltaTime, 0)) {
-                if (transformToCandy) projectile.transform(true);
+                if (transformToCandy) {
+                    delayTransform(projectile, true);
+                    return false;
+                }
                 projectile.setEnabled(false);
                 return true;
             }
@@ -53,11 +67,23 @@ public class HurledProjectileState extends ProjectileState {
         }
         if ((getProjectile().velocity.x == 0 || Math.abs(getProjectile().position.x - initX) >= distance)) {
             if (transformToCandy) {
-                getProjectile().transform();
+                if (projectile.getParent() instanceof RunRuntime) {
+                    delayTransform(projectile, false);
+                    return false;
+                }
+                projectile.transform();
             }
             return true;
         }
         return false;
+    }
+
+    private void delayTransform(Projectile projectile, boolean blocked) {
+        projectile.setEnabled(false);
+        projectile.velocity.setZero();
+        transformPending = true;
+        blockedAtEnd = blocked;
+        transformDelay = BEAM_TO_BUBBLE_DELAY_SECONDS;
     }
 
     @Override
@@ -70,6 +96,8 @@ public class HurledProjectileState extends ProjectileState {
         getProjectile().velocity.x = 0;
         getProjectile().acceleration.y = 0;
         startPending = false;
+        transformPending = false;
+        transformDelay = 0;
     }
 
     public void setInitX(float initX) {

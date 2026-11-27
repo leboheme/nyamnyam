@@ -64,6 +64,8 @@ public final class PrototypeBalance {
 
     // Contact margin in px, shared by player contact, grouping and chain propagation.
     public static final float BUBBLE_CONTACT_MARGIN = 0.25f;
+    // The JSON beam holds its final position briefly before becoming a bubble.
+    public static final float BEAM_TO_BUBBLE_DELAY_SECONDS = 0.1f;
 
     // Collision solver tolerances, not balance controls. Change with care.
     public static final float BUBBLE_TERRAIN_EDGE_EPSILON = 0.001f;

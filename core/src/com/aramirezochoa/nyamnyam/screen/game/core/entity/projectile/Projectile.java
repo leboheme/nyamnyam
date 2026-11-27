@@ -140,7 +140,7 @@ public class Projectile extends Entity {
         if (getParent() instanceof RunRuntime) {
             Bubble bubble = EntityFactory.bubble(position.x, position.y, getLookingAt(), getParent());
             getParent().getEntityWorld().addBubble(bubble);
-            // Terrain stops a shot; only a bubble squeezed against its player bursts at creation.
+            // A blocked shot still bursts if the shooter has not cleared its spawn area.
             if (blocked && pitcher == getParent().getEntityWorld().getMainAvatar()
                     && bubble.box.overlaps(pitcher.box)) bubble.burst();
         } else if (getParent().getEntityWorld().getMainAvatar().isTornadoBoost()) {
