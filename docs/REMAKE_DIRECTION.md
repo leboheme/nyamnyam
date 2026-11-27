@@ -87,12 +87,12 @@ Antes de implementar, resolver el contrato mínimo de datos y coordenadas con un
 
 El flujo JSON usa RunRuntime; GameWrapper conserva el flujo TMX para comparación. GameScreen selecciona el runtime y coordina UI/input, sin alojar las reglas nuevas de combate, recursos o resolución de sala.
 
-**Runtime tras las primeras tres tarjetas arcade (27/11/2026):** esta sección describe la implementación actual; el objetivo pendiente y las pruebas manuales están en [PROTOTYPE.md](PROTOTYPE.md#objetivo-actual--recuperar-el-combate-arcade-de-nyam). Las reglas de diseño vigentes están en [GAME_DESIGN.md](GAME_DESIGN.md#p7--combate-recursos-y-supervivencia). Actualizar esta fotografía al cambiar el código, sin tratar decisiones provisionales como requisitos.
+**Runtime tras las primeras cuatro tarjetas arcade (27/11/2026):** esta sección describe la implementación actual; el objetivo pendiente y las pruebas manuales están en [PROTOTYPE.md](PROTOTYPE.md#objetivo-actual--recuperar-el-combate-arcade-de-nyam). Las reglas de diseño vigentes están en [GAME_DESIGN.md](GAME_DESIGN.md#p7--combate-recursos-y-supervivencia). Actualizar esta fotografía al cambiar el código, sin tratar decisiones provisionales como requisitos.
 
 | Frontera | Responsabilidad actual |
 | --- | --- |
-| `RunState` | Floors/sala actual y salud de dientes/salivación persistentes entre salas; sin modificadores ni mutaciones de build |
-| `RoomInstance` | Material, colisión/layout y combatCleared; sin salud/saliva ni reglas de puertas implícitas |
+| `RunState` | Floors/sala actual y salud de dientes persistentes entre salas; sin salivación, modificadores ni mutaciones de build |
+| `RoomInstance` | Material, colisión/layout y combatCleared; sin salud ni reglas de puertas implícitas |
 | `EntityWorld` | Colecciones y actualización/render/limpieza de enemigos, comida, proyectiles, mascotas y Bubble; reúne cuerpos para la física JSON |
 | `GameplayContext` | Servicios de gameplay accesibles a entidades. Los nuevos servicios opcionales son null en TMX |
 | `CollisionLayer` / `CollisionBody` | Categorías lógicas y datos de contacto de entidades; independientes de capas de render/Tiled |
@@ -120,13 +120,13 @@ El cuerpo derrotado es una copia independiente de TextureRegion y posición, nun
 
 ### Física de sala y vuelos de drops
 
-`CollisionLayer` define `PLAYER`, `ENEMY`, `FREE`, `ANCHORED` y `BOMB` como categorías lógicas, sin modificar el orden de dibujo ni la colisión de tiles. `RunPhysicsSystem` consulta los cuerpos de `EntityWorld` y los pickups de `RunDropService`. Aplica gravedad y respuesta al terreno cada frame a los `FREE`, incluida la comida colocada directamente en el JSON. Los `FREE` se separan entre sí; el protagonista puede atravesarlos y los desplaza lateralmente a velocidad limitada. La recogida se decide por el efecto del objeto: si no aporta nada, permanece en la sala. Los enemigos no empujan los `FREE`. `ANCHORED` tiene respuesta de bloqueo para el protagonista, pero aún no hay soportes/objetos anclados jugables; `BOMB` solo prepara la categoría de contacto y no representa todavía un refresco funcional en JSON.
+`CollisionLayer` define `PLAYER`, `ENEMY`, `FREE`, `ANCHORED` y `BOMB` como categorías lógicas, sin modificar el orden de dibujo ni la colisión de tiles. `RunPhysicsSystem` consulta los cuerpos de `EntityWorld` y los pickups de `RunDropService`. Aplica gravedad y respuesta al terreno cada frame a los `FREE`, incluida la comida colocada directamente en el JSON. Los `FREE` se separan entre sí; el protagonista puede atravesarlos y los desplaza lateralmente a velocidad limitada. Frutas y verduras se recogen siempre; un pickup con efecto condicionado permanece si no puede aplicarse. Los enemigos no empujan los `FREE`. `ANCHORED` tiene respuesta de bloqueo para el protagonista, pero aún no hay soportes/objetos anclados jugables; `BOMB` solo prepara la categoría de contacto y no representa todavía un refresco funcional en JSON.
 
 `DropLaunch` conserva únicamente imagen, trayectoria y datos para crear la recompensa. Durante el vuelo queda fuera de `EntityWorld` y de `RunPhysicsSystem`: no recibe colisiones con entidades ni puede recogerse. Al cruzar una superficie al descender, `RunDropService` crea la comida pooled o el `RunPickup` físico exactamente una vez y retira el vuelo. La comida del layout y las recompensas ya aterrizadas comparten la física de `FREE`. El flujo TMX conserva sus estados y recogida legacy.
 
 ### Recursos, carga y derrota
 
-ToothHealth guarda unidades enteras de medio diente; SalivationReserve todavía usa una cantidad continua para regeneración. Ambos pertenecen a RunState, no a RoomInstance ni a GameStatus. La salivación sigue implementada hasta la siguiente iteración, pero ya no es una regla del diseño vigente; véase [P7.B](GAME_DESIGN.md#p7b--ataque-libre-y-comida-común).
+ToothHealth guarda unidades enteras de medio diente en RunState, fuera de RoomInstance y GameStatus. Ya no existe reserva de salivación en el flujo JSON; el ataque se rige por Cadence base. Las reglas jugables están en [P7.B–C](GAME_DESIGN.md#p7b--ataque-libre-y-comida-común).
 
 `stage <n>` recarga contenido sin restaurar recursos. `restart` los restaura expresamente y recarga la sala actual. La navegación modular ya funciona; aún no se conservan enemigos ni comida de salas visitadas. Nueva pantalla/run crea un RunState nuevo.
 
@@ -136,12 +136,12 @@ GameStatus sigue siendo la señal de estado para los listeners y conserva puntua
 
 ### Configuración y herramientas de balance
 
-- `PrototypeBalance`: constantes del prototipo JSON agrupadas por recurso, combate, supervivencia, burbujas, física de items y vuelos, con unidades/comentarios. Incluye tolerancias numéricas separadas de los controles de balance. Editar y recompilar; sin loader ni configuración en caliente.
-- Los modificadores de Power, Cadence y Salivation y las mutaciones Burbuja Gigante/Captura Prolongada se retiraron del runtime JSON. El ataque usa la Cadence base. La reserva y la regeneración base de salivación permanecen hasta completar su retirada en la siguiente iteración.
+- `PrototypeBalance`: constantes del prototipo JSON agrupadas por supervivencia, burbujas, física de items y vuelos, con unidades/comentarios. Incluye tolerancias numéricas separadas de los controles de balance. Editar y recompilar; sin loader ni configuración en caliente.
+- Los modificadores de Power, Cadence y Salivation, las mutaciones Burbuja Gigante/Captura Prolongada y el recurso de salivación se retiraron del runtime JSON. El ataque usa la Cadence base.
 - `RunPickup`: ciclo compartido mínimo (colisión, recogida y render) para `ToothPickup`; `DropLaunch` mantiene el vuelo visual y materializa el pickup al aterrizar.
 - `EnemyDropConfig`: perfil común y excepciones por EnemyType. Incluye probabilidades de comida y de diente adicional; actualmente todas las especies usan el fallback común. No hay reglas de dificultad/Luck implementadas.
 - `PickupType`: IDs numéricos explícitos y estables: 1–4 dientes provisionales; 5–9 están reservados y no aparecen en la enumeración. No usar ordinal ni nombres provisionales como identidad persistente. Aún no es un catálogo general de objetos.
-- `DebugConsole`: comandos `stage`, `restart`, `killall`, `spawn` y `stats`; disponibilidad actual solo Desktop. `spawn list` ofrece dientes 1–4 e identifica 5–9 como reservados. `stats` consulta Cadence base y salivación actual/capacidad/regeneración, sin modificadores retirados. Los comandos conservados para la prueba se resumen en [PROTOTYPE.md](PROTOTYPE.md#valores-y-herramientas-que-se-conservan-para-la-prueba).
+- `DebugConsole`: comandos `stage`, `restart`, `killall`, `spawn` y `stats`; disponibilidad actual solo Desktop. `spawn list` ofrece dientes 1–4 e identifica 5–9 como reservados. `stats` consulta solo Cadence base. Los comandos conservados para la prueba se resumen en [PROTOTYPE.md](PROTOTYPE.md#valores-y-herramientas-que-se-conservan-para-la-prueba).
 
 No se ha introducido ECS ni sistema genérico de drops de calidad o efectos. Las constantes de movimiento/cadencia todavía compartidas con el legacy no se han trasladado indiscriminadamente.
 

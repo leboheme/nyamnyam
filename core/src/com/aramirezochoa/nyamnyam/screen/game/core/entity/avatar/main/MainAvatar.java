@@ -282,7 +282,6 @@ public abstract class MainAvatar extends Avatar {
     public abstract void fire();
 
     public void createFire() {
-        if ((chilliBoost || tornadoBoost || !garlicBoost) && !tryPayForFire()) return;
         if (chilliBoost) {
             getParent().getMediaManager().playSound(MediaManager.SOUND_SHOT_FIRE);
             getParent().addProjectile(EntityFactory.projectile(ProjectileType.FIRE_BALL, this, getLookingAt(), true, false));
@@ -295,11 +294,6 @@ public abstract class MainAvatar extends Avatar {
             createNormalFire();
             resetFire();
         }
-    }
-
-    /** Called only when this action will emit an attack; legacy attacks are free. */
-    protected boolean tryPayForFire() {
-        return true;
     }
 
     protected abstract void createNormalFire();

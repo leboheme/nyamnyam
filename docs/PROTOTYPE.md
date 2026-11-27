@@ -19,7 +19,7 @@ La navegación modular, footprints, máscaras, conectores y minimapa quedan fuer
 
 ### Estado implementado de esta iteración
 
-El usuario validó exploratoriamente la sala JSON con burbujas, interacción, drops, dientes y una build de debug. Las tres primeras tarjetas ya están implementadas y `core` compila: el ataque usa `BEAM`, distinto de las burbujas físicas `AIR_*`; el contacto con burbujas existentes no captura; un impacto captura de inmediato y ya no hay resistencia, Power de combate, feedback de desgaste, pickups de build ni mutaciones. Los pickups debug 5–9 están retirados y sus IDs reservados. La cadencia base se conserva. Reserva, coste, regeneración y HUD de salivación siguen activos hasta la siguiente tarjeta; frutas/verduras aún pueden restaurarla. Falta la comprobación manual. También está implementada la navegación modular de depuración con área generada. Estos hechos describen el punto de partida y no sustituyen las reglas nuevas. El detalle técnico vivo se registra en [REMAKE_DIRECTION.md](REMAKE_DIRECTION.md#runtime-json-implementado).
+El usuario validó exploratoriamente la sala JSON con burbujas, interacción, drops, dientes y una build de debug. Las cuatro primeras tarjetas están implementadas y el build completo pasa: el ataque usa `BEAM`, distinto de las burbujas físicas `AIR_*`; el contacto con burbujas existentes no captura; un impacto captura de inmediato; ya no hay resistencia, Power, pickups de build, mutaciones ni salivación. Los IDs debug 5–9 están reservados. La cadencia base se conserva y frutas/verduras se recogen sin efecto. Falta la comprobación manual de esta iteración. La navegación modular de depuración con área generada sigue implementada. El detalle técnico vivo se registra en [REMAKE_DIRECTION.md](REMAKE_DIRECTION.md#runtime-json-implementado).
 
 ### Criterios de aceptación manual
 
@@ -37,7 +37,7 @@ El usuario validó exploratoriamente la sala JSON con burbujas, interacción, dr
 
 Los tiempos de burbuja, física de contacto, vuelo de drops y salud siguen siendo provisionales en [PrototypeBalance.java](../core/src/com/aramirezochoa/nyamnyam/screen/game/run/PrototypeBalance.java). El perfil de drops permanece en [EnemyDropConfig.java](../core/src/com/aramirezochoa/nyamnyam/screen/game/run/EnemyDropConfig.java). No crear balance nuevo para sustituir Power o salivación.
 
-En Desktop, stage 7 recarga la sala conservando la salud; restart la reinicia con la salud inicial; killall resuelve enemigos libres y cautivos; spawn 1–4 produce los dientes de debug. `stats` muestra Cadence base y estado/regeneración de salivación, sin modificadores. Los IDs 5–9 quedan retirados y reservados. La consola no es una interfaz HTML/móvil. F11 permite comparar el flujo JSON con el TMX legacy mientras ambos existan.
+En Desktop, stage 7 recarga la sala conservando la salud; restart la reinicia con la salud inicial; killall resuelve enemigos libres y cautivos; spawn 1–4 produce los dientes de debug. `stats` muestra solo Cadence base. Los IDs 5–9 quedan retirados y reservados. La consola no es una interfaz HTML/móvil. F11 permite comparar el flujo JSON con el TMX legacy mientras ambos existan.
 
 ## Experimento modular anterior — navegación sin combate
 

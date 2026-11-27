@@ -11,7 +11,6 @@ import com.aramirezochoa.nyamnyam.screen.game.run.BubbleAttractionService;
 import com.aramirezochoa.nyamnyam.screen.game.run.RunCombatService;
 import com.aramirezochoa.nyamnyam.screen.game.run.RunDropService;
 import com.aramirezochoa.nyamnyam.screen.game.run.RunSurvivalService;
-import com.aramirezochoa.nyamnyam.screen.game.run.SalivationReserve;
 import com.aramirezochoa.nyamnyam.screen.game.status.GameStatus;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.utils.Array;
@@ -25,7 +24,6 @@ public interface GameplayContext {
     default RunSurvivalService getSurvivalService() { return null; }
     default RunDropService getDropService() { return null; }
     default RunCombatService getCombatService() { return null; }
-    default SalivationReserve getSalivationReserve() { return null; }
     CollisionWorld getCollisionWorld();
     void addEnemy(Enemy enemy);
     void addMeal(Meal meal);

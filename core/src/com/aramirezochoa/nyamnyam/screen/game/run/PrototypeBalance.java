@@ -7,11 +7,6 @@ package com.aramirezochoa.nyamnyam.screen.game.run;
 public final class PrototypeBalance {
     private PrototypeBalance() { }
 
-    // Salivation: starts full, regenerates continuously, including while attacking.
-    public static final float SALIVATION_CAPACITY = 6f;
-    public static final float SALIVATION_BUBBLE_COST = 1f;
-    public static final float SALIVATION_REGENERATION_PER_SECOND = 0.75f;
-
     // Health is stored in half teeth: 1 unit = 0.5 tooth. Normal containers reserve whole spaces.
     public static final int STARTING_TOOTH_CONTAINERS = 3;
     public static final int MAX_TOOTH_SPACES = 8;
@@ -25,9 +20,6 @@ public final class PrototypeBalance {
     public static final float TOOTH_DROP_HALF_CHANCE = 0.5f;
     public static final float TOOTH_PICKUP_SIZE = 16f;
 
-    // Common food: variants in each family restore the same amount, capped at capacity.
-    public static final float FRUIT_SALIVATION_RESTORE = 2f;
-    public static final float VERDURE_SALIVATION_RESTORE = 1f;
     // Free room entities: px/s²; physics is applied centrally by RunPhysicsSystem.
     public static final float ROOM_FREE_ENTITY_GRAVITY = 650f;
     public static final float ROOM_PHYSICS_MAX_MOVEMENT_STEP = 4f;

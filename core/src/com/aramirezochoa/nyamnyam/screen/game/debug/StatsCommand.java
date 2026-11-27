@@ -1,14 +1,12 @@
 package com.aramirezochoa.nyamnyam.screen.game.debug;
 
 import com.aramirezochoa.nyamnyam.Constant;
-import com.aramirezochoa.nyamnyam.screen.game.run.PrototypeBalance;
 import com.aramirezochoa.nyamnyam.screen.game.run.RunRuntime;
-import com.aramirezochoa.nyamnyam.screen.game.run.SalivationReserve;
 
 import java.util.Locale;
 import java.util.function.Supplier;
 
-/** Read-only view of the active JSON runtime's base attack cadence and saliva reserve. */
+/** Read-only view of the active JSON runtime's base attack cadence. */
 public final class StatsCommand implements DebugCommand {
     private final Supplier<RunRuntime> runtimeSupplier;
 
@@ -17,7 +15,7 @@ public final class StatsCommand implements DebugCommand {
     }
 
     @Override public String name() { return "stats"; }
-    @Override public String description() { return "Show base attack cadence and salivation reserve"; }
+    @Override public String description() { return "Show base attack cadence"; }
 
     @Override
     public String execute(String[] arguments) {
@@ -25,11 +23,8 @@ public final class StatsCommand implements DebugCommand {
         RunRuntime runtime = runtimeSupplier.get();
         if (runtime == null) return "stats requires a JSON room";
 
-        SalivationReserve reserve = runtime.getSalivationReserve();
         float interval = Constant.MAIN_AVATAR_FIRE_TIME_LAPSE;
         return String.format(Locale.ROOT,
-                "Cadence: %.2f attacks/s base (%.2fs interval)\nSalivation: %.1f/%.1f, regen %.2f/s",
-                1f / interval, interval, reserve.getCurrent(), reserve.getCapacity(),
-                PrototypeBalance.SALIVATION_REGENERATION_PER_SECOND);
+                "Cadence: %.2f attacks/s base (%.2fs interval)", 1f / interval, interval);
     }
 }

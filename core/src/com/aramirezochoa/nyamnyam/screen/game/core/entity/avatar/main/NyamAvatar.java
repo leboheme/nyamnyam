@@ -2,7 +2,6 @@ package com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.main;
 
 import com.aramirezochoa.nyamnyam.Constant;
 import com.aramirezochoa.nyamnyam.media.MediaManager;
-import com.aramirezochoa.nyamnyam.screen.game.run.SalivationReserve;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.EntityFactory;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.types.DirectionType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.ProjectileType;
@@ -36,18 +35,9 @@ public class NyamAvatar extends MainAvatar {
 
     @Override
     public void fire() {
-        if (canPerformAction()) {
-            SalivationReserve reserve = getParent().getSalivationReserve();
-            if (fireEnabled && (reserve == null || reserve.canSpend())) {
-                currentState = MainAvatarStateFactory.fire(this);
-            }
+        if (canPerformAction() && fireEnabled) {
+            currentState = MainAvatarStateFactory.fire(this);
         }
-    }
-
-    @Override
-    protected boolean tryPayForFire() {
-        SalivationReserve reserve = getParent().getSalivationReserve();
-        return reserve == null || reserve.trySpend();
     }
 
     @Override

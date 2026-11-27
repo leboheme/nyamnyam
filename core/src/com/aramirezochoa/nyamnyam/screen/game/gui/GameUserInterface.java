@@ -1,7 +1,6 @@
 package com.aramirezochoa.nyamnyam.screen.game.gui;
 
 import com.badlogic.gdx.graphics.Color;
-import com.aramirezochoa.nyamnyam.screen.game.run.SalivationReserve;
 import com.aramirezochoa.nyamnyam.screen.game.run.ToothHealth;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -49,7 +48,6 @@ public class GameUserInterface implements GameScreen.GameScreenComponent, GameSt
         }
     };
     private String fourthMessage = "";
-    private SalivationReserve salivationReserve;
     private ToothHealth toothHealth;
     private final ShapeRenderer healthRenderer = new ShapeRenderer();
     private Label legacyInsertCoinLabel;
@@ -63,10 +61,6 @@ public class GameUserInterface implements GameScreen.GameScreenComponent, GameSt
     public void setToothHealth(ToothHealth toothHealth) {
         this.toothHealth = toothHealth;
         legacyInsertCoinLabel.setVisible(toothHealth == null);
-    }
-
-    public void setSalivationReserve(SalivationReserve salivationReserve) {
-        this.salivationReserve = salivationReserve;
     }
 
     public GameUserInterface(MediaManager mediaManager, ExtendViewport viewport) {
@@ -264,12 +258,6 @@ public class GameUserInterface implements GameScreen.GameScreenComponent, GameSt
                     (worldWidth - hudWidth) / 2f + columnWidth * 2, firstRowY, columnWidth, Align.center, false);
         }
         barFont.draw(stage.getBatch(), fourthMessage, (worldWidth - hudWidth) / 2f, secondRowY, hudWidth, Align.center, false);
-        if (salivationReserve != null) {
-            int tenths = (int) (salivationReserve.getCurrent() * 10);
-            String text = LanguageManager.INSTANCE.getString("salivation") + ": "
-                    + (tenths / 10) + "." + (tenths % 10) + "/" + (int) salivationReserve.getCapacity();
-            barFont.draw(stage.getBatch(), text, 12, secondRowY, worldWidth - 24, Align.left, false);
-        }
         for (VolatileMessage message : messages) {
             message.getFont().draw(stage.getBatch(), message.message, message.x, message.y);
         }

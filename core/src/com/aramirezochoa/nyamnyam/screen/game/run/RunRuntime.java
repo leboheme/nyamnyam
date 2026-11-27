@@ -100,7 +100,6 @@ public class RunRuntime implements GameplayContext {
             survivalService.updateDefeat(deltaTime);
             return;
         }
-        runState.getSalivationReserve().update(deltaTime);
         MainAvatar player = entityWorld.getMainAvatar();
         if (player != null) {
             if (Gdx.input.isKeyPressed(Input.Keys.A)) player.left();
@@ -220,7 +219,6 @@ public class RunRuntime implements GameplayContext {
     @Override public RunSurvivalService getSurvivalService() { return survivalService; }
     @Override public RunDropService getDropService() { return dropService; }
     @Override public RunCombatService getCombatService() { return combatService; }
-    @Override public SalivationReserve getSalivationReserve() { return runState.getSalivationReserve(); }
     @Override public void addEnemy(Enemy enemy) {
         entityWorld.addEnemy(enemy);
     }

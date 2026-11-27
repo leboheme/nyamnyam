@@ -12,12 +12,6 @@ public class RunState {
 
     public ToothHealth getToothHealth() { return toothHealth; }
 
-    private final SalivationReserve salivationReserve = new SalivationReserve();
-
-    public SalivationReserve getSalivationReserve() {
-        return salivationReserve;
-    }
-
     public Array<FloorState> getFloors() {
         return floors;
     }

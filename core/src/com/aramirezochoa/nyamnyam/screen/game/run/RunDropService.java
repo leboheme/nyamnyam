@@ -93,11 +93,6 @@ public class RunDropService {
         for (Meal meal : runtime.getEntityWorld().getFood()) {
             if (!meal.isEnabled() || !(meal.getType().isFruit() || meal.getType().isVerdure())
                     || !meal.box.overlaps(player.box)) continue;
-            float restore = meal.getType().isFruit() ? FRUIT_SALIVATION_RESTORE : VERDURE_SALIVATION_RESTORE;
-            if (!runtime.getSalivationReserve().canRestore(restore)) {
-                continue;
-            }
-            runtime.getSalivationReserve().restore(restore);
             runtime.getMediaManager().playSound(MediaManager.SOUND_NYAM_MEAL);
             meal.setRenderRotation(0);
             meal.setEnabled(false);

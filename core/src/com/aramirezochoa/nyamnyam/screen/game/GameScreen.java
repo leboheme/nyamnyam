@@ -142,7 +142,6 @@ public class GameScreen extends AbstractScreen {
             loadArea(navigationSeed);
             return;
         }
-        runState.getSalivationReserve().reset();
         runState.getToothHealth().reset();
         init(gameStatus);
     }
@@ -151,7 +150,6 @@ public class GameScreen extends AbstractScreen {
         FloorState floor = runFactory.createGeneratedFloor(seed);
         Vector2 spawn = RoomEntryResolver.initial(floor.getCurrentRoom(),
                 Constant.AVATAR_DIMENSION.x, Constant.AVATAR_DIMENSION.y);
-        runState.getSalivationReserve().reset();
         runState.getToothHealth().reset();
         if (runRuntime != null) runRuntime.dispose();
         gameWrapper.unloadLegacyStage();
@@ -223,7 +221,6 @@ public class GameScreen extends AbstractScreen {
             }
         }
         gameUserInterface.setToothHealth(runRuntime == null ? null : runState.getToothHealth());
-        gameUserInterface.setSalivationReserve(runRuntime == null ? null : runState.getSalivationReserve());
         gameUserInterface.update(delta);
 
         // Render
