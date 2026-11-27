@@ -17,9 +17,9 @@ Orden de trabajo propuesto para incrementos comprobables:
 
 La navegación modular, footprints, máscaras, conectores y minimapa quedan fuera de este cambio. Los enemigos siguen bloqueando la resolución del combate mientras estén libres o cautivos; abrir/cerrar puertas por combate pertenece a una iteración posterior.
 
-### Estado implementado antes de esta iteración
+### Estado implementado de esta iteración
 
-El usuario validó exploratoriamente la sala JSON con burbujas, interacción, drops, dientes y una build de debug. El código **todavía** contiene resistencia/Power, salivación, captura de contacto con burbuja vacía, pickups 5–9 y score al rematar. También contiene la navegación modular de depuración con área generada. Estos hechos describen el punto de partida y no sustituyen las reglas nuevas. El detalle técnico vivo se registra en [REMAKE_DIRECTION.md](REMAKE_DIRECTION.md#runtime-json-implementado).
+El usuario validó exploratoriamente la sala JSON con burbujas, interacción, drops, dientes y una build de debug. La primera tarjeta ya está implementada y compila: el ataque usa el proyectil legacy `BEAM`, distinto de las burbujas físicas `AIR_*`, y el contacto entre una burbuja existente y un enemigo ya no captura. Falta la comprobación manual. Siguen pendientes resistencia/Power, salivación, pickups 5–9 y score al rematar. También está implementada la navegación modular de depuración con área generada. Estos hechos describen el punto de partida y no sustituyen las reglas nuevas. El detalle técnico vivo se registra en [REMAKE_DIRECTION.md](REMAKE_DIRECTION.md#runtime-json-implementado).
 
 ### Criterios de aceptación manual
 

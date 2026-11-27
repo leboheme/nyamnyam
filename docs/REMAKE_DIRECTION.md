@@ -97,7 +97,7 @@ El flujo JSON usa RunRuntime; GameWrapper conserva el flujo TMX para comparació
 | `GameplayContext` | Servicios de gameplay accesibles a entidades. Los nuevos servicios opcionales son null en TMX |
 | `CollisionLayer` / `CollisionBody` | Categorías lógicas y datos de contacto de entidades; independientes de capas de render/Tiled |
 | `RunPhysicsSystem` | Gravedad y terreno de objetos `FREE`, separación entre ellos y respuesta física a contactos según capas en JSON |
-| `RunCombatService` | Resistencia/Power, captura al agotar resistencia o por contacto con burbuja vacía, fuga/restauración y remate; atajo debug de derrota masiva |
+| `RunCombatService` | Resistencia/Power, captura al agotar resistencia por impacto directo, fuga/restauración y remate; atajo debug de derrota masiva |
 | `BubbleContactSystem` / `BubbleTerrain` | Contacto del jugador, presión, agrupación, propagación iterativa y bloqueo por terreno |
 | `BubbleAttractionService` | Velocidad hacia focos de la room; foco/destino por entidad |
 | `RoomCompletionService` | Marca combate resuelto cuando no quedan enemigos libres ni cautivos. No emite WIN, UI, recompensas ni apertura de puertas |
@@ -108,9 +108,9 @@ El flujo JSON usa RunRuntime; GameWrapper conserva el flujo TMX para comparació
 
 ### Captura y ciclo de vida
 
-Bubble es una Entity propia, no Meal/Air/Candy. Puede estar vacía o poseer una instancia Enemy. Capturar retira al enemigo de la colección de enemigos libres, lo deshabilita y suspende IA/colisiones; la burbuja lo posiciona y representa. No hay copia a otro Enemy ni doble actualización.
+El ataque de Nyam usa `ProjectileType.BEAM` y las regiones legacy `BEAM` del atlas. `Bubble` es una Entity propia, no Meal/Air/Candy, y usa las animaciones `AIR_*`; el proyectil y la burbuja física son entidades visuales distintas. Una burbuja puede estar vacía o poseer una instancia Enemy. Capturar retira al enemigo de la colección de enemigos libres, lo deshabilita y suspende IA/colisiones; la burbuja lo posiciona y representa. No hay copia a otro Enemy ni doble actualización.
 
-`RunCombatService` comprueba el contacto de burbujas vacías con enemigos debilitados después de actualizar las entidades. `Bubble` conserva su edad desde el nacimiento; al capturar toma una sola vez el límite de vida efectivo de la build. La mutación no modifica el reloj de las vacías ni los límites ya fijados en otras capturas.
+`RunCombatService.hit` gestiona los impactos directos y, por ahora, reduce resistencia hasta capturar. El runtime ya no captura por contacto entre enemigos y burbujas existentes, estén vacías o contengan otro enemigo. `Bubble` conserva su edad desde el nacimiento; al capturar toma una sola vez el límite de vida efectivo de la build. La mutación no modifica el reloj de las vacías ni los límites ya fijados en otras capturas.
 
 Expirar devuelve esa misma instancia al mundo mediante el servicio de combate. Estallar limpia la referencia de captura antes de resolver y liberar al enemigo. El reset/cleanup de la burbuja libera un cautivo que siga poseyendo al limpiar la sala, sin generar drops. No reconstruir desde EnemyType ni liberar dos veces una instancia pooled.
 

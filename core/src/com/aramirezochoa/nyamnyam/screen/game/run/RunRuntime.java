@@ -114,7 +114,6 @@ public class RunRuntime implements GameplayContext {
         lastIntendedX = intendedX;
         entityWorld.update(deltaTime);
         if (runState.getToothHealth().isDefeated()) return;
-        combatService.captureOnBubbleContact();
         dropService.update(deltaTime);
         physicsSystem.update(entityWorld, dropService.getPickups(), deltaTime, true);
         bubbleContactSystem.update(entityWorld, deltaTime, jumpRequested, intendedX, intendedY);
