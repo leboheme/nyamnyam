@@ -362,6 +362,8 @@ def read_layer(layer, width, height):
 
 
 def compile_room(room_id, force=False):
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*(?:/[A-Za-z0-9][A-Za-z0-9_-]*)*", room_id):
+        raise ValueError("Room ID must be a relative room path without traversal")
     source = DESIGN_DIR / (room_id + ".tmx")
     if not source.is_file():
         raise ValueError("Room TMX not found: " + str(source))
@@ -418,17 +420,18 @@ def compile_room(room_id, force=False):
     target = OUTPUT_DIR / (room_id + ".json")
     if target.exists() and not force:
         raise ValueError("Room JSON already exists; pass --force to replace it: " + str(target))
+    target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(result, separators=(",", ":")) + "\n", encoding="utf-8")
     print("Compiled room " + room_id + " to " + str(target.relative_to(ROOT)))
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("room", help="Room ID, for example 7")
+    parser.add_argument("room", help="Room path, for example 7 or world_01/room_01")
     parser.add_argument("--force", action="store_true", help="Replace an existing room JSON")
     args = parser.parse_args()
-    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*", args.room):
-        parser.error("Room ID must contain only letters, digits, _ or -")
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]*(?:/[A-Za-z0-9][A-Za-z0-9_-]*)*", args.room):
+        parser.error("Room path segments must contain only letters, digits, _ or -")
     compile_room(args.room, args.force)
 
 

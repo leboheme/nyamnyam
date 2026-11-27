@@ -1,0 +1,15 @@
+{
+  "rooms": [
+    "world_01/room_01",
+    "world_01/room_02",
+    "world_01/room_03",
+    "world_01/room_04",
+    "world_01/room_05",
+    "world_01/room_06",
+    "world_01/room_07",
+    "world_01/room_08",
+    "world_01/room_09",
+    "world_01/room_10"
+  ],
+  "theme": "STATIC_TILES"
+}

@@ -5,7 +5,7 @@ JAVA17_HOME ?= $(shell /usr/libexec/java_home -v 17 2>/dev/null)
 GRADLE := $(if $(JAVA17_HOME),JAVA_HOME="$(JAVA17_HOME)" ,)./gradlew
 LAN_IP := $(shell ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || hostname -I 2>/dev/null | awk '{print $$1}')
 
-.PHONY: compile web-runtime web-dev html-build html-serve html-zip promote-stages compile-room
+.PHONY: compile web-runtime web-dev html-build html-serve html-zip promote-stages compile-room compile-world
 
 compile:
 	$(GRADLE) :core:compileJava :desktop:compileJava :html:compileJava
@@ -39,3 +39,6 @@ compile-room:
 	@if [ -z "$(ROOM)" ]; then echo 'Usage: make compile-room ROOM=7'; exit 2; fi
 	python3 tools/compile_stage.py $(ROOM) $(if $(FORCE),--force,)
 
+compile-world:
+	@if [ -z "$(WORLD)" ]; then echo 'Usage: make compile-world WORLD=world_01'; exit 2; fi
+	python3 tools/compile_world.py $(WORLD) $(if $(FORCE),--force,)

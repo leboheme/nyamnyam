@@ -58,6 +58,7 @@ public class GameScreen extends AbstractScreen {
     private boolean hasJsonRoom;
     private boolean useLegacyFlow;
     private Long navigationSeed;
+    private String areaWorld;
     private int loadedLevel = -1;
 
     public GameScreen() {
@@ -116,6 +117,7 @@ public class GameScreen extends AbstractScreen {
 
     private void init(GameStatus gameStatus) {
         navigationSeed = null;
+        areaWorld = null;
         gameUserInterface.setPauseButtonVisible(true);
         if (loadedLevel != gameStatus.getLevel()) {
             useLegacyFlow = false;
@@ -141,15 +143,15 @@ public class GameScreen extends AbstractScreen {
 
     private void restartRun() {
         if (navigationSeed != null) {
-            loadArea(navigationSeed);
+            loadArea(navigationSeed, areaWorld);
             return;
         }
         runState.getToothHealth().reset();
         init(gameStatus);
     }
 
-    private void loadArea(long seed) {
-        FloorState floor = runFactory.createGeneratedFloor(seed);
+    private void loadArea(long seed, String worldName) {
+        FloorState floor = runFactory.createGeneratedFloor(seed, worldName);
         Vector2 spawn = RoomEntryResolver.initial(floor.getCurrentRoom(),
                 Constant.AVATAR_DIMENSION.x, Constant.AVATAR_DIMENSION.y);
         runState.getToothHealth().reset();
@@ -158,6 +160,7 @@ public class GameScreen extends AbstractScreen {
         runState.setCurrentRoom(null);
         runState.addFloor(floor);
         navigationSeed = seed;
+        areaWorld = worldName;
         hasJsonRoom = true;
         useLegacyFlow = false;
         gameUserInterface.initForJson();
@@ -169,7 +172,7 @@ public class GameScreen extends AbstractScreen {
     private String areaStatus() {
         if (navigationSeed == null) return "No generated area loaded";
         FloorState floor = runState.getCurrentFloor();
-        return "Area seed " + floor.getSeed() + ", room "
+        return "World " + areaWorld + ", area seed " + floor.getSeed() + ", room "
                 + (floor.getCurrentRoomIndex() + 1) + "/" + floor.getRooms().size;
     }
 

@@ -35,7 +35,12 @@ public class RunFactory {
         runState.addFloor(floor);
     }
 
+    public FloorState createGeneratedFloor(long seed, String worldName) {
+        WorldConfig world = new WorldLoader().load(worldName);
+        return new AreaGenerator(roomLoader, world).generate(seed);
+    }
+
     public FloorState createGeneratedFloor(long seed) {
-        return new AreaGenerator(roomLoader).generate(seed);
+        return createGeneratedFloor(seed, "world_01");
     }
 }

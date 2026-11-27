@@ -1,0 +1,14 @@
+{
+  "rooms": [
+    "nav_1x1",
+    "nav_1x1_corridor",
+    "nav_1x2",
+    "nav_2x1",
+    "nav_2x2",
+    "nav_l_gap_bl",
+    "nav_l_gap_br",
+    "nav_l_gap_tl",
+    "nav_l_gap_tr"
+  ],
+  "theme": "STATIC_TILES"
+}

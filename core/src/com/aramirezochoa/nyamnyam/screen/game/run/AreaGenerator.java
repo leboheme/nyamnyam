@@ -9,35 +9,30 @@ import com.aramirezochoa.nyamnyam.screen.game.room.RoomModule;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-/** Bounded, seeded growth of the empty navigation prototypes. */
+/** Bounded, seeded growth from an authored world catalog. */
 final class AreaGenerator {
     private static final int MAX_ATTEMPTS = 64;
-    private static final String PREFIX = "data/rooms/";
-    private static final String[] NAMES = {
-            "nav_1x1", "nav_1x1_corridor", "nav_1x2", "nav_2x1", "nav_2x2",
-            "nav_l_gap_bl", "nav_l_gap_br", "nav_l_gap_tl", "nav_l_gap_tr"
-    };
+    private static final int ROOM_COUNT = 7;
 
     private final RoomLoader loader;
-    private final Map<String, Template> templates = new HashMap<String, Template>();
+    private final RoomAppearance theme;
+    private final List<Template> templates = new ArrayList<Template>();
 
-    AreaGenerator(RoomLoader loader) {
+    AreaGenerator(RoomLoader loader, WorldConfig world) {
         this.loader = loader;
-        for (String name : NAMES) {
-            String path = PREFIX + name + ".json";
-            RoomInstance room = loader.loadIfPresent(path);
-            if (room == null) throw new IllegalStateException("Missing area template: " + path);
-            if (room.getLayout().getEnemies().size != 0 || room.getLayout().getMeals().size != 0) {
-                throw new IllegalStateException("Navigation template has combat content: " + path);
+        this.theme = world.theme;
+        for (String name : world.rooms) {
+            String path = "data/rooms/" + name + ".json";
+            RoomInstance room = loader.load(path);
+            if (room.getConnectors().size == 0) {
+                throw new IllegalArgumentException("World room has no connectors: " + path);
             }
-            templates.put(name, new Template(path, room));
+            templates.add(new Template(path, room));
         }
     }
 
@@ -45,16 +40,11 @@ final class AreaGenerator {
         Random random = new Random(seed);
         for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
             FloorState floor = new FloorState(seed);
-            addRoom(floor, templates.get("nav_1x1"), 0, 0);
+            addRoom(floor, templates.get(0), 0, 0);
 
-            List<Template> remaining = new ArrayList<Template>();
-            remaining.add(templates.get("nav_1x2"));
-            remaining.add(templates.get("nav_2x1"));
-            remaining.add(templates.get("nav_2x2"));
-            remaining.add(templates.get(NAMES[5 + random.nextInt(4)]));
-            remaining.add(templates.get(NAMES[random.nextInt(2)]));
-            remaining.add(templates.get(NAMES[random.nextInt(2)]));
+            List<Template> remaining = new ArrayList<Template>(templates.subList(1, templates.size()));
             Collections.shuffle(remaining, random);
+            remaining = remaining.subList(0, Math.min(ROOM_COUNT - 1, remaining.size()));
 
             boolean placedAll = true;
             for (Template template : remaining) {
@@ -76,7 +66,7 @@ final class AreaGenerator {
 
     private int addRoom(FloorState floor, Template template, int x, int y) {
         RoomInstance room = loader.load(template.path);
-        room.setAppearance(RoomMaterial.FLOOR, RoomAppearance.STATIC_TILES);
+        room.setAppearance(RoomMaterial.FLOOR, theme);
         return floor.addRoom(template.path, room, x, y);
     }
 

@@ -1,14 +1,14 @@
 package com.aramirezochoa.nyamnyam.screen.game.debug;
 
-import java.util.function.LongConsumer;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
-/** Starts an empty modular area by seed for navigation checks. */
+/** Starts a seeded modular area from a world catalog. */
 public final class AreaCommand implements DebugCommand {
-    private final LongConsumer loader;
+    private final BiConsumer<Long, String> loader;
     private final Supplier<String> status;
 
-    public AreaCommand(LongConsumer loader, Supplier<String> status) {
+    public AreaCommand(BiConsumer<Long, String> loader, Supplier<String> status) {
         this.loader = loader;
         this.status = status;
     }
@@ -20,14 +20,15 @@ public final class AreaCommand implements DebugCommand {
     @Override
     public String execute(String[] arguments) {
         if (arguments.length == 0) return status.get();
-        if (arguments.length != 1) return "Usage: area [seed]";
+        if (arguments.length > 2) return "Usage: area [seed [world]]";
         try {
             long seed = Long.parseLong(arguments[0]);
-            loader.accept(seed);
-            return "Loaded navigation area with seed " + seed;
+            String world = arguments.length == 2 ? arguments[1] : "world_01";
+            loader.accept(seed, world);
+            return "Loaded " + world + " area with seed " + seed;
         } catch (NumberFormatException exception) {
             return "Invalid area seed: " + arguments[0];
-        } catch (IllegalStateException exception) {
+        } catch (RuntimeException exception) {
             return "Area generation failed: " + exception.getMessage();
         }
     }
