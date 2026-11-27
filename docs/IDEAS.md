@@ -5,7 +5,7 @@ Fuente de verdad de posibilidades futuras **sin compromiso de implementación**.
 ## Personajes y combate
 
 - Personaje que muerde, engulle enemigos aturdidos y los escupe; también podría existir como mutación específica. Escupitajos potentes o perforantes quedan asociados a esa exploración.
-- Saliva en el suelo como arma o cebo. No implica recuperar saliva de disparos fallados: esa mecánica fue sustituida por regeneración y comida.
+- Saliva en el suelo como arma o cebo. Esta idea no implica recuperar un recurso de salivación: el ataque básico del remake no consume ninguno.
 - Reacciones específicas al escapar: enemigos más furiosos y resistentes, débiles, asustados que huyen del jugador o sin cambios de comportamiento. Son alternativas para P10, no estados nuevos obligatorios. La regla base vigente está en GAME_DESIGN.md, P7.A.
 
 ## Tour y eventos

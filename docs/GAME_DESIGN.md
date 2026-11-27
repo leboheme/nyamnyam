@@ -1,6 +1,6 @@
 # Nyam Nyam — Game Design
 
-> Fuente de verdad del diseño del remake. Reconciliado el 25/11/2026 con el boceto P1–P9, las pruebas del prototipo y las decisiones P10 sobre el parque y la navegación. No describe necesariamente lo ya implementado.
+> Fuente de verdad del diseño del remake. Reconciliado el 27/11/2026 con la iteración de combate arcade y las decisiones sobre el parque y la navegación. No describe necesariamente lo ya implementado.
 
 ## Cómo leer este documento
 
@@ -14,7 +14,9 @@ La escala visual, anatomía compartida y convenciones de producción de assets s
 
 ## Visión general
 
-Un glotón visita un gigantesco parque gastronómico de experiencias peligrosas. Explora sus hábitats, captura y remata criaturas, recoge comida para recargar la salivación y obtiene platos que transforman su build. Objetivo de ritmo: tours estándar de unos 15–20 minutos, ampliables mediante rutas extra.
+Un glotón visita un gigantesco parque gastronómico de experiencias peligrosas. Explora sus hábitats, captura y remata criaturas, recoge comida y obtiene platos que transforman su build. Objetivo de ritmo: tours estándar de unos 15–20 minutos, ampliables mediante rutas extra.
+
+El remake no tiene score: ningún combate, recogida ni otro evento concede puntos, y no hay recompensa, vida extra ni progresión vinculada a puntuación. El score del TMX legacy es comportamiento histórico pendiente de retirar al completar la migración.
 
 ## P1 · Premisa global
 
@@ -107,7 +109,7 @@ Antes de fijar cantidad de mundos/áreas, medir el tiempo real de una sala y una
 
 ### P6.B · Progresión
 
-Dentro de la run: platos, caramelos, stats, activas y mutaciones. Los drops abundantes de fruta/verdura recargan salivación. Un objeto puede corregir debilidades de la build.
+Dentro de la run se exploran platos, caramelos, stats, activas y mutaciones; todavía no forman un catálogo definitivo. Un objeto puede corregir debilidades de la build. Las frutas y verduras se recogen sin efecto mientras se decide su función.
 
 Entre runs: candidatos a desbloqueo son personajes, objetos, destinos, eventos y rutas. No se ha decidido progresión permanente de stats.
 
@@ -135,17 +137,19 @@ La preferencia anterior por probar solo puertas laterales queda sustituida por l
 
 ### P7.A · Ciclo básico de combate
 
-Burbujas → reducir resistencia → ATURDIDO/captura → remate por contacto → DERROTADO → evaluación del drop.
+Ataque válido → captura inmediata en burbuja física → alcanzar o manipular la burbuja → remate válido → DERROTADO → evaluación del drop.
+
+El proyectil de Nyam es un ataque con aspecto propio; su apariencia de burbujita no lo convierte en una burbuja física. Al impactar a un enemigo común capturable lo captura de un golpe, sin resistencia, Power ni daño previo acumulado. Si no impacta, al agotar su recorrido o tocar terreno se convierte en burbuja vacía, como en el flujo actual y el legacy. El arte del proyectil debe distinguirlo de la burbuja física.
 
 Vocabulario de diseño compartido: NORMAL, ENFADADO, ATURDIDO y DERROTADO. Timeout es un evento, no un estado. Son estados conceptuales; no obligan a una arquitectura exclusiva: ENFADADO puede coexistir con otros comportamientos del enemigo.
 
 Transiciones de referencia: NORMAL → ENFADADO; NORMAL/ENFADADO → ATURDIDO; ATURDIDO → ENFADADO al escapar por timeout; ATURDIDO → DERROTADO por remate válido.
 
-Se mantiene la utilidad de las burbujas como apoyo en plataformas; las burbujas ambientales dan acceso a todos los personajes.
+Se mantiene la utilidad de las burbujas como apoyo en plataformas. Las burbujas ambientales son una posibilidad futura, distinguible visualmente de las emitidas por personajes; no se generan ni se les asignan reglas nuevas en esta iteración.
 
-Prototipo inicial: cuando una captura expira, el enemigo recupera su resistencia inicial y pasa a ENFADADO. Esta es una regla de prueba, no un comportamiento universal definitivo. En P10 se podrán definir reacciones diferentes por especie, incluyendo enemigos que se debilitan, se fortalecen o huyen.
+Prototipo inicial: cuando una captura expira, el enemigo escapa y pasa a ENFADADO. Es una regla de prueba, no una reacción universal definitiva; las especies podrán reaccionar de otra forma más adelante. No hay resistencia que restaurar.
 
-El enemigo aturdido queda capturado dentro de una burbuja, sin necesitar un estado conceptual adicional. Las burbujas, incluso al reducir resistencia, NO derrotan por sí solas. La derrota exige un remate válido.
+El enemigo aturdido queda capturado dentro de una burbuja, sin necesitar un estado conceptual adicional. Una burbuja no derrota por sí sola: la derrota exige un remate válido.
 
 Reglas de interacción acordadas y probadas en el prototipo:
 
@@ -156,27 +160,15 @@ Reglas de interacción acordadas y probadas en el prototipo:
 - Un estallido se propaga entre burbujas en contacto, con una tolerancia técnica mínima; las paredes bloquean la conexión. La propagación no depende de qué haya provocado el estallido. Actualmente el protagonista es quien inicia los estallidos.
 - Tocar una pared por sí solo frena la burbuja, sin romperla. Disparar sin espacio contra una pared puede reventarla por compresión contra el propio protagonista.
 - Expirar es distinto de estallar: elimina la burbuja, libera al cautivo si lo tiene y no inicia cadenas ni remata otras capturas.
-- Regla experimental por validar: una burbuja vacía puede capturar por contacto a un enemigo al que le quede como máximo un golpe según el Power actual. La captura conserva la edad de esa burbuja; no reinicia su ciclo. Captura Prolongada amplía solo el límite de vida al capturar, sin alargar burbujas vacías ni modificar capturas anteriores.
+- El contacto de un enemigo con una burbuja existente, vacía, ocupada o ambiental, no constituye un ataque válido y nunca lo captura por sí solo.
 
 La sala queda con el combate resuelto cuando no quedan enemigos libres ni cautivos. La comida, los pickups y las burbujas vacías pendientes no lo bloquean. Resolver combate no decide por sí mismo la apertura de salidas: dependerá de las reglas del tipo de sala. En la sala de prueba se sigue jugando, sin mensaje, WIN, avance automático ni premio por convertir aire en verduras.
 
-### P7.B · Barra de salivación y comida común
+### P7.B · Ataque libre y comida común
 
-Generar burbujas consume salivación. Existe una regeneración natural basal; Nyam destaca por su regeneración elevada.
+El ataque básico no consume salivación ni otro recurso. Mantener pulsado dispara conforme a la Cadence base. Las burbujas vacías pueden servir de apoyo en plataformas; no se recogen para recargar ataques.
 
-Las frutas y verduras aparecen como drops abundantes (referencia: 0–2 por enemigo) y se recogen por contacto para recargar la barra.
-
-Las frutas recargan MÁS que las verduras. Las variantes visuales dentro de cada familia tienen el mismo efecto; cantidades pendientes de balance.
-
-En el prototipo, Nyam paga una sola vez al emitir realmente cada ataque; no paga por frame de botón sostenido ni vuelve a pagar al capturar. Disparar al vacío o sin espacio también consume. Cadence y disponibilidad de saliva deben cumplirse a la vez; mantener ataque permite volver a disparar al regenerar lo suficiente. La regeneración es continua, también mientras ataca, limitada a la capacidad y detenida al pausar. Limpiar la sala no rellena la reserva.
-
-La salud y la salivación pertenecen a la run y se conservan al cambiar de sala; un reinicio explícito restaura sus valores iniciales. Los valores de prueba actuales se recogen en [PROTOTYPE.md](PROTOTYPE.md#valores-provisionales-y-balance).
-
-La capacidad máxima de salivación y el coste por burbuja son atributos secundarios modificables; la regeneración es stat principal.
-
-Las burbujas falladas no devuelven salivación al recogerse. Regeneración basal + frutas/verduras sustituyen aquella idea. Las burbujas vacías pueden permanecer como elemento de plataformas y futuras mutaciones.
-
-Diferencia entre personajes a validar: Gluty puede usar la lengua sin salivación y solo paga cuando crea una burbuja; Nyam necesita salivación para disparar. No compensar anticipadamente sin probar distancia, cadencia y juego real.
+Frutas y verduras siguen apareciendo como drops y conservan su vuelo, aterrizaje y física. Al tocarlas, se comen y desaparecen siempre, sin curar, recargar recursos, modificar stats ni conceder puntos. Sus identificadores y arte se conservan mientras se decide su función futura.
 
 ### P7.C · Supervivencia: cuatro dientes
 
@@ -208,17 +200,15 @@ Representación provisional: cuadrados con borde blanco, interior oscuro para co
 
 ### P7.D · Estadísticas y atributos
 
-| Stats principales (7) | Ámbito |
+| Stats candidatas universales (5) | Ámbito por definir |
 | --- | --- |
 | Speed | Movimiento |
 | Cadence | Frecuencia de ataque |
-| Power | Reducción de resistencia enemiga |
-| Shot Speed | Velocidad de la burbuja |
+| Shot Speed | Velocidad del proyectil de ataque |
 | Luck | Probabilidades |
-| Salivation | Regeneración natural de salivación |
 | Bubble Duration | Tiempo de vida de la burbuja, con mínimo jugable |
 
-Capacidades secundarias: vida máxima/espacios de salud, salivación máxima y coste por burbuja.
+No reintroducir Power, resistencia general ni salivación como stats del prototipo. Vida máxima/espacios de salud siguen siendo una capacidad distinta. Los efectos exactos de estas candidatas sobre Gluty y Tfly quedan abiertos.
 
 Size y Range dejan de ser stats universales. Tamaño de personaje/burbujas, longitud de la lengua, empuje y trayectorias especiales pueden cambiar mediante efectos concretos.
 
@@ -228,17 +218,17 @@ No permitir que mejoras/penalizaciones de salto hagan imposible acceder a salida
 
 ## P8 · Personajes y uso compartido de burbujas
 
-Todos los personajes actuales pueden generar burbujas y beneficiarse de sus mutaciones. Los ataques y ventajas innatas se diferencian; las salas obligatorias siguen siendo transitables con el movimiento base.
+Los personajes comparten la física de burbujas, pero pueden tener ataques y formas de remate diferentes; las salas obligatorias siguen siendo transitables con el movimiento base. Esta iteración solo prueba a Nyam.
 
 | Personaje | Ataque y generación | Rasgo propio |
 | --- | --- | --- |
-| Nyam | Crea burbujas directamente desde su posición. | Regeneración de salivación elevada; puede sostener el ataque con descansos cortos. |
-| Gluty | Lengüetazo disponible siempre; si golpea al aire genera burbuja desde la punta, consumiendo saliva solo en ese caso. | Si alcanza un enemigo aturdido puede atraerlo hacia sí. |
-| Tfly | Aleteo corto disponible siempre; después puede generar burbuja. | Empuje en el aleteo y en sus burbujas (este último reutilizable como mutación); doble salto. Diseño físico pendiente. |
+| Nyam | Lanza un proyectil; si falla, este se convierte en burbuja vacía. | Captura de un impacto válido y remate por contacto. |
+| Gluty | Lengüetazo. | Posible remate a distancia con lengua; reglas exactas pendientes. |
+| Tfly | Aleteo. | Posible empuje o remate de burbujas contra superficies; reglas exactas pendientes. |
 
 Burbujas vacías y con enemigo usan una entidad de burbuja común, con propiedades generales y mutaciones compartidas. Durante la captura, la burbuja posee la instancia del enemigo y suspende su actualización y colisiones independientes; escapar devuelve esa misma instancia al mundo y rematar la resuelve una sola vez. La frontera técnica se documenta en [REMAKE_DIRECTION.md](REMAKE_DIRECTION.md#runtime-json-implementado).
 
-Tfly no necesita empujar burbujas ya existentes con el aleteo; no añadir interacciones extra sin justificación.
+Las formas concretas de remate de Gluty y Tfly, incluido el posible empuje de burbujas de Tfly contra superficies, siguen abiertas y no forman parte de la prueba de Nyam.
 
 Posibilidades futuras relacionadas: [IDEAS.md](IDEAS.md).
 
@@ -248,8 +238,8 @@ Posibilidades futuras relacionadas: [IDEAS.md](IDEAS.md).
 
 | Familia | Función / estado |
 | --- | --- |
-| Frutas | Drops abundantes; recarga superior de salivación. Variantes visuales equivalentes. |
-| Verduras | Drops abundantes; recarga inferior de salivación. Variantes visuales equivalentes. |
+| Frutas | Drops que se comen sin efecto por ahora; función futura pendiente. |
+| Verduras | Drops que se comen sin efecto por ahora; función futura pendiente. |
 | Caramelos | Subidones temporales conocidos: ventaja intensa + efecto secundario cómico. Cada variedad tiene temporizador independiente; se solapan. Envoltorio sorpresa elige uno de los efectos conocidos. |
 | Refrescos agitados | Consumibles relativamente escasos; se colocan a los pies y explotan tras aviso. Herramienta ofensiva y para abrir caminos. |
 | Platos preparados | Pasivas de estadísticas y mutaciones; identidad gastronómica se asignará después de definir los efectos. |
@@ -273,7 +263,7 @@ Se retiran los boosts de oruga/huevo como mascotas asociadas a Tfly/Gluty; sus s
 
 Tipos: pasivas permanentes, pasivas temporales y activas recargables, preparadas manualmente.
 
-Los objetos sueltos (`FREE`) caen y chocan entre sí. El protagonista los recoge cuando pueden producir efecto; si no, puede atravesarlos desplazándolos gradualmente, sin usarlos como plataformas ni quedar bloqueado. Los enemigos ignoran los objetos sueltos. Esta interacción ya se prueba en el runtime JSON con comida y pickups.
+Los objetos sueltos (`FREE`) caen y chocan entre sí. Las frutas y verduras se recogen siempre, aunque hoy no produzcan efecto; los pickups con efecto condicionado permanecen si no pueden aplicarse. El protagonista atraviesa los objetos no recogibles desplazándolos gradualmente, sin usarlos como plataformas ni quedar bloqueado. Los enemigos ignoran los objetos sueltos.
 
 Los objetos anclados (`ANCHORED`) conservan su posición relativa a un soporte, como un pedestal o un cofre. No se empujan por separado: si el soporte se mueve, se mueven con él. Un objeto anclado que no se pueda recoger bloquea al protagonista. Esta categoría tiene soporte de colisión, pero todavía no hay contenido JSON de pedestales o cofres. Los futuros refrescos/bombas interactuarán con protagonista, enemigos y objetos `FREE`; su comportamiento jugable aún no está implementado en JSON.
 
@@ -289,66 +279,15 @@ La comida rápida es un posible grupo temático, no una pool o una calidad: pizz
 
 Posibilidades futuras relacionadas: [IDEAS.md](IDEAS.md).
 
-### P9.C · Kit estadístico v0.2 — 21 efectos
+### P9.C · Stats y mutaciones futuras
 
-Banco experimental de efectos SIN nombres de comidas ni porcentajes definitivos. Siete puros, nueve dobles y cinco con contrapartida. Las calidades son tentativas.
+Las cinco stats candidatas están en [P7.D](#p7d--estadísticas-y-atributos). El antiguo banco de 21 efectos dependía de Power y Salivation y queda descartado. No hay catálogo de mejoras aprobado para esta iteración.
 
-| # | Modificación | Grupo | Calidad |
-| --- | --- | --- | --- |
-| 01 | +Speed | Puro | 0 |
-| 02 | +Cadence | Puro | 0 |
-| 03 | +Power | Puro | 0 |
-| 04 | +Shot Speed | Puro | 0 |
-| 05 | +Luck | Puro | 0 |
-| 06 | +Salivation | Puro | 0 |
-| 07 | +Bubble Duration | Puro | 0 |
-| 08 | +Speed, +Cadence | Doble | 1 |
-| 09 | +Speed, +Power | Doble | 1 |
-| 10 | +Cadence, +Shot Speed | Doble | 0 |
-| 11 | +Cadence, +Salivation | Doble | 1 |
-| 12 | +Power, +Shot Speed | Doble | 1 |
-| 13 | +Power, +Bubble Duration | Doble | 1 |
-| 14 | +Shot Speed, +Bubble Duration | Doble | 0 |
-| 15 | +Luck, +Salivation | Doble | 0 |
-| 16 | +Luck, +Bubble Duration | Doble | 0 |
-| 17 | ++Speed, −Power | Contrapartida | 1 |
-| 18 | ++Cadence, −Power | Contrapartida | 1 |
-| 19 | ++Power, −Cadence | Contrapartida | 1 |
-| 20 | ++Shot Speed, −Bubble Duration | Contrapartida | 1 |
-| 21 | ++Salivation, −salivación máxima | Contrapartida | 1 |
+Una mutación cuantitativa modifica stats; una mecánica añade, elimina o reemplaza habilidades o reglas. Las antiguas mutaciones de debug Burbuja Gigante y Captura Prolongada se retiran de la build actual. Las futuras mutaciones de tamaño, rebote, empuje, velocidad o remate se diseñarán y probarán por separado, sin presuponer sus números ni efectos anteriores.
 
-Efectos redundantes y mejoras positivas sin desventajas son aceptables. Las mutaciones, no las mejoras básicas, darán la mayor personalidad al catálogo.
+### P9.D · Activas futuras
 
-### P9.D · Kit mínimo de mutaciones
-
-| Dominio | Mutación | Efecto propuesto |
-| --- | --- | --- |
-| Burbuja | Gigante | Aumenta el tamaño de los disparos nuevos y de las burbujas que generan; no redimensiona las anteriores. |
-| Burbuja | Rebotadora | Rebota contra paredes. |
-| Burbuja | Impulsora | Empuje/knockback al contacto; Tfly lo posee de serie. |
-| Burbuja (iteración 2) | Doble | Genera dos burbujas por disparo; consumo por ataque a probar. |
-| Captura | Prolongada | Amplía el límite de vida al capturar; conserva la edad de la burbuja y no alarga las vacías. |
-| Captura | Rápida | Las burbujas con enemigo capturado se desplazan más deprisa. |
-| Remate | Explosivo | El remate produce una explosión pequeña. |
-| Remate | Nutritivo | Recupera salivación ÚNICAMENTE con remate por contacto cuerpo a cuerpo. |
-| Salivación | Regeneración mejorada | Aumenta la regeneración natural sin condiciones. |
-| Salivación (candidata) | Sobresalivación | Comida recogida con barra llena permite superar temporalmente capacidad máxima. |
-
-Posibilidades futuras relacionadas: [IDEAS.md](IDEAS.md).
-
-### P9.E · Primer catálogo de activas
-
-Activa equipada: pulsación para preparar el efecto sobre la PRÓXIMA burbuja generada. Pulsar de nuevo cancela la preparación sin gastar carga. La carga se consume al crear la burbuja. La burbuja conserva el efecto mientras exista, incluso si captura un enemigo. El efecto se desencadena SOLO cuando el jugador la rompe con la misma acción de remate, esté vacía o con captura. La desaparición por timeout NO activa el efecto.
-
-| Activa | Efecto al estallar |
-| --- | --- |
-| Rayo | Descarga que atraviesa enemigos, pero se detiene contra paredes u obstáculos sólidos. |
-| Tornado | Tornado que avanza afectando a enemigos hasta encontrar obstáculo. |
-| Charco | Charco de baba que ralentiza a los enemigos que lo pisan durante un intervalo. |
-
-Las activas no tienen que limitarse a modificar burbujas en el catálogo definitivo; estas tres sí lo hacen para facilitar pruebas comunes.
-
-Recarga propuesta previamente: avance por tiempo y recarga completa al limpiar sala. La interacción definitiva con salivación se validará en el prototipo; no se fusionan automáticamente ambas barras.
+Se contempla una activa equipada, con recarga por salas y efectos excepcionalmente fuertes que manipulan el combate. Capturar a todos los enemigos, alterar burbujas existentes o reventarlas son ejemplos exploratorios, no un catálogo ni reglas de activación definitivas. No forman parte de esta iteración.
 
 ## Próximos temas de diseño
 

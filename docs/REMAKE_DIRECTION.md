@@ -87,6 +87,8 @@ Antes de implementar, resolver el contrato mínimo de datos y coordenadas con un
 
 El flujo JSON usa RunRuntime; GameWrapper conserva el flujo TMX para comparación. GameScreen selecciona el runtime y coordina UI/input, sin alojar las reglas nuevas de combate, recursos o resolución de sala.
 
+**Estado previo a la iteración arcade del 27/11/2026:** esta sección describe la implementación existente, incluidas mecánicas que se van a retirar. Las reglas de diseño vigentes están en [GAME_DESIGN.md](GAME_DESIGN.md#p7--combate-recursos-y-supervivencia) y el alcance de la migración en [PROTOTYPE.md](PROTOTYPE.md#objetivo-actual--recuperar-el-combate-arcade-de-nyam). Actualizar esta fotografía al cambiar el código, sin tratar los detalles antiguos como requisitos.
+
 | Frontera | Responsabilidad actual |
 | --- | --- |
 | `RunState` | Floors/sala actual, recursos persistentes entre salas, modificadores de Power/Cadence/Salivation y mutaciones binarias de la build |

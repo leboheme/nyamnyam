@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Nyam Nyam is a LibGDX Java game with desktop and HTML targets. It is a food-themed, fixed-screen platform-action game in which the player moves, attacks enemies, transforms some of them into candy, and eats the resulting food to clear each level.
+Nyam Nyam is a LibGDX Java game with desktop and HTML targets. Its legacy TMX campaign is a food-themed, fixed-screen platform-action game. The JSON-room remake is being developed alongside it; its current player-facing rules are in docs/GAME_DESIGN.md.
 
 The project is an older, mostly complete game codebase. Treat existing behavior as valuable design history. When changing it, preserve the game’s identity and avoid introducing modern architecture merely for its own sake.
 
@@ -71,7 +71,9 @@ Do not move gameplay rules casually into UI classes or platform launchers. Keep 
 
 The existing design uses inheritance, factories, object pooling, and state objects together. Preserve those boundaries unless the requested work specifically calls for a refactor.
 
-## Gameplay Invariants
+## Legacy TMX Gameplay Invariants
+
+The following describe the old campaign and are not requirements for the JSON-room remake. In particular, the remake has no score, salivation resource, enemy resistance, or passive capture from touching a bubble.
 
 - The central player loop is `move/jump -> attack -> transform or defeat -> eat -> clear`.
 - A transformed enemy becomes candy and must be eaten before the level can finish.
