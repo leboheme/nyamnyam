@@ -114,7 +114,7 @@ El ataque de Nyam usa `ProjectileType.BEAM` y las regiones legacy `BEAM` del atl
 
 Expirar devuelve esa misma instancia al mundo mediante el servicio de combate. Estallar limpia la referencia de captura antes de resolver y liberar al enemigo. El reset/cleanup de la burbuja libera un cautivo que siga poseyendo al limpiar la sala, sin generar drops. No reconstruir desde EnemyType ni liberar dos veces una instancia pooled.
 
-Los proyectiles persistentes registran IDs de impactos para no dañar repetidamente al mismo enemigo por solapamiento. Las cadenas descubren vecinos antes de resolver y no conservan referencias a entidades liberadas entre updates.
+Los proyectiles persistentes registran IDs de impactos para no procesar varias veces el contacto con un mismo enemigo durante un solapamiento. Las cadenas descubren vecinos antes de resolver y no conservan referencias a entidades liberadas entre updates.
 
 El cuerpo derrotado es una copia independiente de TextureRegion y posición, nunca un Enemy activo: puede girar/volar/desvanecerse sin retrasar la resolución ni retener el pool. Frutas y verduras siguen usando factories/pools existentes. `ToothPickup` es un placeholder poligonal propiedad del servicio, sin textura ni entidad pooled; se retira al recoger o limpiar. Los renderers añadidos se liberan al disponer el runtime/HUD.
 
@@ -126,9 +126,9 @@ El cuerpo derrotado es una copia independiente de TextureRegion y posición, nun
 
 ### Recursos, carga y derrota
 
-ToothHealth guarda unidades enteras de medio diente; SalivationReserve usa una cantidad continua para regeneración. Ambos pertenecen a RunState, no a RoomInstance ni a GameStatus. Los valores y reglas jugables se recogen en GAME_DESIGN.md y PROTOTYPE.md.
+ToothHealth guarda unidades enteras de medio diente; SalivationReserve todavía usa una cantidad continua para regeneración. Ambos pertenecen a RunState, no a RoomInstance ni a GameStatus. La salivación sigue implementada hasta la siguiente iteración, pero ya no es una regla del diseño vigente; véase [P7.B](GAME_DESIGN.md#p7b--ataque-libre-y-comida-común).
 
-`stage <n>` recarga contenido sin restaurar recursos. `restart` los restaura expresamente y recarga la sala actual. Esto todavía no implementa navegación ni conservación de enemigos/comida de salas visitadas. Nueva pantalla/run crea un RunState nuevo.
+`stage <n>` recarga contenido sin restaurar recursos. `restart` los restaura expresamente y recarga la sala actual. La navegación modular ya funciona; aún no se conservan enemigos ni comida de salas visitadas. Nueva pantalla/run crea un RunState nuevo.
 
 La entrada JSON usa idle y spawnTimer=-1: sin bloqueo SPAWN ni inmunidad inicial. El daño reutiliza el timer/parpadeo existente para su ventana de protección. Al agotar salud se usa una pose DEAD propia, sin los efectos legacy de DeadEntityState; después de una espera se llama a GameStatus.setGameState(LOSE). Cargar sala a cero no revive. Pausa detiene la espera.
 
@@ -141,7 +141,7 @@ GameStatus sigue siendo la señal de estado para los listeners y conserva puntua
 - `RunPickup`: ciclo compartido mínimo (colisión, recogida y render) para `ToothPickup`; `DropLaunch` mantiene el vuelo visual y materializa el pickup al aterrizar.
 - `EnemyDropConfig`: perfil común y excepciones por EnemyType. Incluye probabilidades de comida y de diente adicional; actualmente todas las especies usan el fallback común. No hay reglas de dificultad/Luck implementadas.
 - `PickupType`: IDs numéricos explícitos y estables: 1–4 dientes provisionales; 5–9 están reservados y no aparecen en la enumeración. No usar ordinal ni nombres provisionales como identidad persistente. Aún no es un catálogo general de objetos.
-- `DebugConsole`: comandos `stage`, `restart`, `killall`, `spawn` y `stats`; disponibilidad actual solo Desktop. `spawn list` ofrece dientes 1–4 e identifica 5–9 como reservados. `stats` consulta Cadence base y salivación actual/capacidad/regeneración, sin modificadores retirados. Sintaxis e IDs en [PROTOTYPE.md](PROTOTYPE.md#consola-de-debug).
+- `DebugConsole`: comandos `stage`, `restart`, `killall`, `spawn` y `stats`; disponibilidad actual solo Desktop. `spawn list` ofrece dientes 1–4 e identifica 5–9 como reservados. `stats` consulta Cadence base y salivación actual/capacidad/regeneración, sin modificadores retirados. Los comandos conservados para la prueba se resumen en [PROTOTYPE.md](PROTOTYPE.md#valores-y-herramientas-que-se-conservan-para-la-prueba).
 
 No se ha introducido ECS ni sistema genérico de drops de calidad o efectos. Las constantes de movimiento/cadencia todavía compartidas con el legacy no se han trasladado indiscriminadamente.
 
