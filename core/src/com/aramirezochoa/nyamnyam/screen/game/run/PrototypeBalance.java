@@ -61,6 +61,8 @@ public final class PrototypeBalance {
     public static final float BUBBLE_BLOCKED_PRESSURE_GAIN_PER_SECOND = 5f;
     // Relative impact speed in px/s that bursts immediately, without waiting for pressure.
     public static final float BUBBLE_BURST_IMPACT_SPEED = 280f;
+    // A jump into the underside should pop more readily than a sideways shove.
+    public static final float BUBBLE_UNDERSIDE_BURST_IMPACT_SPEED = 150f;
 
     // Contact margin in px, shared by player contact, grouping and chain propagation.
     public static final float BUBBLE_CONTACT_MARGIN = 0.25f;

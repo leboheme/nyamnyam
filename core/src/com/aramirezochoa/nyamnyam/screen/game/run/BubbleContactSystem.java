@@ -56,8 +56,13 @@ public class BubbleContactSystem {
                 if (oldHeadGap >= -BUBBLE_CONTACT_MARGIN && newHeadGap <= BUBBLE_CONTACT_MARGIN
                         && player.box.y < bubble.box.y) {
                     float risingSpeed = Math.max(0, intendedY);
+                    float impactSpeed = risingSpeed - bubble.velocity.y;
+                    if (impactSpeed >= BUBBLE_UNDERSIDE_BURST_IMPACT_SPEED) {
+                        bubble.burst();
+                        continue;
+                    }
                     boolean blocked = pushGroup(world, bubble, 0, Math.max(BUBBLE_MIN_UPWARD_PUSH_SPEED, risingSpeed));
-                    if (risingSpeed > 0 || jumpRequested) bubble.press(deltaTime, risingSpeed - bubble.velocity.y, blocked);
+                    if (risingSpeed > 0 || jumpRequested) bubble.press(deltaTime, impactSpeed, blocked);
                     if (!bubble.isBurstRequested()) {
                         movePlayer(player, 0, Math.min(0, newHeadGap));
                         player.velocity.y = Math.min(0, player.velocity.y);
