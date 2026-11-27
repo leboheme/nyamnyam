@@ -42,13 +42,13 @@ public class Candy extends Meal {
 
     @Override
     protected int getEatenScore() {
-        getParent().getMediaManager().playSound(MediaManager.SOUND_NYAM_CANDY);
         return Constant.SCORE_CANDY;
     }
 
     @Override
     protected void staffBeforeEaten(Avatar avatar) {
         super.staffBeforeEaten(avatar);
+        getParent().getMediaManager().playSound(MediaManager.SOUND_NYAM_CANDY);
         // check other air / candies
         Meal meal;
         for (int i = 0; i < getParent().getEntityWorld().getFood().size; i++) {

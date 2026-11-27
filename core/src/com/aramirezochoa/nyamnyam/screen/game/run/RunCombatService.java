@@ -69,8 +69,6 @@ public class RunCombatService {
 
     public void defeat(Enemy enemy) {
         context.getMediaManager().playSound(MediaManager.SOUND_HIT_PROJECTILE);
-        context.getGameStatus().addScore(Constant.SCORE_ENEMY, enemy.position.x + enemy.dimension.x / 2,
-                enemy.position.y + enemy.dimension.y - Constant.SCREEN_GAME_Y_OFFSET);
         context.getDropService().onDefeat(enemy);
         enemy.remove();
     }

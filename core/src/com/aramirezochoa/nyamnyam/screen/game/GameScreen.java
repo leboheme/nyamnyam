@@ -121,14 +121,16 @@ public class GameScreen extends AbstractScreen {
             useLegacyFlow = false;
             loadedLevel = gameStatus.getLevel();
         }
-        gameUserInterface.init(gameStatus.getLevel(), gameStatus.getLives(), gameStatus.getScore());
         hasJsonRoom = runFactory.populate(runState,
                 "data/rooms/" + gameStatus.getLevel() + ".json");
+        boolean jsonFlow = hasJsonRoom && !useLegacyFlow;
+        if (jsonFlow) gameUserInterface.initForJson();
+        else gameUserInterface.init(gameStatus.getLevel(), gameStatus.getLives(), gameStatus.getScore());
         if (runRuntime != null) {
             runRuntime.dispose();
             runRuntime = null;
         }
-        if (hasJsonRoom && !useLegacyFlow) {
+        if (jsonFlow) {
             gameWrapper.unloadLegacyStage();
             runRuntime = new RunRuntime(getMediaManager(), runState, gameStatus);
         } else {
@@ -158,6 +160,7 @@ public class GameScreen extends AbstractScreen {
         navigationSeed = seed;
         hasJsonRoom = true;
         useLegacyFlow = false;
+        gameUserInterface.initForJson();
         gameUserInterface.setPauseButtonVisible(false);
         runRuntime = new RunRuntime(getMediaManager(), runState, gameStatus, spawn.x, spawn.y, null);
         gameStatus.setGameState(GameState.IN_GAME);

@@ -87,7 +87,7 @@ Antes de implementar, resolver el contrato mínimo de datos y coordenadas con un
 
 El flujo JSON usa RunRuntime; GameWrapper conserva el flujo TMX para comparación. GameScreen selecciona el runtime y coordina UI/input, sin alojar las reglas nuevas de combate, recursos o resolución de sala.
 
-**Runtime tras las primeras cuatro tarjetas arcade (27/11/2026):** esta sección describe la implementación actual; el objetivo pendiente y las pruebas manuales están en [PROTOTYPE.md](PROTOTYPE.md#objetivo-actual--recuperar-el-combate-arcade-de-nyam). Las reglas de diseño vigentes están en [GAME_DESIGN.md](GAME_DESIGN.md#p7--combate-recursos-y-supervivencia). Actualizar esta fotografía al cambiar el código, sin tratar decisiones provisionales como requisitos.
+**Runtime tras las primeras cinco tarjetas arcade (27/11/2026):** esta sección describe la implementación actual; el objetivo pendiente y las pruebas manuales están en [PROTOTYPE.md](PROTOTYPE.md#objetivo-actual--recuperar-el-combate-arcade-de-nyam). Las reglas de diseño vigentes están en [GAME_DESIGN.md](GAME_DESIGN.md#p7--combate-recursos-y-supervivencia). Actualizar esta fotografía al cambiar el código, sin tratar decisiones provisionales como requisitos.
 
 | Frontera | Responsabilidad actual |
 | --- | --- |
@@ -132,7 +132,7 @@ ToothHealth guarda unidades enteras de medio diente en RunState, fuera de RoomIn
 
 La entrada JSON usa idle y spawnTimer=-1: sin bloqueo SPAWN ni inmunidad inicial. El daño reutiliza el timer/parpadeo existente para su ventana de protección. Al agotar salud se usa una pose DEAD propia, sin los efectos legacy de DeadEntityState; después de una espera se llama a GameStatus.setGameState(LOSE). Cargar sala a cero no revive. Pausa detiene la espera.
 
-GameStatus sigue siendo la señal de estado para los listeners y conserva puntuación/vidas legacy; no se ha migrado globalmente. El score de remate previo aún pasa por él, pero recoger comida o dientes no da puntos ni vidas extra. La salud JSON no consume vidas persistentes, no reduce boosts al recibir daño y no usa su respawn. StageCompletion queda reservado a TMX.
+GameStatus sigue siendo la señal de estado para los listeners y conserva puntuación/vidas legacy; no se ha migrado globalmente. El flujo JSON no lee ni concede puntuación: remates, comida y dientes tampoco activan vidas extra por puntos. Su HUD oculta score y limpia mensajes de puntos al entrar; el score de GameStatus y su presentación quedan para TMX. La salud JSON no consume vidas persistentes, no reduce boosts al recibir daño y no usa su respawn. StageCompletion queda reservado a TMX.
 
 ### Configuración y herramientas de balance
 

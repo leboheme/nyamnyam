@@ -80,7 +80,7 @@ public abstract class Boss extends Enemy {
 
         if (!transformToCandy) {
             getParent().getMediaManager().playSound(MediaManager.SOUND_HIT_PROJECTILE);
-            getParent().getGameStatus().addScore(getEatenScore(), position.x + (dimension.x / 2), position.y + dimension.y - Constant.SCREEN_GAME_Y_OFFSET);
+            awardLegacyScore();
             lives--;
             if (lives < 0) lives = 0;
             getParent().notifyMessage(LanguageManager.INSTANCE.getString("bossLives") + ": " + lives + "/" + maxLives, position.x + dimension.x / 2,

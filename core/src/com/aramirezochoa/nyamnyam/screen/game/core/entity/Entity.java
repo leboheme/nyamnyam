@@ -290,9 +290,16 @@ public abstract class Entity implements Pool.Poolable, CollisionBody {
 
     public void eaten(Avatar avatar) {
         enabled = false;
-        getParent().getGameStatus().addScore(getEatenScore(), position.x + (dimension.x / 2), position.y + dimension.y - Constant.SCREEN_GAME_Y_OFFSET);
+        awardLegacyScore();
         staffBeforeEaten(avatar);
         setCurrentState(MealStateFactory.explode(this, false));
+    }
+
+    protected void awardLegacyScore() {
+        if (parent instanceof GameWrapper) {
+            parent.getGameStatus().addScore(getEatenScore(), position.x + dimension.x / 2,
+                    position.y + dimension.y - Constant.SCREEN_GAME_Y_OFFSET);
+        }
     }
 
     protected void staffBeforeEaten(Avatar avatar) {

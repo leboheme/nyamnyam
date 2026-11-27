@@ -19,7 +19,7 @@ La navegación modular, footprints, máscaras, conectores y minimapa quedan fuer
 
 ### Estado implementado de esta iteración
 
-El usuario validó exploratoriamente la sala JSON con burbujas, interacción, drops, dientes y una build de debug. Las cuatro primeras tarjetas están implementadas y el build completo pasa: el ataque usa `BEAM`, distinto de las burbujas físicas `AIR_*`; el contacto con burbujas existentes no captura; un impacto captura de inmediato; ya no hay resistencia, Power, pickups de build, mutaciones ni salivación. Los IDs debug 5–9 están reservados. La cadencia base se conserva y frutas/verduras se recogen sin efecto. Falta la comprobación manual de esta iteración. La navegación modular de depuración con área generada sigue implementada. El detalle técnico vivo se registra en [REMAKE_DIRECTION.md](REMAKE_DIRECTION.md#runtime-json-implementado).
+El usuario validó exploratoriamente la sala JSON con burbujas, interacción, drops, dientes y una build de debug. Las cinco primeras tarjetas están implementadas: el ataque usa `BEAM`, distinto de las burbujas físicas `AIR_*`; el contacto con burbujas existentes no captura; un impacto captura de inmediato; ya no hay resistencia, Power, pickups de build, mutaciones, salivación ni score JSON. Los IDs debug 5–9 están reservados. La cadencia base se conserva y frutas/verduras se recogen sin efecto. El build completo pasó tras la cuarta tarjeta y `core:compileJava` pasó tras la quinta; falta la comprobación manual de esta iteración. La navegación modular de depuración con área generada sigue implementada. El detalle técnico vivo se registra en [REMAKE_DIRECTION.md](REMAKE_DIRECTION.md#runtime-json-implementado).
 
 ### Criterios de aceptación manual
 

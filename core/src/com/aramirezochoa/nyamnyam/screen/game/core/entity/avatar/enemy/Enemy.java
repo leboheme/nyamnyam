@@ -46,7 +46,7 @@ public abstract class Enemy extends Avatar {
             parent.addMeal(EntityFactory.candy(this));
         } else {
             getParent().getMediaManager().playSound(MediaManager.SOUND_HIT_PROJECTILE);
-            getParent().getGameStatus().addScore(getEatenScore(), position.x + (dimension.x / 2), position.y + dimension.y - Constant.SCREEN_GAME_Y_OFFSET);
+            awardLegacyScore();
             getParent().addMeal(EntityFactory.fruit(position.x + dimension.x / 2, position.y, MealType.randomFruit(), getParent()));
         }
         remove();

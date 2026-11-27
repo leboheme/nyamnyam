@@ -79,6 +79,12 @@ public class GameUserInterface implements GameScreen.GameScreenComponent, GameSt
         this.fourthMessage = "";
     }
 
+    public void initForJson() {
+        init(0, 0, 0);
+        for (VolatileMessage message : messages) messagePool.free(message);
+        messages.clear();
+    }
+
     private void loadFonts(MediaManager mediaManager) {
         barFont = mediaManager.get("data/game/font-24.fnt");
         barFont.setColor(Color.valueOf("13004a"));
