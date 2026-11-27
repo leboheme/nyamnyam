@@ -100,7 +100,7 @@ public class RunRuntime implements GameplayContext {
             survivalService.updateDefeat(deltaTime);
             return;
         }
-        runState.getSalivationReserve().update(deltaTime, runState.getStats());
+        runState.getSalivationReserve().update(deltaTime);
         MainAvatar player = entityWorld.getMainAvatar();
         if (player != null) {
             if (Gdx.input.isKeyPressed(Input.Keys.A)) player.left();
@@ -217,19 +217,10 @@ public class RunRuntime implements GameplayContext {
     @Override public EntityWorld getEntityWorld() { return entityWorld; }
     @Override public CollisionWorld getCollisionWorld() { return collisionWorld; }
     public ToothHealth getToothHealth() { return runState.getToothHealth(); }
-    public float getBubbleScale() {
-        return runState.hasMutation(RunMutation.GIANT_BUBBLE) ? PrototypeBalance.GIANT_BUBBLE_SCALE : 1f;
-    }
-    public float getCaptureDuration() {
-        return PrototypeBalance.CAPTURE_BASE_SECONDS + (runState.hasMutation(RunMutation.PROLONGED_CAPTURE)
-                ? PrototypeBalance.PROLONGED_CAPTURE_BONUS_SECONDS : 0f);
-    }
-    public boolean addMutation(RunMutation mutation) { return runState.addMutation(mutation); }
     @Override public RunSurvivalService getSurvivalService() { return survivalService; }
     @Override public RunDropService getDropService() { return dropService; }
     @Override public RunCombatService getCombatService() { return combatService; }
     @Override public SalivationReserve getSalivationReserve() { return runState.getSalivationReserve(); }
-    @Override public RunStats getRunStats() { return runState.getStats(); }
     @Override public void addEnemy(Enemy enemy) {
         entityWorld.addEnemy(enemy);
     }

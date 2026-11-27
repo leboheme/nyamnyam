@@ -16,8 +16,6 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.bubble.Bubble;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.EntityState;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.meal.common.RaiseType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.projectile.ProjectileStateFactory;
-import com.aramirezochoa.nyamnyam.Constant;
-import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.main.NyamAvatar;
 
 /**
  * Created by boheme on 26/01/15.
@@ -28,33 +26,19 @@ public class Projectile extends Entity {
     private Avatar pitcher;
     private boolean friendly, transformToCandy;
     private int germination;
-    private float bubbleScale = 1f;
     private final LongSet impactedEnemies = new LongSet();
 
     public void init(EntityType type, float x, float y, DirectionType lookingAt, GameplayContext gameWrapper, boolean friendly, boolean transformToCandy, Avatar pitcher) {
-        bubbleScale = 1f;
         impactedEnemies.clear();
         this.friendly = friendly;
         this.transformToCandy = transformToCandy;
         this.pitcher = pitcher;
         this.germination = -1;
         super.init(type, x, y, lookingAt, gameWrapper);
-        if (type == ProjectileType.BEAM && gameWrapper instanceof RunRuntime && pitcher instanceof NyamAvatar) {
-            bubbleScale = ((RunRuntime) gameWrapper).getBubbleScale();
-            if (bubbleScale != 1f) {
-                float extraWidth = dimension.x * (bubbleScale - 1f);
-                if (lookingAt == DirectionType.LEFT) position.x -= extraWidth;
-                dimension.scl(bubbleScale);
-                initBoxes();
-                updateBoxes();
-                previousPosition.set(position);
-            }
-        }
         setCollisionLayer(type == ProjectileType.BOMB ? CollisionLayer.BOMB : CollisionLayer.NONE);
     }
 
     public void init(EntityType type, float x, float y, DirectionType lookingAt, GameplayContext gameWrapper, boolean friendly, boolean transformToCandy, int germination) {
-        bubbleScale = 1f;
         impactedEnemies.clear();
         this.friendly = friendly;
         this.transformToCandy = transformToCandy;
@@ -133,9 +117,6 @@ public class Projectile extends Entity {
         return pitcher;
     }
 
-    public float getBubbleScale() { return bubbleScale; }
-    @Override protected float getBoxOffset() { return Constant.ENTITY_BOX_OFFSET * bubbleScale; }
-    @Override protected float getRenderScale() { return bubbleScale; }
     public boolean registerImpact(long enemyId) { return impactedEnemies.add(enemyId); }
 
     public int getGermination() {
@@ -147,7 +128,6 @@ public class Projectile extends Entity {
         super.reset();
         pitcher = null;
         germination = -1;
-        bubbleScale = 1f;
         impactedEnemies.clear();
     }
 
@@ -158,7 +138,7 @@ public class Projectile extends Entity {
     public void transform(boolean blocked) {
         RaiseType raiseType = getParent().getBubbleRaiseType();
         if (getParent() instanceof RunRuntime) {
-            Bubble bubble = EntityFactory.bubble(position.x, position.y, getLookingAt(), bubbleScale, getParent());
+            Bubble bubble = EntityFactory.bubble(position.x, position.y, getLookingAt(), getParent());
             getParent().getEntityWorld().addBubble(bubble);
             // Terrain stops a shot; only a bubble squeezed against its player bursts at creation.
             if (blocked && pitcher == getParent().getEntityWorld().getMainAvatar()

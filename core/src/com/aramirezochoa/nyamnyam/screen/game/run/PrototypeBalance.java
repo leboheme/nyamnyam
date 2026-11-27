@@ -25,17 +25,6 @@ public final class PrototypeBalance {
     public static final float TOOTH_DROP_HALF_CHANCE = 0.5f;
     public static final float TOOTH_PICKUP_SIZE = 16f;
 
-    // Debug-only stat pickups: percentages stack additively against each stat's base.
-    // Power is temporarily readout-only while its pickup awaits removal in the next task.
-    // +50% Cadence makes the 0.75s interval 0.5s; +100% Salivation doubles regeneration.
-    public static final float DEBUG_POWER_BASE = 1f;
-    public static final float POWER_PICKUP_MODIFIER = 0.5f;
-    public static final float CADENCE_PICKUP_MODIFIER = 0.5f;
-    public static final float SALIVATION_PICKUP_MODIFIER = 1f;
-    public static final float STAT_PICKUP_SIZE = 16f;
-    // Giant Bubble is binary: new Nyam shots and their bubbles use 48 instead of 32 px.
-    public static final float GIANT_BUBBLE_SCALE = 1.5f;
-
     // Common food: variants in each family restore the same amount, capped at capacity.
     public static final float FRUIT_SALIVATION_RESTORE = 2f;
     public static final float VERDURE_SALIVATION_RESTORE = 1f;
@@ -64,11 +53,6 @@ public final class PrototypeBalance {
     public static final float BUBBLE_COLD_SECONDS = 5f;
     public static final float BUBBLE_WARM_SECONDS = 3f;
     public static final float BUBBLE_HOT_SECONDS = 2f;
-    // Capture keeps the bubble's elapsed age. Its deadline is sampled on capture;
-    // the base equals the previous 10-second lifetime and the mutation adds 5 seconds.
-    public static final float CAPTURE_BASE_SECONDS = 10f;
-    public static final float PROLONGED_CAPTURE_BONUS_SECONDS = 5f;
-
     // Bubble movement: speeds in px/s; damping removes this fraction of impulse per second.
     public static final float BUBBLE_ATTRACTION_SPEED = 40f;
     public static final float BUBBLE_MAX_PUSH_SPEED = 200f;

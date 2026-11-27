@@ -16,14 +16,16 @@ public final class SpawnCommand implements DebugCommand {
             StringBuilder result = new StringBuilder();
             for (PickupType type : PickupType.values()) {
                 if (result.length() > 0) result.append("\n");
-                result.append(type.id).append(" - ").append(type.getDisplayName());
+                result.append(type.id).append(" - ").append(type.name());
             }
+            result.append("\nIDs 5–9 are reserved");
             return result.toString();
         }
         if (arguments.length != 1) return "Usage: spawn <id> | spawn list";
         int id;
         try { id = Integer.parseInt(arguments[0]); }
         catch (NumberFormatException exception) { return "Invalid pickup ID; use spawn list"; }
+        if (id >= 5 && id <= 9) return "Pickup ID " + id + " is reserved";
         if (PickupType.fromId(id) == null) return "Unknown pickup ID; use spawn list";
         return spawn.applyAsInt(id) < 0 ? "spawn requires an active JSON run" : "Spawned pickup " + id;
     }

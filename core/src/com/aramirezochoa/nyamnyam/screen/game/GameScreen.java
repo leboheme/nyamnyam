@@ -100,7 +100,7 @@ public class GameScreen extends AbstractScreen {
                 ? -1 : runRuntime.getDropService().spawnPickup(id)));
         debugConsole.registerCommand(new KillAllCommand(() -> runRuntime == null
                 ? -1 : runRuntime.getCombatService().defeatAllEnemies()));
-        debugConsole.registerCommand(new StatsCommand(() -> runRuntime == null ? null : runRuntime.getRunStats()));
+        debugConsole.registerCommand(new StatsCommand(() -> runRuntime));
 
         InputMultiplexer im = new InputMultiplexer();
         im.addProcessor(debugConsole);
@@ -142,8 +142,6 @@ public class GameScreen extends AbstractScreen {
             loadArea(navigationSeed);
             return;
         }
-        runState.getStats().reset();
-        runState.clearMutations();
         runState.getSalivationReserve().reset();
         runState.getToothHealth().reset();
         init(gameStatus);
@@ -153,8 +151,6 @@ public class GameScreen extends AbstractScreen {
         FloorState floor = runFactory.createGeneratedFloor(seed);
         Vector2 spawn = RoomEntryResolver.initial(floor.getCurrentRoom(),
                 Constant.AVATAR_DIMENSION.x, Constant.AVATAR_DIMENSION.y);
-        runState.getStats().reset();
-        runState.clearMutations();
         runState.getSalivationReserve().reset();
         runState.getToothHealth().reset();
         if (runRuntime != null) runRuntime.dispose();

@@ -27,21 +27,15 @@ public class Bubble extends Entity {
     private float pressure;
     private boolean burstRequested;
     private final Vector2 impulse = new Vector2();
-    private float sizeScale = 1f;
 
-    public void init(float x, float y, DirectionType lookingAt, float sizeScale, GameplayContext context) {
-        this.sizeScale = sizeScale;
+    public void init(float x, float y, DirectionType lookingAt, GameplayContext context) {
         impulse.setZero();
         pressure = 0;
         burstRequested = false;
         super.init(BubbleType.BUBBLE, x, y, lookingAt, context);
-        dimension.scl(sizeScale);
         initBoxes();
         updateBoxes();
     }
-
-    @Override protected float getBoxOffset() { return Constant.ENTITY_BOX_OFFSET * sizeScale; }
-    @Override protected float getRenderScale() { return sizeScale; }
 
     @Override
     protected EntityState getInitialState() {
@@ -74,13 +68,11 @@ public class Bubble extends Entity {
 
     private class FloatingState extends EntityState {
         private float elapsed;
-        private float capturedLifetime;
 
         @Override public boolean update(float deltaTime) {
             if (burstRequested) return false;
             elapsed += deltaTime;
-            float lifetime = capturedEnemy == null ? BUBBLE_COLD_SECONDS + BUBBLE_WARM_SECONDS + BUBBLE_HOT_SECONDS
-                    : capturedLifetime;
+            float lifetime = BUBBLE_COLD_SECONDS + BUBBLE_WARM_SECONDS + BUBBLE_HOT_SECONDS;
             if (elapsed >= lifetime) {
                 expire();
                 return false;
@@ -100,24 +92,16 @@ public class Bubble extends Entity {
                     : elapsed < BUBBLE_COLD_SECONDS + BUBBLE_WARM_SECONDS ? "RAISE_WARM" : "RAISE_HOT";
         }
 
-        public void startCapture(float duration) {
-            // Keep elapsed age, including time spent empty before contact.
-            capturedLifetime = duration;
-        }
-
         @Override public void reset() {
             elapsed = 0;
-            capturedLifetime = 0;
         }
     }
 
-    public boolean capture(Enemy enemy, float duration) {
+    public boolean capture(Enemy enemy) {
         if (capturedEnemy != null || !isEnabled() || !enemy.isEnabled() || enemy.isBoss()) {
             return false;
         }
-        if (duration <= 0f) throw new IllegalArgumentException("Capture duration must be positive");
         capturedEnemy = enemy;
-        floatingState.startCapture(duration);
         enemy.captureInBubble();
         updateCapturedPosition();
         return true;

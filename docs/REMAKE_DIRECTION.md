@@ -87,11 +87,11 @@ Antes de implementar, resolver el contrato mínimo de datos y coordenadas con un
 
 El flujo JSON usa RunRuntime; GameWrapper conserva el flujo TMX para comparación. GameScreen selecciona el runtime y coordina UI/input, sin alojar las reglas nuevas de combate, recursos o resolución de sala.
 
-**Estado previo a la iteración arcade del 27/11/2026:** esta sección describe la implementación existente, incluidas mecánicas que se van a retirar. Las reglas de diseño vigentes están en [GAME_DESIGN.md](GAME_DESIGN.md#p7--combate-recursos-y-supervivencia) y el alcance de la migración en [PROTOTYPE.md](PROTOTYPE.md#objetivo-actual--recuperar-el-combate-arcade-de-nyam). Actualizar esta fotografía al cambiar el código, sin tratar los detalles antiguos como requisitos.
+**Runtime tras las primeras tres tarjetas arcade (27/11/2026):** esta sección describe la implementación actual; el objetivo pendiente y las pruebas manuales están en [PROTOTYPE.md](PROTOTYPE.md#objetivo-actual--recuperar-el-combate-arcade-de-nyam). Las reglas de diseño vigentes están en [GAME_DESIGN.md](GAME_DESIGN.md#p7--combate-recursos-y-supervivencia). Actualizar esta fotografía al cambiar el código, sin tratar decisiones provisionales como requisitos.
 
 | Frontera | Responsabilidad actual |
 | --- | --- |
-| `RunState` | Floors/sala actual, recursos persistentes entre salas, modificadores de Power/Cadence/Salivation y mutaciones binarias de la build |
+| `RunState` | Floors/sala actual y salud de dientes/salivación persistentes entre salas; sin modificadores ni mutaciones de build |
 | `RoomInstance` | Material, colisión/layout y combatCleared; sin salud/saliva ni reglas de puertas implícitas |
 | `EntityWorld` | Colecciones y actualización/render/limpieza de enemigos, comida, proyectiles, mascotas y Bubble; reúne cuerpos para la física JSON |
 | `GameplayContext` | Servicios de gameplay accesibles a entidades. Los nuevos servicios opcionales son null en TMX |
@@ -110,13 +110,13 @@ El flujo JSON usa RunRuntime; GameWrapper conserva el flujo TMX para comparació
 
 El ataque de Nyam usa `ProjectileType.BEAM` y las regiones legacy `BEAM` del atlas. `Bubble` es una Entity propia, no Meal/Air/Candy, y usa las animaciones `AIR_*`; el proyectil y la burbuja física son entidades visuales distintas. Una burbuja puede estar vacía o poseer una instancia Enemy. Capturar retira al enemigo de la colección de enemigos libres, lo deshabilita y suspende IA/colisiones; la burbuja lo posiciona y representa. No hay copia a otro Enemy ni doble actualización.
 
-`RunCombatService.hit` registra cada impacto una vez y captura inmediatamente a enemigos comunes en la misma instancia `Enemy`. No hay resistencia, Power de combate ni feedback de desgaste. Al expirar una captura se libera la instancia como ENFADADO, sin restaurar resistencia ni generar drops; el remate resuelve y recompensa una sola vez. El runtime tampoco captura por contacto entre enemigos y burbujas existentes, estén vacías o contengan otro enemigo. El pickup debug Power aún permanece en `RunStats` hasta la siguiente tarea, pero el combate ya no consulta ese valor. `Bubble` conserva su edad desde el nacimiento; al capturar toma una sola vez el límite de vida efectivo de la build. La mutación no modifica el reloj de las vacías ni los límites ya fijados en otras capturas.
+`RunCombatService.hit` registra cada impacto una vez y captura inmediatamente a enemigos comunes en la misma instancia `Enemy`. No hay resistencia, Power, feedback de desgaste, pickups de build ni mutaciones experimentales en el runtime JSON. Al expirar una captura se libera la instancia como ENFADADO, sin restaurar resistencia ni generar drops; el remate resuelve y recompensa una sola vez. El runtime tampoco captura por contacto entre enemigos y burbujas existentes, estén vacías o contengan otro enemigo. `Bubble` mantiene un único ciclo de vida total de diez segundos desde su creación; capturar no reinicia ni prolonga el reloj.
 
 Expirar devuelve esa misma instancia al mundo mediante el servicio de combate. Estallar limpia la referencia de captura antes de resolver y liberar al enemigo. El reset/cleanup de la burbuja libera un cautivo que siga poseyendo al limpiar la sala, sin generar drops. No reconstruir desde EnemyType ni liberar dos veces una instancia pooled.
 
 Los proyectiles persistentes registran IDs de impactos para no dañar repetidamente al mismo enemigo por solapamiento. Las cadenas descubren vecinos antes de resolver y no conservan referencias a entidades liberadas entre updates.
 
-El cuerpo derrotado es una copia independiente de TextureRegion y posición, nunca un Enemy activo: puede girar/volar/desvanecerse sin retrasar la resolución ni retener el pool. Frutas y verduras siguen usando factories/pools existentes. ToothPickup es un placeholder poligonal propiedad del servicio, sin textura ni entidad pooled; se retira al recoger o limpiar. UpgradePickup comparte el ciclo RunPickup de colisión, recogida y render, y aplica su stat o mutación tipada al recoger; sus marcadores geométricos distinguen cada mejora sin assets nuevos. Los renderers añadidos se liberan al disponer el runtime/HUD.
+El cuerpo derrotado es una copia independiente de TextureRegion y posición, nunca un Enemy activo: puede girar/volar/desvanecerse sin retrasar la resolución ni retener el pool. Frutas y verduras siguen usando factories/pools existentes. `ToothPickup` es un placeholder poligonal propiedad del servicio, sin textura ni entidad pooled; se retira al recoger o limpiar. Los renderers añadidos se liberan al disponer el runtime/HUD.
 
 ### Física de sala y vuelos de drops
 
@@ -134,15 +134,14 @@ La entrada JSON usa idle y spawnTimer=-1: sin bloqueo SPAWN ni inmunidad inicial
 
 GameStatus sigue siendo la señal de estado para los listeners y conserva puntuación/vidas legacy; no se ha migrado globalmente. El score de remate previo aún pasa por él, pero recoger comida o dientes no da puntos ni vidas extra. La salud JSON no consume vidas persistentes, no reduce boosts al recibir daño y no usa su respawn. StageCompletion queda reservado a TMX.
 
-### Configuración, stats y herramientas de balance
+### Configuración y herramientas de balance
 
 - `PrototypeBalance`: constantes del prototipo JSON agrupadas por recurso, combate, supervivencia, burbujas, física de items y vuelos, con unidades/comentarios. Incluye tolerancias numéricas separadas de los controles de balance. Editar y recompilar; sin loader ni configuración en caliente.
-- `RunStats`: conserva temporalmente modificadores tipados de Power, Cadence y Salivation para los pickups debug pendientes de retirar. Power ya no interviene en combate; `DEBUG_POWER_BASE` solo alimenta la lectura temporal de `stats`. Cadence y Salivation mantienen sus bases actuales. Los modificadores se calculan como `base × (1 + suma de modificadores)` sin componer sobre resultados anteriores.
-- `RunMutation`: efectos discretos de la build. Burbuja Gigante se registra una vez en `RunState`; cada disparo nuevo conserva su escala hasta convertirse en burbuja vacía o capturar un enemigo. El tamaño de render, caja de impacto y huella ante el terreno comparten esa escala. Captura Prolongada se consulta al iniciar cada captura y fija su límite sin alterar otras burbujas.
-- `RunPickup`: ciclo compartido mínimo (colisión, recogida y render) para `ToothPickup` y `UpgradePickup`. Cada subtipo aplica su resultado específico; no convierte toda recogida en salud. `DropLaunch` mantiene el vuelo visual y materializa el pickup al aterrizar.
+- Los modificadores de Power, Cadence y Salivation y las mutaciones Burbuja Gigante/Captura Prolongada se retiraron del runtime JSON. El ataque usa la Cadence base. La reserva y la regeneración base de salivación permanecen hasta completar su retirada en la siguiente iteración.
+- `RunPickup`: ciclo compartido mínimo (colisión, recogida y render) para `ToothPickup`; `DropLaunch` mantiene el vuelo visual y materializa el pickup al aterrizar.
 - `EnemyDropConfig`: perfil común y excepciones por EnemyType. Incluye probabilidades de comida y de diente adicional; actualmente todas las especies usan el fallback común. No hay reglas de dificultad/Luck implementadas.
-- `PickupType`: IDs numéricos explícitos y estables: 1–4 dientes provisionales, 5–7 mejoras de stats y 8–9 mutaciones de debug. No usar ordinal ni nombres provisionales como identidad persistente. Aún no es un catálogo general de objetos.
-- `DebugConsole`: comandos `stage`, `restart`, `killall`, `spawn` y consulta de stats; disponibilidad actual solo Desktop. Sintaxis e IDs en [PROTOTYPE.md](PROTOTYPE.md#consola-de-debug).
+- `PickupType`: IDs numéricos explícitos y estables: 1–4 dientes provisionales; 5–9 están reservados y no aparecen en la enumeración. No usar ordinal ni nombres provisionales como identidad persistente. Aún no es un catálogo general de objetos.
+- `DebugConsole`: comandos `stage`, `restart`, `killall`, `spawn` y `stats`; disponibilidad actual solo Desktop. `spawn list` ofrece dientes 1–4 e identifica 5–9 como reservados. `stats` consulta Cadence base y salivación actual/capacidad/regeneración, sin modificadores retirados. Sintaxis e IDs en [PROTOTYPE.md](PROTOTYPE.md#consola-de-debug).
 
 No se ha introducido ECS ni sistema genérico de drops de calidad o efectos. Las constantes de movimiento/cadencia todavía compartidas con el legacy no se han trasladado indiscriminadamente.
 

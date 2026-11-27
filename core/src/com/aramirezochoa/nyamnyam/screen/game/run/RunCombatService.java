@@ -22,7 +22,7 @@ public class RunCombatService {
     public boolean hit(Projectile attack, Enemy enemy) {
         if (!enemy.isEnabled() || enemy.isBoss() || !attack.registerImpact(enemy.getId())) return false;
         context.getMediaManager().playSound(MediaManager.SOUND_HIT_PROJECTILE);
-        float size = Constant.CANDY_DIMENSION.x * attack.getBubbleScale();
+        float size = Constant.CANDY_DIMENSION.x;
         float x = enemy.position.x + (enemy.dimension.x - size) / 2;
         float y = enemy.position.y + (enemy.dimension.y - size) / 2;
         if (!context.getBubbleTerrain().canOccupy(x, y, size, size)) {
@@ -30,8 +30,8 @@ public class RunCombatService {
             x = attack.position.x;
             y = attack.position.y;
         }
-        Bubble bubble = EntityFactory.bubble(x, y, attack.getLookingAt(), attack.getBubbleScale(), context);
-        if (bubble.capture(enemy, context.getCaptureDuration())) {
+        Bubble bubble = EntityFactory.bubble(x, y, attack.getLookingAt(), context);
+        if (bubble.capture(enemy)) {
             context.getEntityWorld().addBubble(bubble);
         } else {
             bubble.free();

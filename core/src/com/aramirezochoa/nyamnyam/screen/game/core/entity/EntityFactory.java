@@ -68,9 +68,9 @@ public class EntityFactory {
         return air;
     }
 
-    public static Bubble bubble(float x, float y, DirectionType lookingAt, float sizeScale, GameplayContext gameWrapper) {
+    public static Bubble bubble(float x, float y, DirectionType lookingAt, GameplayContext gameWrapper) {
         Bubble bubble = entity(Bubble.class);
-        bubble.init(x, y, lookingAt, sizeScale, gameWrapper);
+        bubble.init(x, y, lookingAt, gameWrapper);
         return bubble;
     }
 
