@@ -9,10 +9,13 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.bubble.Bubble;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.Projectile;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.ProjectileType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.projectile.ProjectileStateFactory;
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.utils.Array;
 
 /** Prototype JSON combat rules. Locomotion and bubble contact physics remain independent. */
 public class RunCombatService {
     private final RunRuntime context;
+    private final Array<DefeatedEnemyFlight> defeatedFlights = new Array<DefeatedEnemyFlight>();
 
     public RunCombatService(RunRuntime context) {
         this.context = context;
@@ -70,6 +73,40 @@ public class RunCombatService {
     public void defeat(Enemy enemy) {
         context.getMediaManager().playSound(MediaManager.SOUND_HIT_PROJECTILE);
         context.getDropService().onDefeat(enemy);
-        enemy.remove();
+        float direction = context.getMainAvatar() == null || enemy.position.x >= context.getMainAvatar().position.x
+                ? 1 : -1;
+        defeatedFlights.add(new DefeatedEnemyFlight(enemy, direction, context.getCollisionWorld()));
+    }
+
+    public void update(float deltaTime) {
+        for (int i = defeatedFlights.size - 1; i >= 0; i--) {
+            DefeatedEnemyFlight flight = defeatedFlights.get(i);
+            if (flight.isFading()) {
+                if (!flight.updateDeathFade(deltaTime)) continue;
+                flight.enemy.free();
+                defeatedFlights.removeIndex(i);
+            } else if (flight.update(deltaTime)) {
+                onDefeatedEnemyLanded(flight);
+            }
+        }
+    }
+
+    /** Future durable enemies can resolve this landing into another combat cycle. */
+    private void onDefeatedEnemyLanded(DefeatedEnemyFlight flight) {
+        flight.startDeathFade();
+    }
+
+    public boolean hasUnresolvedDefeatedEnemies() { return defeatedFlights.size > 0; }
+
+    public void render(Batch batch) {
+        if (defeatedFlights.size == 0) return;
+        batch.begin();
+        for (DefeatedEnemyFlight flight : defeatedFlights) flight.render(batch);
+        batch.end();
+    }
+
+    public void dispose() {
+        for (DefeatedEnemyFlight flight : defeatedFlights) flight.enemy.free();
+        defeatedFlights.clear();
     }
 }

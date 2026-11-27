@@ -61,6 +61,15 @@ public abstract class Enemy extends Avatar {
         grounded = false;
     }
 
+    /** Combat owns this enemy until its defeated flight lands; it cannot hit or block anything. */
+    public void beginDefeatedFlight() {
+        parent.getEntityWorld().removeEnemy(this);
+        setEnabled(false);
+        velocity.setZero();
+        acceleration.setZero();
+        grounded = false;
+    }
+
     public void escapeBubble(float x, float y, DirectionType facing) {
         setPosition(x, y);
         setLookingAt(facing);

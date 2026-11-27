@@ -32,8 +32,7 @@ public final class PrototypeBalance {
     public static final float DROP_ROOM_RESTITUTION = 0.85f;
     // Spin uses degrees/s.
     public static final float DROP_SPIN_DEGREES_PER_SECOND = 720f;
-    // Defeated body is visual only; it never delays drops or room completion.
-    public static final float DEFEAT_BODY_SECONDS = 1.2f;
+    // Defeated enemies fly without entity contacts until their body lands on terrain.
     public static final float DEFEAT_BODY_HORIZONTAL_SPEED = 180f;
     public static final float DEFEAT_BODY_UPWARD_SPEED = 320f;
     public static final float DEFEAT_BODY_GRAVITY = 600f;

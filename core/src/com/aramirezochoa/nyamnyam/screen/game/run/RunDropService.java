@@ -25,7 +25,6 @@ public class RunDropService {
     private final Array<RunPickup> pickups = new Array<RunPickup>();
     private final ShapeRenderer pickupRenderer = new ShapeRenderer();
     private final RandomXS128 random = new RandomXS128();
-    private final Array<DefeatedBodyEffect> bodies = new Array<DefeatedBodyEffect>();
     private final Array<Meal> persistentFood = new Array<Meal>();
     private final Array<MealType> fruits = new Array<MealType>();
     private final Array<MealType> vegetables = new Array<MealType>();
@@ -41,7 +40,6 @@ public class RunDropService {
     public void onDefeat(Enemy enemy) {
         MainAvatar player = runtime.getMainAvatar();
         float direction = player == null || enemy.position.x >= player.position.x ? 1 : -1;
-        bodies.add(new DefeatedBodyEffect(enemy, direction));
         EnemyDropConfig.Profile profile = EnemyDropConfig.resolve((EnemyType) enemy.getType());
         if (random.nextFloat() < profile.toothDropChance) {
             boolean caries = random.nextFloat() < profile.toothCariesChance;
@@ -111,7 +109,6 @@ public class RunDropService {
     }
 
     public void update(float deltaTime) {
-        for (int i = bodies.size - 1; i >= 0; i--) if (bodies.get(i).update(deltaTime)) bodies.removeIndex(i);
         for (int i = launches.size - 1; i >= 0; i--) {
             DropLaunch launch = launches.get(i);
             if (launch.update(deltaTime, runtime.getCollisionWorld())) {
@@ -140,9 +137,8 @@ public class RunDropService {
     }
 
     public void render(Batch batch) {
-        if (bodies.size == 0 && launches.size == 0) return;
+        if (launches.size == 0) return;
         batch.begin();
-        for (DefeatedBodyEffect body : bodies) body.render(batch);
         for (DropLaunch launch : launches) launch.render(batch);
         batch.setColor(1, 1, 1, 1);
         batch.end();
@@ -190,6 +186,6 @@ public class RunDropService {
         }
     }
 
-    public void clear() { launches.clear(); bodies.clear(); pickups.clear(); persistentFood.clear(); }
+    public void clear() { launches.clear(); pickups.clear(); persistentFood.clear(); }
     public void dispose() { clear(); pickupRenderer.dispose(); }
 }

@@ -80,10 +80,10 @@ public class RunRuntime implements GameplayContext {
         roomRenderer = new RoomRenderer(mediaManager.get("data/stages/tiles.png"));
         collisionWorld = new RoomCollisionWorld(runState.getCurrentRoom());
         physicsSystem = new RunPhysicsSystem(collisionWorld);
-        roomCompletionService = new RoomCompletionService(runState.getCurrentRoom(), entityWorld);
         bubbleTerrain = new BubbleTerrain(collisionWorld);
         bubbleContactSystem = new BubbleContactSystem(bubbleTerrain);
         combatService = new RunCombatService(this);
+        roomCompletionService = new RoomCompletionService(runState.getCurrentRoom(), entityWorld, combatService);
         dropService = new RunDropService(this);
         survivalService = new RunSurvivalService(this, runState.getToothHealth());
         bubbleAttractionService = new BubbleAttractionService(runState.getCurrentRoom());
@@ -97,6 +97,7 @@ public class RunRuntime implements GameplayContext {
         if (runState.getToothHealth().isDefeated()) {
             entityWorld.getMainAvatar().update(deltaTime);
             dropService.update(deltaTime);
+            combatService.update(deltaTime);
             physicsSystem.update(entityWorld, dropService.getPickups(), deltaTime, false);
             survivalService.updateDefeat(deltaTime);
             return;
@@ -115,6 +116,7 @@ public class RunRuntime implements GameplayContext {
         entityWorld.update(deltaTime);
         if (runState.getToothHealth().isDefeated()) return;
         dropService.update(deltaTime);
+        combatService.update(deltaTime);
         physicsSystem.update(entityWorld, dropService.getPickups(), deltaTime, true);
         bubbleContactSystem.update(entityWorld, deltaTime, jumpRequested, intendedX, intendedY);
         roomCompletionService.update();
@@ -140,6 +142,7 @@ public class RunRuntime implements GameplayContext {
         }
         entityBatch.setProjectionMatrix(orthoCamera.combined);
         entityWorld.render(entityBatch);
+        combatService.render(entityBatch);
         dropService.render(entityBatch);
         dropService.renderPickups(orthoCamera.combined);
     }
@@ -154,6 +157,7 @@ public class RunRuntime implements GameplayContext {
             entityWorld.setMainAvatar(null);
         }
         dropService.dispose();
+        combatService.dispose();
         entityWorld.clear();
         roomRenderer.dispose();
         if (navigationDebugRenderer != null) navigationDebugRenderer.dispose();

@@ -7,14 +7,17 @@ import com.aramirezochoa.nyamnyam.screen.game.room.RoomInstance;
 public class RoomCompletionService {
     private final RoomInstance room;
     private final EntityWorld entityWorld;
+    private final RunCombatService combatService;
 
-    public RoomCompletionService(RoomInstance room, EntityWorld entityWorld) {
+    public RoomCompletionService(RoomInstance room, EntityWorld entityWorld, RunCombatService combatService) {
         this.room = room;
         this.entityWorld = entityWorld;
+        this.combatService = combatService;
     }
 
     public void update() {
-        if (!room.isCombatCleared() && !entityWorld.hasUnresolvedEnemies()) {
+        if (!room.isCombatCleared() && !entityWorld.hasUnresolvedEnemies()
+                && !combatService.hasUnresolvedDefeatedEnemies()) {
             room.markCombatCleared();
         }
     }
