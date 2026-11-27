@@ -49,8 +49,8 @@ public final class PrototypeBalance {
     public static final float BUBBLE_MAX_PUSH_SPEED = 200f;
     public static final float BUBBLE_IMPULSE_DAMPING_PER_SECOND = 6f;
     public static final float BUBBLE_MIN_UPWARD_PUSH_SPEED = 40f;
-    public static final float BUBBLE_SIDE_PUSH_MULTIPLIER = 1.5f;
-    public static final float BUBBLE_GROUP_SEPARATION_SPEED = 60f;
+    // Sum of neighboring overlap areas / bubble area; permits overlap before compression resists.
+    public static final float BUBBLE_CLUSTER_MAX_OVERLAP = 1.25f;
 
     // Pressure is an accumulated resource, not a direct contact timer.
     // Net contact rate = gain - relaxation: 1/s freely, 4/s against terrain.
@@ -71,8 +71,7 @@ public final class PrototypeBalance {
 
     // Collision solver tolerances, not balance controls. Change with care.
     public static final float BUBBLE_TERRAIN_EDGE_EPSILON = 0.001f;
-    public static final float BUBBLE_COINCIDENT_CENTER_EPSILON = 0.001f;
+    public static final float BUBBLE_CONTACT_MOVEMENT_EPSILON = 0.001f;
     // Probe distance in px used to detect whether a pushed group is blocked.
     public static final float BUBBLE_BLOCKED_PROBE_DISTANCE = 2f;
-    public static final float BUBBLE_MIN_SIDE_INPUT_SPEED = 1f;
 }

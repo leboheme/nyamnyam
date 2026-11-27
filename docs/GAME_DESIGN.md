@@ -154,9 +154,10 @@ El enemigo aturdido queda capturado dentro de una burbuja, sin necesitar un esta
 Reglas de interacción acordadas y probadas en el prototipo:
 
 - Una burbuja puede estar vacía o contener un enemigo; ambas comparten movimiento, contacto y estallido. Las capturas no se representan como caramelos.
-- El contacto lateral o desde abajo empuja la burbuja y su grupo. La presión sostenida puede romperla; apretarla contra terreno acelera el estallido. Un impacto suficientemente fuerte puede romperla directamente.
+- Al avanzar lateralmente, en suelo o aire, el protagonista desplaza las burbujas que toca para reunirlas; no las lanza con un impulso lateral. Una burbuja que llega lateralmente al protagonista quieto lo empuja. La compresión contra terreno o contra un cluster demasiado denso acumula presión hasta el estallido; agrupar con espacio libre no lo hace. Los impactos suficientemente fuertes pueden romperlas directamente.
+- Desde abajo, el contacto suave empuja y un impacto fuerte revienta. Quedarse quieto no genera presión por sí solo; una compresión que aumente demasiado la densidad sí puede generarla.
 - Al caer sobre una burbuja, mantener salto permite rebotar conservándola; sin salto se revienta.
-- Las burbujas se amontonan manteniendo entidades y capturas independientes, sin fusionarse.
+- Las burbujas pueden solaparse para formar clusters, sin separarse automáticamente ni fusionarse. Cada una conserva su cautivo y temporizador. La densidad mide el solapamiento local: estar denso no provoca estallidos por sí solo; la presión aparece al intentar comprimir más allá del límite. Esta interacción está en prueba y requiere validación jugable.
 - Un estallido se propaga entre burbujas en contacto, con una tolerancia técnica mínima; las paredes bloquean la conexión. La propagación no depende de qué haya provocado el estallido. Actualmente el protagonista es quien inicia los estallidos.
 - Tocar una pared por sí solo frena la burbuja, sin romperla. Disparar sin espacio contra una pared puede reventarla por compresión contra el propio protagonista.
 - Expirar es distinto de estallar: elimina la burbuja, libera al cautivo si lo tiene y no inicia cadenas ni remata otras capturas.

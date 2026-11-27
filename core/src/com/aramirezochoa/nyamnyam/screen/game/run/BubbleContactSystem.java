@@ -5,7 +5,6 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.main.MainAvatar
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.bubble.Bubble;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.FloatArray;
 
 import static com.aramirezochoa.nyamnyam.screen.game.run.PrototypeBalance.*;
 
@@ -14,8 +13,6 @@ public class BubbleContactSystem {
     private final BubbleTerrain terrain;
     private final Rectangle previousPlayer = new Rectangle();
     private final Rectangle previousBubble = new Rectangle();
-    private final Array<Bubble> group = new Array<Bubble>();
-    private final FloatArray separationBudget = new FloatArray();
     private final Array<Bubble> bursts = new Array<Bubble>();
 
     public BubbleContactSystem(BubbleTerrain terrain) {
@@ -24,7 +21,6 @@ public class BubbleContactSystem {
 
     public void update(EntityWorld world, float deltaTime, boolean jumpRequested, float intendedX, float intendedY) {
         for (int i = 0; i < world.getBubbles().size; i++) world.getBubbles().get(i).relaxPressure(deltaTime);
-        settleGroups(world, deltaTime);
         MainAvatar player = world.getMainAvatar();
         if (player != null && player.canPerformAction()) {
             previousPlayer.set(player.box);
@@ -61,8 +57,9 @@ public class BubbleContactSystem {
                         bubble.burst();
                         continue;
                     }
-                    boolean blocked = pushGroup(world, bubble, 0, Math.max(BUBBLE_MIN_UPWARD_PUSH_SPEED, risingSpeed));
-                    if (risingSpeed > 0 || jumpRequested) bubble.press(deltaTime, impactSpeed, blocked);
+                    boolean dense = !canCompress(world, bubble, 0, BUBBLE_BLOCKED_PROBE_DISTANCE);
+                    boolean blocked = pushBubble(world, bubble, 0, Math.max(BUBBLE_MIN_UPWARD_PUSH_SPEED, risingSpeed), 0);
+                    if (risingSpeed > 0 || jumpRequested || dense) bubble.press(deltaTime, impactSpeed, blocked);
                     if (!bubble.isBurstRequested()) {
                         movePlayer(player, 0, Math.min(0, newHeadGap));
                         player.velocity.y = Math.min(0, player.velocity.y);
@@ -72,17 +69,24 @@ public class BubbleContactSystem {
 
                 boolean playerOnLeft = previousPlayer.x + previousPlayer.width / 2
                         < previousBubble.x + previousBubble.width / 2;
-                float correction = playerOnLeft ? bubble.box.x - (player.box.x + player.box.width)
+                float penetration = playerOnLeft ? player.box.x + player.box.width - bubble.box.x
                         : bubble.box.x + bubble.box.width - player.box.x;
-                float towardBubble = playerOnLeft ? intendedX : -intendedX;
-                if (towardBubble > BUBBLE_MIN_SIDE_INPUT_SPEED) {
-                    boolean blocked = pushGroup(world, bubble, intendedX * BUBBLE_SIDE_PUSH_MULTIPLIER, 0);
-                    float relativeSpeed = playerOnLeft ? intendedX - bubble.velocity.x : bubble.velocity.x - intendedX;
-                    bubble.press(deltaTime, relativeSpeed, blocked);
-                }
-                if (!bubble.isBurstRequested() && !movePlayer(player, correction, 0)) {
-                    // The bubble is squeezing the player against terrain; never teleport through it.
-                    bubble.press(deltaTime, 0, true);
+                if (penetration <= 0) continue;
+                float outward = playerOnLeft ? 1 : -1;
+                float relativeSpeed = outward * (intendedX - bubble.velocity.x);
+                if (outward * intendedX > BUBBLE_CONTACT_MOVEMENT_EPSILON) {
+                    // Only the contacted bubble moves: neighbors can overlap to form a cluster.
+                    boolean blocked = pushBubble(world, bubble, 0, 0, outward * penetration);
+                    bubble.press(blocked ? deltaTime : 0, relativeSpeed, blocked);
+                } else {
+                    // The incoming bubble carries a stationary (or retreating) player with it.
+                    movePlayerAsFarAsPossible(player, -outward * penetration);
+                    float remaining = playerOnLeft ? player.box.x + player.box.width - bubble.box.x
+                            : bubble.box.x + bubble.box.width - player.box.x;
+                    if (remaining > BUBBLE_CONTACT_MOVEMENT_EPSILON) {
+                        boolean blocked = pushBubble(world, bubble, 0, 0, outward * remaining);
+                        bubble.press(blocked ? deltaTime : 0, relativeSpeed, blocked);
+                    }
                 }
             }
         }
@@ -95,63 +99,71 @@ public class BubbleContactSystem {
         return true;
     }
 
-    private boolean pushGroup(EntityWorld world, Bubble first, float x, float y) {
-        group.clear();
-        group.add(first);
-        boolean blocked = false;
-        for (int i = 0; i < group.size; i++) {
-            Bubble member = group.get(i);
-            if (!terrain.canTravel(member.position.x, member.position.y, member.dimension.x, member.dimension.y,
-                    Math.signum(x) * BUBBLE_BLOCKED_PROBE_DISTANCE, Math.signum(y) * BUBBLE_BLOCKED_PROBE_DISTANCE)) blocked = true;
-            member.push(x, y);
-            for (int j = 0; j < world.getBubbles().size; j++) {
-                Bubble candidate = world.getBubbles().get(j);
-                if (candidate.isEnabled() && !candidate.isBurstRequested() && !group.contains(candidate, true)
-                        && connected(member, candidate)) group.add(candidate);
-            }
+    private void movePlayerAsFarAsPossible(MainAvatar player, float dx) {
+        float fraction = travelFraction(player.position.x, player.position.y,
+                player.dimension.x, player.dimension.y, dx);
+        player.setPosition(player.position.x + dx * fraction, player.position.y);
+    }
+
+    private float travelFraction(float x, float y, float width, float height, float dx) {
+        if (terrain.canTravel(x, y, width, height, dx, 0)) return 1;
+        float allowed = 0, blocked = 1;
+        for (int i = 0; i < 12; i++) {
+            float middle = (allowed + blocked) / 2;
+            if (terrain.canTravel(x, y, width, height, dx * middle, 0)) allowed = middle;
+            else blocked = middle;
         }
-        group.clear();
+        return allowed;
+    }
+
+    private boolean pushBubble(EntityWorld world, Bubble bubble, float x, float y, float displacementX) {
+        float probeX = Math.signum(displacementX != 0 ? displacementX : x) * BUBBLE_BLOCKED_PROBE_DISTANCE;
+        float probeY = Math.signum(y) * BUBBLE_BLOCKED_PROBE_DISTANCE;
+        boolean blocked = !terrain.canTravel(bubble.position.x, bubble.position.y,
+                bubble.dimension.x, bubble.dimension.y, probeX, probeY)
+                || !canCompress(world, bubble, probeX, probeY);
+        bubble.push(blocked ? 0 : x, blocked ? 0 : y);
+        if (displacementX != 0) {
+            float fraction = travelFraction(bubble.position.x, bubble.position.y,
+                    bubble.dimension.x, bubble.dimension.y, displacementX);
+            if (!canCompress(world, bubble, displacementX * fraction, 0)) {
+                float allowed = 0, dense = fraction;
+                for (int i = 0; i < 12; i++) {
+                    float middle = (allowed + dense) / 2;
+                    if (canCompress(world, bubble, displacementX * middle, 0)) allowed = middle;
+                    else dense = middle;
+                }
+                fraction = allowed;
+                blocked = true;
+            }
+            if (fraction < 1) blocked = true;
+            bubble.setPosition(bubble.position.x + displacementX * fraction, bubble.position.y);
+        }
         return blocked;
     }
 
-    private void settleGroups(EntityWorld world, float deltaTime) {
-        separationBudget.clear();
-        for (int i = 0; i < world.getBubbles().size; i++) separationBudget.add(BUBBLE_GROUP_SEPARATION_SPEED * deltaTime);
-        for (int i = 0; i < world.getBubbles().size; i++) {
-            Bubble a = world.getBubbles().get(i);
-            if (!a.isEnabled() || a.isBurstRequested()) continue;
-            for (int j = i + 1; j < world.getBubbles().size; j++) {
-                Bubble b = world.getBubbles().get(j);
-                if (!b.isEnabled() || b.isBurstRequested() || !connected(a, b)) continue;
-                float dx = centerX(b) - centerX(a);
-                float dy = centerY(b) - centerY(a);
-                float distance = (float) Math.sqrt(dx * dx + dy * dy);
-                float overlap = radius(a) + radius(b) - distance;
-                if (overlap <= 0) continue;
-                if (distance < BUBBLE_COINCIDENT_CENTER_EPSILON) {
-                    dx = a.getId() < b.getId() ? 1 : -1;
-                    dy = 0;
-                    distance = 1;
-                }
-                float correction = Math.min(overlap / 2, BUBBLE_GROUP_SEPARATION_SPEED * deltaTime);
-                float correctionA = Math.min(correction, separationBudget.get(i));
-                float correctionB = Math.min(correction, separationBudget.get(j));
-                if (moveBubble(a, -dx / distance * correctionA, -dy / distance * correctionA)) {
-                    separationBudget.set(i, separationBudget.get(i) - correctionA);
-                }
-                if (moveBubble(b, dx / distance * correctionB, dy / distance * correctionB)) {
-                    separationBudget.set(j, separationBudget.get(j) - correctionB);
-                }
-            }
-        }
+    private boolean canCompress(EntityWorld world, Bubble bubble, float dx, float dy) {
+        // Existing dense clusters may decompress; simply being dense never creates pressure.
+        float current = density(world, bubble, 0, 0);
+        return density(world, bubble, dx, dy) <= Math.max(BUBBLE_CLUSTER_MAX_OVERLAP,
+                current + BUBBLE_CONTACT_MOVEMENT_EPSILON);
     }
 
-    private boolean moveBubble(Bubble bubble, float dx, float dy) {
-        if (terrain.canTravel(bubble.position.x, bubble.position.y, bubble.dimension.x, bubble.dimension.y, dx, dy)) {
-            bubble.setPosition(bubble.position.x + dx, bubble.position.y + dy);
-            return true;
+    private float density(EntityWorld world, Bubble bubble, float dx, float dy) {
+        Rectangle box = bubble.box;
+        float total = 0;
+        for (Bubble other : world.getBubbles()) {
+            if (other == bubble || !other.isEnabled() || other.isBurstRequested()) continue;
+            float overlapX = Math.min(box.x + dx + box.width, other.box.x + other.box.width)
+                    - Math.max(box.x + dx, other.box.x);
+            float overlapY = Math.min(box.y + dy + box.height, other.box.y + other.box.height)
+                    - Math.max(box.y + dy, other.box.y);
+            if (overlapX > 0 && overlapY > 0
+                    && terrain.connects(centerX(bubble) + dx, centerY(bubble) + dy, centerX(other), centerY(other))) {
+                total += overlapX * overlapY / (box.width * box.height);
+            }
         }
-        return false;
+        return total;
     }
 
     private void propagateBursts(EntityWorld world) {

@@ -104,7 +104,7 @@ El flujo JSON usa RunRuntime; GameWrapper conserva el flujo TMX para comparació
 | `CollisionLayer` / `CollisionBody` | Categorías lógicas y datos de contacto de entidades; independientes de capas de render/Tiled |
 | `RunPhysicsSystem` | Gravedad y terreno de objetos `FREE`, separación entre ellos y respuesta física a contactos según capas en JSON |
 | `RunCombatService` | Captura inmediata por impacto directo, fuga como ENFADADO, remate y atajo debug de derrota masiva; sin resistencia ni Power de combate |
-| `BubbleContactSystem` / `BubbleTerrain` | Contacto del jugador, presión, agrupación, propagación iterativa y bloqueo por terreno |
+| `BubbleContactSystem` / `BubbleTerrain` | Contacto del jugador, arrastre lateral, solapamiento/densidad de clusters, presión y propagación iterativa bloqueada por terreno |
 | `BubbleAttractionService` | Velocidad hacia focos de la room; foco/destino por entidad |
 | `RoomCompletionService` | Marca combate resuelto cuando no quedan enemigos libres ni cautivos. No emite WIN, UI, recompensas ni apertura de puertas |
 | `RunDropService` | Evaluación de drops al rematar, vuelos/cuerpos visuales, comida y propiedad/limpieza de pickups JSON |
