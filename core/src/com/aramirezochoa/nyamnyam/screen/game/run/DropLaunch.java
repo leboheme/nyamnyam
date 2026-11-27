@@ -44,19 +44,20 @@ final class DropLaunch {
         float dt = delta / steps;
         int tile = world.getTileSize();
         for (int i = 0; i < steps; i++) {
-            float nx = x + velocityX * dt, ny = y + velocityY * dt;
-            float right = world.getWidth() - tile - size;
-            if (nx < tile || nx > right) {
-                nx = Math.max(tile, Math.min(right, nx));
+            float dx = velocityX * dt;
+            float horizontal = RoomContainment.movementFraction(world, x, y, size, size, dx, 0);
+            float nx = x + dx * horizontal;
+            if (horizontal < 1) {
                 velocityX = -velocityX * DROP_ROOM_RESTITUTION;
             }
-            float ceiling = world.getHeight() - tile - size;
-            if (ny > ceiling) {
-                ny = ceiling;
+            float dy = velocityY * dt;
+            float vertical = RoomContainment.movementFraction(world, nx, y, size, size, 0, dy);
+            float ny = y + dy * vertical;
+            if (dy > 0 && vertical < 1) {
                 velocityY = -Math.abs(velocityY) * DROP_ROOM_RESTITUTION;
             }
-            if (velocityY < 0) {
-                float floor = ny <= tile ? tile : Float.NEGATIVE_INFINITY;
+            if (dy < 0) {
+                float floor = vertical < 1 ? ny : Float.NEGATIVE_INFINITY;
                 for (int row = Math.max(0, (int)Math.floor(ny / tile) - 1);
                      row <= (int)Math.floor(y / tile); row++) {
                     float top = (row + 1) * tile;

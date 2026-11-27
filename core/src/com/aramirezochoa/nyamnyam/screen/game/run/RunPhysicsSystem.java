@@ -63,13 +63,10 @@ public final class RunPhysicsSystem {
     private void moveHorizontally(CollisionBody body, Vector2 velocity, float dx) {
         if (dx == 0) return;
         Rectangle bounds = body.getCollisionBounds();
-        float tile = collisionWorld.getTileSize();
-        float nextX = bounds.x + dx;
-        float left = tile;
-        float right = collisionWorld.getWidth() - tile - bounds.width;
-        if (nextX < left || nextX > right) {
-            float boundedX = Math.max(left, Math.min(right, nextX));
-            body.moveByCollision(boundedX - bounds.x, 0);
+        float allowed = RoomContainment.movementFraction(collisionWorld, bounds.x, bounds.y,
+                bounds.width, bounds.height, dx, 0);
+        if (allowed < 1) {
+            if (canOccupy(body, dx * allowed, 0)) body.moveByCollision(dx * allowed, 0);
             velocity.x = -velocity.x * DROP_ROOM_RESTITUTION;
         } else if (canOccupy(body, dx, 0)) {
             body.moveByCollision(dx, 0);
@@ -83,14 +80,19 @@ public final class RunPhysicsSystem {
         Rectangle bounds = body.getCollisionBounds();
         float tile = collisionWorld.getTileSize();
         float nextY = bounds.y + dy;
-        float ceiling = collisionWorld.getHeight() - tile - bounds.height;
-        if (nextY > ceiling) {
-            body.moveByCollision(0, ceiling - bounds.y);
+        float allowed = RoomContainment.movementFraction(collisionWorld, bounds.x, bounds.y,
+                bounds.width, bounds.height, 0, dy);
+        if (dy > 0 && allowed < 1) {
+            if (canOccupy(body, 0, dy * allowed)) body.moveByCollision(0, dy * allowed);
             velocity.y = -Math.abs(velocity.y) * DROP_ROOM_RESTITUTION;
             return false;
         }
         if (dy < 0) {
             float floor = findFloor(bounds, nextY, tile);
+            if (allowed < 1) {
+                float boundaryFloor = bounds.y + dy * allowed;
+                floor = Float.isNaN(floor) ? boundaryFloor : Math.max(floor, boundaryFloor);
+            }
             if (!Float.isNaN(floor)) {
                 body.moveByCollision(0, floor - bounds.y);
                 velocity.setZero();
