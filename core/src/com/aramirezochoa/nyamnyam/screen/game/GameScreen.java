@@ -189,6 +189,7 @@ public class GameScreen extends AbstractScreen {
         if (entrance == null) throw new IllegalStateException("Missing linked connector " + link.getSlot());
         Vector2 spawn = RoomEntryResolver.atConnector(room, entrance,
                 Constant.AVATAR_DIMENSION.x, Constant.AVATAR_DIMENSION.y);
+        runRuntime.saveRoomState();
         runRuntime.dispose();
         floor.setCurrentRoomIndex(link.getRoomIndex());
         runRuntime = new RunRuntime(getMediaManager(), runState, gameStatus,

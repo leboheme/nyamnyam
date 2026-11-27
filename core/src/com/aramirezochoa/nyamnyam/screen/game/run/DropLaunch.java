@@ -29,6 +29,14 @@ final class DropLaunch {
         velocityY = vy;
     }
 
+    RoomState.Launch snapshot() {
+        return new RoomState.Launch(mealType, pickupType, size, x, y, velocityX, velocityY, rotation);
+    }
+
+    void setRotation(float rotation) {
+        this.rotation = rotation;
+    }
+
     boolean update(float delta, CollisionWorld world) {
         velocityY -= ROOM_FREE_ENTITY_GRAVITY * delta;
         int steps = Math.max(1, (int)Math.ceil(Math.max(Math.abs(velocityX), Math.abs(velocityY))

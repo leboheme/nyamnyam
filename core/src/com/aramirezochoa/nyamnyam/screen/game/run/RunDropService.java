@@ -26,6 +26,7 @@ public class RunDropService {
     private final ShapeRenderer pickupRenderer = new ShapeRenderer();
     private final RandomXS128 random = new RandomXS128();
     private final Array<DefeatedBodyEffect> bodies = new Array<DefeatedBodyEffect>();
+    private final Array<Meal> persistentFood = new Array<Meal>();
     private final Array<MealType> fruits = new Array<MealType>();
     private final Array<MealType> vegetables = new Array<MealType>();
 
@@ -67,9 +68,47 @@ public class RunDropService {
     public void prepareFood(Meal meal) {
         DroppedMealState state = EntityStateFactory.state(DroppedMealState.class);
         meal.setCurrentState(state);
+        persistentFood.add(meal);
     }
 
     Array<RunPickup> getPickups() { return pickups; }
+
+    void save(RoomState state) {
+        for (DropLaunch launch : launches) state.add(launch.snapshot());
+        for (RunPickup pickup : pickups) state.add(pickup.snapshot());
+        for (Meal meal : persistentFood) {
+            if (meal.isEnabled() && runtime.getEntityWorld().getFood().contains(meal, true)) {
+                state.add(new RoomState.Food((MealType) meal.getType(),
+                        meal.position.x, meal.position.y, meal.velocity.x, meal.velocity.y,
+                        meal.getRenderRotation()));
+            }
+        }
+    }
+
+    void restoreLaunch(RoomState.Launch launch) {
+        DropLaunch restored = new DropLaunch(launch.mealType, launch.pickupType,
+                launch.mealType == null ? null : runtime.getTextureAtlas().findRegion(launch.mealType.name()),
+                launch.size, launch.x, launch.y, launch.velocityX, launch.velocityY);
+        restored.setRotation(launch.rotation);
+        launches.add(restored);
+    }
+
+    void restoreTooth(RoomState.Tooth tooth) {
+        ToothPickup pickup = new ToothPickup(tooth.type, tooth.x, tooth.y);
+        pickup.getVelocity().set(tooth.velocityX, tooth.velocityY);
+        pickup.setCollisionRotation(tooth.rotation);
+        pickups.add(pickup);
+    }
+
+    void restoreFood(RoomState.Food food) {
+        Meal meal = food.type.isFruit()
+                ? EntityFactory.fruit(food.x, food.y, food.type, runtime)
+                : EntityFactory.verdure(food.x, food.y, food.type, runtime);
+        prepareFood(meal);
+        meal.velocity.set(food.velocityX, food.velocityY);
+        meal.setRenderRotation(food.rotation);
+        runtime.addMeal(meal);
+    }
 
     public void update(float deltaTime) {
         for (int i = bodies.size - 1; i >= 0; i--) if (bodies.get(i).update(deltaTime)) bodies.removeIndex(i);
@@ -151,6 +190,6 @@ public class RunDropService {
         }
     }
 
-    public void clear() { launches.clear(); bodies.clear(); pickups.clear(); }
+    public void clear() { launches.clear(); bodies.clear(); pickups.clear(); persistentFood.clear(); }
     public void dispose() { clear(); pickupRenderer.dispose(); }
 }

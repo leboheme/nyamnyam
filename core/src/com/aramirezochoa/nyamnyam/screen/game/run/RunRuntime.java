@@ -89,7 +89,8 @@ public class RunRuntime implements GameplayContext {
         bubbleAttractionService = new BubbleAttractionService(runState.getCurrentRoom());
         loadMainAvatar();
         loadEnemies();
-        loadMeals();
+        loadMeals(placement.getState() != null);
+        if (placement.getState() != null) placement.getState().restore(this);
     }
 
     public void update(float deltaTime) {
@@ -173,7 +174,7 @@ public class RunRuntime implements GameplayContext {
 
     private void loadEnemies() {
         RoomInstance room = runState.getCurrentRoom();
-        if (room == null || room.getLayout() == null) {
+        if (room == null || room.getLayout() == null || room.isCombatCleared()) {
             return;
         }
         int tileSize = room.getTileSize();
@@ -186,7 +187,7 @@ public class RunRuntime implements GameplayContext {
         }
     }
 
-    private void loadMeals() {
+    private void loadMeals(boolean restoring) {
         RoomInstance room = runState.getCurrentRoom();
         if (room == null || room.getLayout() == null) {
             return;
@@ -197,6 +198,7 @@ public class RunRuntime implements GameplayContext {
             float x = (spawn.getX() + 1) * tileSize;
             float y = (spawn.getY() + 1) * tileSize;
             MealType type = spawn.getType();
+            if (restoring && (type.isFruit() || type.isVerdure())) continue;
             Meal meal;
             if (type.isBoost()) {
                 meal = EntityFactory.boost(x, y, type, this, spawn.isExpiring());
@@ -247,6 +249,12 @@ public class RunRuntime implements GameplayContext {
 
     public MainAvatar getMainAvatar() {
         return entityWorld.getMainAvatar();
+    }
+
+    public void saveRoomState() {
+        RoomState state = new RoomState();
+        dropService.save(state);
+        runState.getCurrentFloor().getCurrentPlacement().setState(state);
     }
 
     public RoomLink findNavigationTransition() {

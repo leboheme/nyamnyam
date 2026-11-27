@@ -13,6 +13,7 @@ public class PlacedRoom {
     private final int moduleX;
     private final int moduleY;
     private final Map<String, RoomLink> links = new LinkedHashMap<String, RoomLink>();
+    private RoomState state;
 
     PlacedRoom(String templatePath, RoomInstance room, int moduleX, int moduleY) {
         this.templatePath = templatePath;
@@ -27,6 +28,8 @@ public class PlacedRoom {
     public int getModuleY() { return moduleY; }
     public Map<String, RoomLink> getLinks() { return Collections.unmodifiableMap(links); }
     public RoomLink getLink(String slot) { return links.get(slot); }
+    RoomState getState() { return state; }
+    void setState(RoomState state) { this.state = state; }
 
     void link(String slot, RoomLink destination) { links.put(slot, destination); }
 }

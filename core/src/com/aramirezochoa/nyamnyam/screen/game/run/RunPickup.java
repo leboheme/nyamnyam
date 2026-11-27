@@ -14,6 +14,7 @@ public interface RunPickup extends CollisionBody {
     boolean canCollect();
     boolean apply(RunRuntime runtime);
     void render(ShapeRenderer shapes);
+    RoomState.Entry snapshot();
 
     @Override default CollisionLayer getCollisionLayer() { return CollisionLayer.FREE; }
     @Override default Rectangle getCollisionBounds() { return getBox(); }

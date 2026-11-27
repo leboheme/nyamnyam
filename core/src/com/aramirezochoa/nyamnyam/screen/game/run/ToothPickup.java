@@ -20,6 +20,10 @@ public class ToothPickup implements RunPickup {
         box.set(x, y, TOOTH_PICKUP_SIZE, TOOTH_PICKUP_SIZE);
     }
 
+    @Override public RoomState.Entry snapshot() {
+        return new RoomState.Tooth(type, position.x, position.y, velocity.x, velocity.y, rotation);
+    }
+
     @Override public Rectangle getBox() { return box; }
     @Override public Vector2 getVelocity() { return velocity; }
     @Override public void setPosition(float x, float y) {
