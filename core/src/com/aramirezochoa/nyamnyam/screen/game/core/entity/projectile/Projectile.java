@@ -28,13 +28,11 @@ public class Projectile extends Entity {
     private Avatar pitcher;
     private boolean friendly, transformToCandy;
     private int germination;
-    private float power;
     private float bubbleScale = 1f;
     private final LongSet impactedEnemies = new LongSet();
 
     public void init(EntityType type, float x, float y, DirectionType lookingAt, GameplayContext gameWrapper, boolean friendly, boolean transformToCandy, Avatar pitcher) {
         bubbleScale = 1f;
-        power = 0;
         impactedEnemies.clear();
         this.friendly = friendly;
         this.transformToCandy = transformToCandy;
@@ -57,7 +55,6 @@ public class Projectile extends Entity {
 
     public void init(EntityType type, float x, float y, DirectionType lookingAt, GameplayContext gameWrapper, boolean friendly, boolean transformToCandy, int germination) {
         bubbleScale = 1f;
-        power = 0;
         impactedEnemies.clear();
         this.friendly = friendly;
         this.transformToCandy = transformToCandy;
@@ -136,11 +133,9 @@ public class Projectile extends Entity {
         return pitcher;
     }
 
-    public float getPower() { return power; }
     public float getBubbleScale() { return bubbleScale; }
     @Override protected float getBoxOffset() { return Constant.ENTITY_BOX_OFFSET * bubbleScale; }
     @Override protected float getRenderScale() { return bubbleScale; }
-    public void setPower(float power) { this.power = power; }
     public boolean registerImpact(long enemyId) { return impactedEnemies.add(enemyId); }
 
     public int getGermination() {
@@ -152,7 +147,6 @@ public class Projectile extends Entity {
         super.reset();
         pitcher = null;
         germination = -1;
-        power = 0;
         bubbleScale = 1f;
         impactedEnemies.clear();
     }

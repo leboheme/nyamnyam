@@ -231,12 +231,10 @@ public class RunRuntime implements GameplayContext {
     @Override public SalivationReserve getSalivationReserve() { return runState.getSalivationReserve(); }
     @Override public RunStats getRunStats() { return runState.getStats(); }
     @Override public void addEnemy(Enemy enemy) {
-        combatService.prepareEnemy(enemy);
         entityWorld.addEnemy(enemy);
     }
     @Override public void addMeal(Meal meal) { entityWorld.addMeal(meal); }
     @Override public void addProjectile(Projectile projectile) {
-        combatService.prepareAttack(projectile);
         if (projectile.getType() == ProjectileType.BEAM
                 && !bubbleTerrain.canOccupy(projectile.position.x, projectile.position.y,
                         projectile.dimension.x, projectile.dimension.y)) {

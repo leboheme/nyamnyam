@@ -12,11 +12,6 @@ public final class PrototypeBalance {
     public static final float SALIVATION_BUBBLE_COST = 1f;
     public static final float SALIVATION_REGENERATION_PER_SECOND = 0.75f;
 
-    // Combat: ceil(resistance / power) impacts to capture; capture itself is not a defeat.
-    public static final float ENEMY_INITIAL_RESISTANCE = 3f;
-    public static final float ATTACK_POWER = 1f;
-    public static final float ENEMY_HIT_FEEDBACK_SECONDS = 0.12f;
-
     // Health is stored in half teeth: 1 unit = 0.5 tooth. Normal containers reserve whole spaces.
     public static final int STARTING_TOOTH_CONTAINERS = 3;
     public static final int MAX_TOOTH_SPACES = 8;
@@ -31,8 +26,9 @@ public final class PrototypeBalance {
     public static final float TOOTH_PICKUP_SIZE = 16f;
 
     // Debug-only stat pickups: percentages stack additively against each stat's base.
-    // +50% Power makes a 3-resistance enemy take two hits; +50% Cadence makes the
-    // 0.75s interval 0.5s; +100% Salivation doubles its regeneration for sustained fire.
+    // Power is temporarily readout-only while its pickup awaits removal in the next task.
+    // +50% Cadence makes the 0.75s interval 0.5s; +100% Salivation doubles regeneration.
+    public static final float DEBUG_POWER_BASE = 1f;
     public static final float POWER_PICKUP_MODIFIER = 0.5f;
     public static final float CADENCE_PICKUP_MODIFIER = 0.5f;
     public static final float SALIVATION_PICKUP_MODIFIER = 1f;

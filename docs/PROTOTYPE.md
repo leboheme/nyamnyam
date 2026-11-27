@@ -19,7 +19,7 @@ La navegación modular, footprints, máscaras, conectores y minimapa quedan fuer
 
 ### Estado implementado de esta iteración
 
-El usuario validó exploratoriamente la sala JSON con burbujas, interacción, drops, dientes y una build de debug. La primera tarjeta ya está implementada y compila: el ataque usa el proyectil legacy `BEAM`, distinto de las burbujas físicas `AIR_*`, y el contacto entre una burbuja existente y un enemigo ya no captura. Falta la comprobación manual. Siguen pendientes resistencia/Power, salivación, pickups 5–9 y score al rematar. También está implementada la navegación modular de depuración con área generada. Estos hechos describen el punto de partida y no sustituyen las reglas nuevas. El detalle técnico vivo se registra en [REMAKE_DIRECTION.md](REMAKE_DIRECTION.md#runtime-json-implementado).
+El usuario validó exploratoriamente la sala JSON con burbujas, interacción, drops, dientes y una build de debug. Las dos primeras tarjetas ya están implementadas y `core` compila: el ataque usa el proyectil legacy `BEAM`, distinto de las burbujas físicas `AIR_*`; el contacto con burbujas existentes no captura, y un impacto válido captura inmediatamente sin resistencia, Power ni feedback de desgaste. Falta la comprobación manual. El pickup Power permanece temporalmente en el catálogo de debug, pero ya no afecta al combate; se retira en la siguiente tarjeta. Siguen pendientes los otros pickups 5–9, salivación y score al rematar. También está implementada la navegación modular de depuración con área generada. Estos hechos describen el punto de partida y no sustituyen las reglas nuevas. El detalle técnico vivo se registra en [REMAKE_DIRECTION.md](REMAKE_DIRECTION.md#runtime-json-implementado).
 
 ### Criterios de aceptación manual
 

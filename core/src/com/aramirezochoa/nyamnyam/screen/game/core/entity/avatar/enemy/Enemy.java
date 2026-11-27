@@ -12,16 +12,12 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.avatar.types.Direction
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.meal.MealType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.EntityState;
 
-import static com.aramirezochoa.nyamnyam.screen.game.run.PrototypeBalance.*;
-
 /**
  * Created by boheme on 14/01/15.
  */
 public abstract class Enemy extends Avatar {
 
-    private float hitFeedbackTimer;
     private boolean angry, scared;
-    private float initialResistance, resistance;
 
     @Override
     public void init(EntityType type, float x, float y, DirectionType lookingAt, GameplayContext gameWrapper) {
@@ -29,8 +25,6 @@ public abstract class Enemy extends Avatar {
         setCollisionLayer(CollisionLayer.ENEMY);
         angry = false;
         scared = false;
-        initialResistance = resistance = 0;
-        hitFeedbackTimer = 0;
     }
 
     @Override
@@ -60,7 +54,6 @@ public abstract class Enemy extends Avatar {
     }
 
     public void captureInBubble() {
-        hitFeedbackTimer = 0;
         parent.getEntityWorld().removeEnemy(this);
         setEnabled(false);
         velocity.setZero();
@@ -76,32 +69,6 @@ public abstract class Enemy extends Avatar {
         grounded = false;
         setEnabled(true);
         parent.addEnemy(this);
-    }
-
-    public float getInitialResistance() { return initialResistance; }
-    public float getResistance() { return resistance; }
-
-    public void setInitialResistance(float value) {
-        initialResistance = resistance = value;
-    }
-
-    public void reduceResistance(float power) {
-        resistance = Math.max(0, resistance - power);
-    }
-
-    public void restoreResistance() {
-        resistance = initialResistance;
-    }
-
-    /** Temporary visual feedback hook; does not interrupt locomotion or grant invulnerability. */
-    public void showHitFeedback() {
-        hitFeedbackTimer = ENEMY_HIT_FEEDBACK_SECONDS;
-    }
-
-    @Override
-    protected void updateState(float deltaTime) {
-        hitFeedbackTimer = Math.max(0, hitFeedbackTimer - deltaTime);
-        super.updateState(deltaTime);
     }
 
     @Override
@@ -120,9 +87,7 @@ public abstract class Enemy extends Avatar {
 
     @Override
     protected Color getColor() {
-        if (hitFeedbackTimer > 0) {
-            return Color.RED;
-        } else if (scared) {
+        if (scared) {
             return Constant.ENEMY_SCARED_COLOR;
         } else if (angry) {
             return Constant.ENEMY_ANGRY_COLOR;

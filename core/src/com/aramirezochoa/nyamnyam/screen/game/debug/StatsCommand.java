@@ -6,7 +6,7 @@ import com.aramirezochoa.nyamnyam.screen.game.run.RunStats;
 import java.util.Locale;
 import java.util.function.Supplier;
 
-import static com.aramirezochoa.nyamnyam.screen.game.run.PrototypeBalance.ATTACK_POWER;
+import static com.aramirezochoa.nyamnyam.screen.game.run.PrototypeBalance.DEBUG_POWER_BASE;
 import static com.aramirezochoa.nyamnyam.screen.game.run.PrototypeBalance.SALIVATION_REGENERATION_PER_SECOND;
 
 /** Read-only view of the active JSON run's base stats and modifiers. */
@@ -27,10 +27,10 @@ public final class StatsCommand implements DebugCommand {
         if (stats == null) return "stats requires a JSON room";
         float baseCadence = 1f / Constant.MAIN_AVATAR_FIRE_TIME_LAPSE;
         return String.format(Locale.US,
-                "Power: %.2f base, %+.0f%%, %.2f effective per hit\n"
+                "Power (debug only; no combat effect): %.2f base, %+.0f%%, %.2f effective\n"
                         + "Cadence: %.2f base attacks/s, %+.0f%%, %.2f attacks/s (%.2f s interval)\n"
                         + "Salivation: %.2f base/s, %+.0f%%, %.2f/s",
-                ATTACK_POWER, stats.getModifier(RunStats.Stat.POWER) * 100f, stats.getPower(),
+                DEBUG_POWER_BASE, stats.getModifier(RunStats.Stat.POWER) * 100f, stats.getPower(),
                 baseCadence, stats.getModifier(RunStats.Stat.CADENCE) * 100f,
                 stats.getCadence(), stats.getCadence() <= 0f ? Float.MAX_VALUE : 1f / stats.getCadence(),
                 SALIVATION_REGENERATION_PER_SECOND,

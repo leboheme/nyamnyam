@@ -5,7 +5,7 @@ import com.aramirezochoa.nyamnyam.Constant;
 import java.util.EnumMap;
 import java.util.Map;
 
-import static com.aramirezochoa.nyamnyam.screen.game.run.PrototypeBalance.ATTACK_POWER;
+import static com.aramirezochoa.nyamnyam.screen.game.run.PrototypeBalance.DEBUG_POWER_BASE;
 import static com.aramirezochoa.nyamnyam.screen.game.run.PrototypeBalance.SALIVATION_REGENERATION_PER_SECOND;
 
 /** Additive percentage modifiers for the small set of run stats in the prototype. */
@@ -41,7 +41,7 @@ public final class RunStats {
     }
 
     public float getPower() {
-        return getValue(Stat.POWER, ATTACK_POWER);
+        return getValue(Stat.POWER, DEBUG_POWER_BASE);
     }
 
     public float getCadence() {

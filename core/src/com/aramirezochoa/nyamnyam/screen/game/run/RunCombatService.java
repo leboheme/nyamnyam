@@ -10,8 +10,6 @@ import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.Projectile;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.projectile.ProjectileType;
 import com.aramirezochoa.nyamnyam.screen.game.core.entity.state.projectile.ProjectileStateFactory;
 
-import static com.aramirezochoa.nyamnyam.screen.game.run.PrototypeBalance.*;
-
 /** Prototype JSON combat rules. Locomotion and bubble contact physics remain independent. */
 public class RunCombatService {
     private final RunRuntime context;
@@ -20,37 +18,23 @@ public class RunCombatService {
         this.context = context;
     }
 
-    public void prepareEnemy(Enemy enemy) {
-        // A returning captive retains its original maximum, even if balance values change later.
-        if (enemy.getInitialResistance() == 0) enemy.setInitialResistance(ENEMY_INITIAL_RESISTANCE);
-    }
-
-    public void prepareAttack(Projectile attack) {
-        RunStats stats = context.getRunStats();
-        attack.setPower(stats == null ? ATTACK_POWER : stats.getPower());
-    }
-
     /** Returns whether this attack applied a new impact; callers stop iterating after capture. */
     public boolean hit(Projectile attack, Enemy enemy) {
         if (!enemy.isEnabled() || enemy.isBoss() || !attack.registerImpact(enemy.getId())) return false;
-        enemy.reduceResistance(attack.getPower());
-        enemy.showHitFeedback();
         context.getMediaManager().playSound(MediaManager.SOUND_HIT_PROJECTILE);
-        if (enemy.getResistance() == 0) {
-            float size = Constant.CANDY_DIMENSION.x * attack.getBubbleScale();
-            float x = enemy.position.x + (enemy.dimension.x - size) / 2;
-            float y = enemy.position.y + (enemy.dimension.y - size) / 2;
-            if (!context.getBubbleTerrain().canOccupy(x, y, size, size)) {
-                // The projectile's valid footprint is the closest safe location at impact.
-                x = attack.position.x;
-                y = attack.position.y;
-            }
-            Bubble bubble = EntityFactory.bubble(x, y, attack.getLookingAt(), attack.getBubbleScale(), context);
-            if (bubble.capture(enemy, context.getCaptureDuration())) {
-                context.getEntityWorld().addBubble(bubble);
-            } else {
-                bubble.free();
-            }
+        float size = Constant.CANDY_DIMENSION.x * attack.getBubbleScale();
+        float x = enemy.position.x + (enemy.dimension.x - size) / 2;
+        float y = enemy.position.y + (enemy.dimension.y - size) / 2;
+        if (!context.getBubbleTerrain().canOccupy(x, y, size, size)) {
+            // The projectile's valid footprint is the closest safe location at impact.
+            x = attack.position.x;
+            y = attack.position.y;
+        }
+        Bubble bubble = EntityFactory.bubble(x, y, attack.getLookingAt(), attack.getBubbleScale(), context);
+        if (bubble.capture(enemy, context.getCaptureDuration())) {
+            context.getEntityWorld().addBubble(bubble);
+        } else {
+            bubble.free();
         }
         if (attack.getType() != ProjectileType.SPIKE && attack.getType() != ProjectileType.BOMB) {
             attack.setEnabled(false);
@@ -60,7 +44,6 @@ public class RunCombatService {
     }
 
     public void release(Enemy enemy, float x, float y, DirectionType facing) {
-        enemy.restoreResistance();
         enemy.anger(true);
         enemy.escapeBubble(x, y, facing);
     }
